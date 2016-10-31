@@ -7,3 +7,5 @@ Robotex football contestant
 * clone repro
 * Open solution
 * Run/Build
+* Wait for opencv3 and boost libraries to be downloaded/installed
+* have fun
