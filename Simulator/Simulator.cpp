@@ -1,0 +1,593 @@
+// Simulator.cpp : Defines the entry point for the console application.
+//
+#include "stdafx.h"
+
+#include <chrono>
+#include <thread>
+#include <time.h>       /* time */
+#include <boost/algorithm/string.hpp>
+#include "Simulator.h"
+#include "../CommonModule/DistanceCalculator.h"
+#include "../RobotModule/Robot.h"
+#include "../DisplayModule/Dialog.h"
+
+extern DistanceCalculator gDistanceCalculator;
+extern cv::Mat wheelAngles;
+
+const double SIMULATOR_SPEED = 0.5;
+const bool INIT_RANDOM = false;
+
+Simulator::Simulator(boost::asio::io_service &io, bool master, const std::string game_mode) :
+	mNumberOfBalls(game_mode == "master" || game_mode == "slave" ? 1 : 11)
+	, ThreadedClass("Simulator"), UdpServer(io, 31000, master)
+	, isMaster(master)
+	, balls(game_mode == "master" || game_mode == "slave" ? 1 : 11)
+	, yellowGate(YELLOW_GATE), blueGate(BLUE_GATE), self(yellowGate, blueGate, cv::Point(0, 0))
+{
+	srand((unsigned int) ::time(NULL));
+	/*
+	wheelSpeeds.push_back({ 0, 0 });
+	wheelSpeeds.push_back({ 0, 0 });
+	wheelSpeeds.push_back({ 0, 0 });
+	wheelSpeeds.push_back({ 0, 0 });
+	*/
+	self.fieldCoords = !INIT_RANDOM ? cv::Point(155, 230) : cv::Point(rand() % 300 - 150, rand() % 460 - 230);
+	self.polarMetricCoords = cv::Point(0, !INIT_RANDOM ? -30 : rand() % 359);
+	if (isMaster) {
+		id = 0;
+		// distribute balls uniformly at random
+		if (mNumberOfBalls == 1) {
+			balls[0].fieldCoords = { 0, 0 };
+			balls[0].id = 0;
+			if (game_mode == "master") self.fieldCoords = { 0, 60 };
+			robots[1].fieldCoords = cv::Point(rand() % 300 - 150, rand() % 460 - 230);
+
+		}
+		else {
+			for (int i = 0; i < mNumberOfBalls; i++) {
+				balls[i].fieldX = (int)(((i % 3) - 1) * 100) + (!INIT_RANDOM ? 0 : (rand() % 200) - 100);
+				balls[i].fieldY = (int)((i / 3 - 1.5) * 110) + (!INIT_RANDOM ? 0 : (rand() % 200) - 100);
+				balls[i].id = i;
+			}
+			robots[9].fieldCoords = cv::Point(rand() % 300 - 150, rand() % 460 - 230);
+		}
+	}
+	else {
+		SendMessage("ID? #"); // ask slave id
+	};
+	Start();
+}
+void Simulator::WriteString(const std::string &command) {
+
+	std::vector<std::string> tokens;
+	boost::split(tokens, command, boost::is_any_of("\n"));
+	for (std::string s : tokens) {
+		if (s.empty()) continue;
+		int id = s[0] - '1'; //string 1...5 -> int 0...4
+		if (id < 4 && s.substr(2, 2) == "sd") {
+			wheelSpeeds.at<double>(id, 0) = atoi(s.substr(4).c_str());
+			//			std::cout << "zzzzzzzzzzzzz" << std::endl;
+			//			std::cout << wheelSpeeds << std::endl;
+			//			std::cout << "xxxxxxxxxxxxx" << std::endl;
+		}
+		else if (id == 4) {
+			if (s[2] == 'k') {
+				Kick(atoi(s.substr(3).c_str()));
+			}
+			else if (s[2] == 'd' && s[3] == 'm') {
+				ToggleTribbler(atoi(s.substr(4).c_str()) > 0);
+			}
+
+		}
+	}
+
+}
+void Simulator::DataReceived(const std::string & message) {//serial
+	if (messageCallback != NULL) {
+		messageCallback->DataReceived(message);
+	}
+}
+void Simulator::MessageReceived(const std::string & message) { //udp
+	std::stringstream ss(message);
+	std::string command, r_id;
+	ss >> command;
+	if (isMaster) {
+		if (command == "ID?") {
+			stop_send = true;
+			SendMessage("ID= " + std::to_string(next_id++) + " #");
+		}
+		else if (command == "POS") { // foward to slaves
+			SendMessage(message);
+		}
+		else if (command == "ACK") { // id received
+			stop_send = false;
+		}
+		else if (command == "KCK") {
+			double s, a;
+			ss >> r_id >> s >> a;
+			int _id = atoi(r_id.c_str());
+			balls[_id].speed = s;
+			balls[_id].heading = a;
+		}
+	}
+	else { // slave commands
+		if (command == "ID=") {
+			ss >> r_id;
+			id = atoi(r_id.c_str());
+			SendMessage("ACK #");
+		}
+		else if (command == "BAL") {
+			ss >> r_id;
+			int _id = atoi(r_id.c_str());
+			if (_id != id) {
+				std::string x, y, a;
+				ss >> x >> y;
+				balls[_id].fieldX = atoi(x.c_str());
+				balls[_id].fieldY = atoi(y.c_str());
+			}
+		}
+		else if (command == "STT") {
+			int numballs;
+			ss >> numballs;
+			for (int i = 0; i < mNumberOfBalls; i++) {
+				std::string x, y, a;
+				ss >> x >> y;
+				balls[i].fieldX = atoi(x.c_str());
+				balls[i].fieldY = atoi(y.c_str());
+			}
+			std::string r_id;
+			do {
+				std::string x, y, a;
+				ss >> r_id >> x >> y;
+				if (r_id != "99") {
+					int _id = atoi(r_id.c_str());
+					if (_id != id) {
+						robots[_id].fieldX = atoi(x.c_str());
+						robots[_id].fieldY = atoi(y.c_str());
+					}
+				}
+
+			} while (r_id != "99");
+		}
+		else if (command == "REF") {
+			int ref_command;
+			ss >> ref_command;
+			assert(false); //fixme RefereeCom::giveCommand((FieldState::GameMode)ref_command);
+		}
+
+	}
+	if (command == "POS") {
+		ss >> r_id;
+		int _id = atoi(r_id.c_str());
+		if (_id != id) {
+			std::string x, y, a;
+			ss >> x >> y >> a;
+			robots[_id].fieldX = atoi(x.c_str());
+			robots[_id].fieldY = atoi(y.c_str());
+			robots[_id].angle = atoi(a.c_str());
+			assert(false); //heading ??
+		}
+	}
+	if (id < 0) {
+		SendMessage("ID? #"); // ask slave id again
+	}
+}
+void Simulator::UpdateGatePos() {
+
+	frame_blank.copyTo(frame);
+
+	drawRect(cv::Rect(cv::Point(-155, -230), cv::Point(155, 230)), 10, cv::Scalar(0, 0, 0));
+	drawRect(cv::Rect(cv::Point(-145, -220), cv::Point(145, 220)), 10, cv::Scalar(255, 255, 255));
+	drawLine(cv::Point(-145, 0), cv::Point(145, 0), 10, cv::Scalar(255, 255, 255));
+	drawCircle(cv::Point(0, 0), 40, 10, cv::Scalar(255, 255, 255));
+
+	blueGate.polarMetricCoords.x = cv::norm(self.fieldCoords - blueGate.fieldCoords);
+	blueGate.polarMetricCoords.y = 360 - gDistanceCalculator.angleBetween(cv::Point(0, 1), self.fieldCoords - (blueGate.fieldCoords)) + self.getAngle();
+	yellowGate.polarMetricCoords.x = cv::norm(self.fieldCoords - yellowGate.fieldCoords);;
+	yellowGate.polarMetricCoords.y = 360 - gDistanceCalculator.angleBetween(cv::Point(0, 1), self.fieldCoords - (yellowGate.fieldCoords)) + self.getAngle();
+
+
+	for (int s = -1; s < 2; s += 2) {
+		cv::Point2d shift1(s * 10, -20);
+		cv::Point2d shift2(s * 10, 20);
+		double a1 = gDistanceCalculator.angleBetween(cv::Point(0, -1), self.fieldCoords - (blueGate.fieldCoords + shift1)) + self.getAngle();
+		double a2 = gDistanceCalculator.angleBetween(cv::Point(0, -1), self.fieldCoords - (yellowGate.fieldCoords + shift2)) + self.getAngle();
+
+		double d1 = gDistanceCalculator.getDistanceInverted(self.fieldCoords, blueGate.fieldCoords + shift1);
+		double d2 = gDistanceCalculator.getDistanceInverted(self.fieldCoords, yellowGate.fieldCoords + shift2);
+
+
+		// draw gates
+		double x1 = -d1*sin(a1 / 180 * CV_PI);
+		double y1 = d1*cos(a1 / 180 * CV_PI);
+		double x2 = -d2*sin(a2 / 180 * CV_PI);
+		double y2 = d2*cos(a2 / 180 * CV_PI);
+
+		cv::Scalar color(236, 137, 48);
+		cv::Scalar color2(61, 255, 244);
+		double s1 = 8000 / cv::norm(self.fieldCoords - blueGate.fieldCoords);
+		double s2 = 8000 / cv::norm(self.fieldCoords - yellowGate.fieldCoords);
+		cv::circle(frame, cv::Point((int)(x1), (int)(y1)) + cv::Point(frame.size() / 2), s1, color, -1);
+		cv::circle(frame, cv::Point((int)(x2), (int)(y2)) + cv::Point(frame.size() / 2), s2, color2, -1);
+	}
+
+}
+void Simulator::UpdateBallPos(double dt) {
+	std::stringstream message;
+	message << "STT " << mNumberOfBalls << " ";
+	// balls 
+	for (int i = 0; i < mNumberOfBalls; i++) {
+		if (isMaster) {
+			if (balls[i].speed > 0.001) {
+				balls[i].fieldX += balls[i].speed*dt * (sin(balls[i].heading / 180 * CV_PI));
+				balls[i].fieldY -= balls[i].speed*dt * (cos(balls[i].heading / 180 * CV_PI));
+				balls[i].speed *= 0.8;
+			}
+			message << (int)balls[i].fieldX << " " << (int)balls[i].fieldY << " ";
+			//SendMessage(message.str());
+		}
+		double a = gDistanceCalculator.angleBetween(cv::Point(0, -1), self.fieldCoords - balls[i].fieldCoords) + self.getAngle();
+		double d = gDistanceCalculator.getDistanceInverted(self.fieldCoords, balls[i].fieldCoords);
+		double x = -d*sin(a / 180 * CV_PI);
+		double y = d*cos(a / 180 * CV_PI);
+		balls[i].polarMetricCoords.x = cv::norm(self.fieldCoords - balls[i].fieldCoords);
+		a -= 180;
+		if (a > 360) a -= 360;
+		if (a < 0) a += 360;
+		balls[i].polarMetricCoords.y = a;
+		cv::Scalar color(48, 154, 236);
+		cv::circle(frame, cv::Point(x, y) + cv::Point(frame.size() / 2), 12, color, -1);
+	}
+	if (isMaster) {
+		message << 0 << " " << self.fieldX << " " << self.fieldY << " ";
+	}
+	// draw shared robots
+	for (int i = 0; i < MAX_ROBOTS; i++) {
+		if (abs(robots[i].fieldX) > 1000) continue;
+		double a = gDistanceCalculator.angleBetween(cv::Point(0, -1), self.fieldCoords - robots[i].fieldCoords) + self.getAngle();
+		double d = gDistanceCalculator.getDistanceInverted(self.fieldCoords, robots[i].fieldCoords);
+		double x = -d*sin(a / 180 * CV_PI);
+		double y = d*cos(a / 180 * CV_PI);
+		cv::Scalar color(i * 52, i * 15 + 100, i * 30);
+		double s = std::min(20., 4000 / cv::norm(self.fieldCoords - robots[i].fieldCoords));
+		cv::circle(frame, cv::Point(x, y) + cv::Point(frame.size() / 2), s * 2, color, -1);
+		cv::Scalar color1(236, 137, 48);
+		cv::Scalar color2(61, 255, 244);
+		cv::rectangle(frame, cv::Point2d(x - s, y - s) + cv::Point2d(frame.size() / 2), cv::Point2d(x + s, y) + cv::Point2d(frame.size() / 2), color1, -1);
+		cv::rectangle(frame, cv::Point2d(x - s, y) + cv::Point2d(frame.size() / 2), cv::Point2d(x + s, y + s) + cv::Point2d(frame.size() / 2), color2, -1);
+		if (isMaster) {
+			message << i << " " << (int)robots[i].fieldX << " " << (int)robots[i].fieldY << " ";
+		}
+	}
+	if (isMaster) {
+		message << " 99 0 0 #";
+		SendMessage(message.str());
+	}
+
+}
+
+void Simulator::UpdateRobotPos(double dt) {
+
+	if (dt > 1000) return;
+	cv::Mat robotSpeed = cv::Mat_<double>(3, 1);
+	cv::solve(wheelAngles, wheelSpeeds, robotSpeed, cv::DECOMP_SVD);
+	double dr = SIMULATOR_SPEED * 2 * (robotSpeed.at<double>(2)*dt);
+	self.polarMetricCoords.y -= dr;
+	if (self.polarMetricCoords.y > 360) self.polarMetricCoords.y -= 360;
+	if (self.polarMetricCoords.y < -360) self.polarMetricCoords.y += 360;
+	cv::Mat rotMat = getRotationMatrix2D(cv::Point(0, 0), self.getAngle(), 1);
+	cv::Mat rotatedSpeed = rotMat * robotSpeed;
+	double dx = SIMULATOR_SPEED*rotatedSpeed.at<double>(0)*dt;
+	double dy = SIMULATOR_SPEED*rotatedSpeed.at<double>(1)*dt;
+
+	self.fieldX += dx;
+	self.fieldY -= dy;
+
+
+	if (!isMaster && id > 0) {
+		std::stringstream message;
+		message << "POS " << id << " " << self.fieldX << " " << self.fieldY << " " << self.getAngle() << " #";
+		SendMessage(message.str());
+	}
+
+	UpdateGatePos();
+
+	UpdateBallIntTribbler(robotSpeed, dt);
+	UpdateBallPos(dt);
+	cv::circle(frame, cv::Point(frame.size() / 2), 55, cv::Scalar::all(160), -1);
+
+	return;
+	{
+		std::lock_guard<std::mutex> lock(mutex);
+#ifndef VIRTUAL_FLIP
+		cv::flip(frame, frame, 1);
+#endif
+		frame.copyTo(frame_copy);
+	}
+
+}
+
+void Simulator::UpdateBallIntTribbler(cv::Mat robotSpeed, double dt) {
+	bool was_in_tribbler = ball_in_tribbler;
+	//---
+
+	if (!tribblerRunning) {
+		ball_in_tribbler = false;
+	}
+	double minDist = INT_MAX;
+	double dist = INT_MAX;
+	int minIndex = -1;
+	for (int i = 0; i < mNumberOfBalls; i++) {
+		dist = cv::norm(self.fieldCoords - balls[i].fieldCoords);
+		//std::cout << dist << std::endl;
+		if (dist < minDist /*&& (fabs(balls[i].getHeading()) < 10 || was_in_tribbler || (fabs(balls[i].getHeading()) - 90)< 1)*/) {
+			minDist = dist;
+			minIndex = i;
+		}
+	}
+	if (minIndex < 0) {
+		ball_in_tribbler = false;
+		return;
+	}
+	if (minDist < (was_in_tribbler ? 30 : 24)) {
+		ball_in_tribbler = fabs(balls[minIndex].getHeading()) < 10;
+
+		double dr = SIMULATOR_SPEED*(robotSpeed.at<double>(2)*dt);
+
+		cv::Mat rotMat2 = getRotationMatrix2D(self.fieldCoords, dr, 1);
+		cv::Mat ballPos = cv::Mat_<double>(3, 1);
+		ballPos.at<double>(0) = balls[minIndex].fieldX;
+		ballPos.at<double>(1) = balls[minIndex].fieldY;
+		ballPos.at<double>(2) = 1;
+		cv::Mat rotatedPos = rotMat2 * ballPos;
+		balls[minIndex].fieldX = rotatedPos.at<double>(0);
+		balls[minIndex].fieldY = rotatedPos.at<double>(1);
+
+		cv::Mat rotMat = getRotationMatrix2D(cv::Point(0, 0), self.getAngle(), 1);
+		cv::Mat rotatedSpeed = rotMat * robotSpeed;
+		double dx = SIMULATOR_SPEED*rotatedSpeed.at<double>(0)*dt;
+		double dy = SIMULATOR_SPEED*rotatedSpeed.at<double>(1)*dt;
+
+		balls[minIndex].fieldX += dx;
+		balls[minIndex].fieldY -= dy;
+
+
+
+	}
+	else ball_in_tribbler = false;
+	//---
+
+	if (!was_in_tribbler && ball_in_tribbler) {
+		DataReceived("<5:bl:1>\n");
+	}
+	else if (was_in_tribbler && !ball_in_tribbler) {
+		DataReceived("<5:bl:0>\n");
+	}
+}
+Simulator::~Simulator()
+{
+	WaitForStop();
+}
+
+cv::Mat & Simulator::Capture(bool bFullFrame) {
+	double t2 = (double)cv::getTickCount();
+	if (frames > 20) {
+		double dt = (t2 - time) / cv::getTickFrequency();
+		fps = frames / dt;
+		time = t2;
+		frames = 0;
+	}
+	else {
+		frames++;
+	}
+	double dt = (t2 - time2) / cv::getTickFrequency();
+	UpdateRobotPos(dt);
+	time2 = t2;
+	return frame;
+
+	std::lock_guard<std::mutex> lock(mutex);
+	frame_copy.copyTo(frame_copy2);
+	return frame_copy2;
+}
+
+cv::Size Simulator::GetFrameSize(bool bFullFrame) {
+	return frame.size();
+}
+
+
+double Simulator::GetFPS() {
+	return fps;
+}
+
+
+cv::Mat & Simulator::GetLastFrame(bool bFullFrame) {
+	return frame;
+}
+
+
+void Simulator::TogglePlay() {
+}
+
+
+
+void Simulator::Drive(double fowardSpeed, double direction, double angularSpeed) {
+	if (mNumberOfBalls == 0)
+		return;
+	targetSpeed = { fowardSpeed, direction, angularSpeed };
+	//std::cout << fowardSpeed  << "\t" <<  direction << "\t" << angularSpeed << std::endl;
+	/*
+	self.polarMetricCoords.y += angularSpeed;
+	if (self.polarMetricCoords.y > 360) self.polarMetricCoords.y -= 360;
+	if (self.polarMetricCoords.y < -360) self.polarMetricCoords.y += 360;
+	self.fieldX += (int)(fowardSpeed * sin((direction - self.getAngle()) / 180 * CV_PI));
+	self.fieldY += (int)(fowardSpeed * cos((direction - self.getAngle()) / 180 * CV_PI));
+	*/
+}
+
+
+const Speed & Simulator::GetActualSpeed() {
+	return actualSpeed;
+}
+
+
+const Speed & Simulator::GetTargetSpeed() {
+	return targetSpeed;
+}
+
+
+void Simulator::Init() {
+}
+
+std::string Simulator::GetDebugInfo() {
+	return "simulating wheels";
+}
+
+void Simulator::Run() {
+	while (!stop_thread) {
+		//UpdateRobotPos();
+		Sleep(50);
+	}
+}
+
+bool Simulator::BallInTribbler() {
+
+	return ball_in_tribbler;
+}
+
+void Simulator::Kick(int force) {
+	if (force == 0) force = 2500;
+	force /= 6;
+	double minDist = INT_MAX;
+	double dist = INT_MAX;
+	int minDistIndex = mNumberOfBalls - 1;
+	for (int i = 0; i < mNumberOfBalls; i++) {
+		dist = cv::norm(self.fieldCoords - balls[i].fieldCoords);
+		if (dist < minDist) {
+			minDist = dist;
+			minDistIndex = i;
+		}
+	}
+	if (minDistIndex < 0) {
+		return;
+	}
+	if (isMaster) {
+		balls[minDistIndex].speed = force;
+		balls[minDistIndex].heading = self.getAngle();
+
+	}
+	else {
+		SendMessage("KCK " + std::to_string(minDistIndex) + " " + std::to_string(force) + " " + std::to_string(self.getAngle()) + " #");
+	}
+	//balls[minDistIndex] = balls[mNumberOfBalls - 1];
+	//balls[mNumberOfBalls - 1].~BallPosition();
+	//mNumberOfBalls--;
+}
+void Simulator::giveCommand(GameMode command) {
+	if (isMaster) {
+		SendMessage("REF " + std::to_string(command) + " #");
+	}
+	RefereeCom::giveCommand(command);
+}
+
+void Simulator::drawRect(cv::Rect rec, int thickness, const cv::Scalar &color) {
+	drawLine(rec.tl(), rec.tl() + cv::Point(rec.width, 0), thickness, color);
+	drawLine(rec.tl() + cv::Point(rec.width, 0), rec.br(), thickness, color);
+	drawLine(rec.br() - cv::Point(rec.width, 0), rec.br(), thickness, color);
+	drawLine(rec.tl(), rec.tl() + cv::Point(0, rec.height), thickness, color);
+
+}
+
+void Simulator::drawLine(cv::Point start, cv::Point end, int thickness, CvScalar color)
+{
+	const int SCALE = 8;
+	cv::Mat dummyField = cv::Mat(cv::Point(608, 608) / SCALE, CV_8UC3, cv::Scalar::all(245));
+	cv::LineIterator it(dummyField, start / SCALE + cv::Point(dummyField.size() / 2), end / SCALE + cv::Point(dummyField.size() / 2), 8);
+	cv::Point last = { INT_MAX, INT_MAX };
+	for (int i = 0; i < it.count; i++, ++it) {
+		cv::Point xy = (it.pos() - cv::Point(dummyField.size() / 2))*SCALE;
+		double a1 = gDistanceCalculator.angleBetween(cv::Point(0, -1), self.fieldCoords - cv::Point2d(xy)) + self.getAngle();
+		double d1 = gDistanceCalculator.getDistanceInverted(self.fieldCoords, xy);
+
+		double x1 = -d1*sin(a1 / 180 * CV_PI);
+		double y1 = d1*cos(a1 / 180 * CV_PI);
+		cv::Point cur = cv::Point((int)(x1), (int)(y1)) + cv::Point(frame.size() / 2);
+		if (last.x < 1000) {
+			cv::line(frame, last, cur, color, std::min(30.0, 4 * 1 / d1 * 960));
+		}
+		last = cur;
+	}
+	return;
+}
+
+void Simulator::drawCircle(cv::Point start, int radius, int thickness, CvScalar color) {
+
+	double i, angle, x1, y1;
+	cv::Point last;
+	for (i = 0; i < 360; i += 10)
+	{
+		angle = i;
+		x1 = radius * cos(angle * PI / 180);
+		y1 = radius * sin(angle * PI / 180);
+		cv::Point cur = cv::Point(int(x1), int(y1));
+		if (i > 0) {
+			drawLine(last, cur, thickness, color);
+		}
+		last = cur;
+
+	}
+}
+po::options_description desc("Allowed options");
+
+
+
+boost::asio::io_service io;
+
+int main(int argc, char* argv[])
+{
+	desc.add_options()
+		("help", "produce help message")
+		("camera", po::value<std::string>(), "set m_pCamera index or path")
+		("app-size", po::value<std::string>(), "main window size: width x height")
+		("locate_cursor", "find cursor instead of ball")
+		("skip-ports", "skip ALL COM port checks")
+		("skip-missing-ports", "skip missing COM ports")
+		("save-frames", "Save captured frames to disc")
+		("simulator-mode", po::value<std::string>(), "Play mode: single, opponent, master, slave")
+		("play-mode", po::value<std::string>(), "Play mode: single, opponent, master, slave")
+		("twitter-port", po::value<int>(), "UDP port for communication between robots");
+
+	std::string play_mode = "single";
+	std::string simulator_mode = "single";
+
+	po::variables_map config;
+
+	po::store(po::parse_command_line(argc, argv, desc), config);
+	po::notify(config);
+
+	if (config.count("help")) {
+		std::cout << desc << std::endl;
+		return false;
+	}
+	if (config.count("play-mode"))
+		play_mode = config["play-mode"].as<std::string>();
+	if (config.count("simulator-mode"))
+		simulator_mode = config["simulator-mode"].as<std::string>();
+
+	cv::Size winSize(1024, 768);
+	if (config.count("app-size")) {
+		std::vector<std::string> tokens;
+		boost::split(tokens, config["app-size"].as<std::string>(), boost::is_any_of("x"));
+		winSize.width = atoi(tokens[0].c_str());
+		winSize.height = atoi(tokens[1].c_str());
+
+	}
+	Simulator Sim(io, simulator_mode == "master", play_mode);
+
+	Dialog display("Robotiina", winSize, Sim.GetFrameSize());
+
+	Robot robot(io, &Sim, &Sim, &display, &Sim);
+	robot.Launch(play_mode);
+
+    return 0;
+}
+
