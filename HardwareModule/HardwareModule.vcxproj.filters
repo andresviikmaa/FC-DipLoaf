@@ -39,10 +39,10 @@
     <ClInclude Include="CoilBoard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="UdpServer.h">
+    <ClInclude Include="Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
+    <ClInclude Include="SerialToUdp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -59,10 +59,10 @@
     <ClCompile Include="CoilBoard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="UdpServer.cpp">
+    <ClCompile Include="Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
+    <ClCompile Include="SerialToUdp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

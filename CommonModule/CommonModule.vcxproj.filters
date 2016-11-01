@@ -33,6 +33,12 @@
     <ClCompile Include="FieldState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="UdpServer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WheelConfig.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ConfigurableModule.h">
@@ -54,6 +60,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FieldState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UdpServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WheelConfig.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

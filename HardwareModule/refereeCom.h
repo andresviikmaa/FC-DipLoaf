@@ -27,16 +27,18 @@ private:
 	void nextRobot();
 };
 
-class LLAPReceiver : public RefereeCom, public SimpleSerial
+class LLAPReceiver : public RefereeCom
 {
 public:
-	LLAPReceiver(boost::asio::io_service &io_service, std::string port = "port", unsigned int baud_rate = 115200, const std::string &name = "Referee");
+	LLAPReceiver(ISerial *pSerial, const std::string &name = "Referee");
 	~LLAPReceiver();
 
 	bool isTogglable() { return true; }
 	virtual void DataReceived(const std::string & message);
 	virtual void sendAck(const std::string & message){
-		WriteString(message);
+		m_pSerial->WriteString(message);
 	}
+protected:
+	ISerial *m_pSerial;
 };
 

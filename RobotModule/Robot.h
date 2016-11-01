@@ -1,7 +1,5 @@
 #include "../CommonModule/Types.h"
 #include "../CommonModule/Interfaces.h"
-#include "../HardwareModule/HardwareInterfaces.h"
-#include "../HardwareModule/refereeCom.h"
 #include <atomic>
 #include <boost/program_options.hpp>
 #include <boost/asio.hpp>
@@ -26,23 +24,18 @@ enum STATE
 	STATE_GIVE_COMMAND,
 	STATE_END_OF_GAME /* leave this last*/
 };
-class FrontCameraVision;
-class ComModule;
-class StateMachine;
+
 class Robot {
 private:
-	po::variables_map config;
-	ICamera *m_pCamera = NULL;
-	ISerial *m_pSerial = NULL;
+	IVisionModule *m_pVision = NULL;
+	ICommunicationModule *m_pComModule = NULL;
+	IStateMachine *m_pAutoPilot = NULL;
 	IDisplay *m_pDisplay = NULL;
-	RefereeCom *refCom = NULL;
-	bool coilBoardPortsOk;
-	bool wheelsPortsOk;
+
 
     //STATE state = STATE_NONE;
     std::atomic<STATE> state;
 	std::atomic<STATE> last_state;
-	bool ParseOptions(int argc, char* argv[]);
 	//void InitHardware();
 	//void InitSimulator(bool master, const std::string game_mode);
 //	void initWheels();
@@ -52,18 +45,14 @@ private:
 	void Run();
     boost::mutex remote_mutex;
 protected:
-	boost::asio::io_service &io;
 	OBJECT targetGate= NUMBER_OF_OBJECTS; //uselected
 	bool captureFrames = false;
 	std::atomic_bool autoPilotEnabled;
 	std::string play_mode = "single";
 //	SimpleSerial *serialPort;
-	FrontCameraVision * visionModule;
-	ComModule * comModule;
-	StateMachine *autoPilot;
 
 public:
-    Robot(boost::asio::io_service &io, ICamera *, ISerial*, IDisplay*, RefereeCom*);
+    Robot(ICamera *, ISerial*, IDisplay*);
 	bool Launch(const std::string & play_mode);
 	~Robot();
 

@@ -86,5 +86,9 @@ public:
 	const cv::Mat & GetFrame() { return m_pCamera->Capture();  }
 	bool captureFrames();
 	void captureFrames(bool start);
+	virtual ICamera * GetCamera() {
+		return m_pCamera;
+	};
+
 };
 

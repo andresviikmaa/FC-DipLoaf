@@ -5,7 +5,7 @@
 #include <mutex>
 #include <chrono>
 #include <thread>
-#include "HardwareInterfaces.h"
+#include "../CommonModule/Interfaces.h"
 
 //#define DUMP_SERIAL
 

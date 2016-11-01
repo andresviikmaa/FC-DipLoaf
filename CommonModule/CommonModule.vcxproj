@@ -139,6 +139,8 @@
     <ClCompile Include="DistanceCalculator.cpp" />
     <ClCompile Include="FieldState.cpp" />
     <ClCompile Include="ThreadedClass.cpp" />
+    <ClCompile Include="UdpServer.cpp" />
+    <ClCompile Include="WheelConfig.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CalibrationConfReader.h" />
@@ -148,6 +150,8 @@
     <ClInclude Include="Interfaces.h" />
     <ClInclude Include="ThreadedClass.h" />
     <ClInclude Include="Types.h" />
+    <ClInclude Include="UdpServer.h" />
+    <ClInclude Include="WheelConfig.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

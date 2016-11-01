@@ -112,11 +112,12 @@ void dance_step(float time, float &move1, float &move2) {
 
 /* END DANCE MOVES */
 
-Robot::Robot(boost::asio::io_service &io, ICamera *pCamera, ISerial*pSerial, IDisplay*pDisplay, RefereeCom* pRefCom) : io(io)
-, m_pCamera(pCamera), m_pDisplay(pDisplay), m_pSerial(pSerial), refCom(pRefCom)
+Robot::Robot(ICamera *pCamera, ISerial* pSerial, IDisplay*pDisplay)
 {
-	visionModule = new FrontCameraVision(m_pCamera, m_pDisplay);
-	comModule = new ComModule(m_pSerial);
+	m_pVision = new FrontCameraVision(pCamera, pDisplay);
+	m_pDisplay = pDisplay;
+	m_pComModule = new ComModule(pSerial);
+
 	last_state = STATE_END_OF_GAME;
 	state = STATE_NONE;
     //wheels = new WheelController(io);
@@ -127,8 +128,6 @@ Robot::Robot(boost::asio::io_service &io, ICamera *pCamera, ISerial*pSerial, IDi
 }
 Robot::~Robot()
 {
-	delete visionModule;
-	delete comModule;
 }
 
 
@@ -159,7 +158,7 @@ bool Robot::Launch(const std::string &play_mode)
 	}
 	// Compose robot from its parts
 	if (config.count("webui") == 0)
-		m_pDisplay = new Dialog("Robotiina", winSize, m_pCamera->GetFrameSize());
+		m_pDisplay = new Dialog("Robotiina", winSize, m_pVision->GetFrameSize());
 	else
 		m_pDisplay = new WebUI(8080);
 	captureFrames = config.count("capture-frames") > 0;
@@ -167,10 +166,10 @@ bool Robot::Launch(const std::string &play_mode)
 
 	/* Logic modules */
 	if (play_mode == "master" || play_mode == "slave") {
-		autoPilot = new MultiModePlay(comModule, play_mode == "master");
+		m_pAutoPilot = new MultiModePlay(m_pComModule, play_mode == "master");
 	}
 	else {
-		autoPilot = new SingleModePlay(comModule);
+		m_pAutoPilot = new SingleModePlay(m_pComModule);
 	}
 
 	Run();
@@ -180,7 +179,7 @@ bool Robot::Launch(const std::string &play_mode)
 /*
 void Robot::InitSimulator(bool master, const std::string game_mode) {
 	auto pSim = new Simulator(io, master, game_mode);
-	m_pCamera = pSim;
+	m_pVision = pSim;
 	m_pSerial = pSim;
 	refCom = pSim;
 }
@@ -189,11 +188,11 @@ void Robot::InitHardware() {
 	std::cout << "Initializing Camera... " << std::endl;
 	if (config.count("camera"))
 		if (config["camera"].as<std::string>() == "ximea")
-			m_pCamera = new Camera(CV_CAP_XIAPI);
+			m_pVision = new Camera(CV_CAP_XIAPI);
 		else
-			m_pCamera = new Camera(config["camera"].as<std::string>());
+			m_pVision = new Camera(config["camera"].as<std::string>());
 	else
-		m_pCamera = new Camera(0);
+		m_pVision = new Camera(0);
 	std::cout << "Done" << std::endl;
 	initRefCom();
 	try {
@@ -250,18 +249,20 @@ void Robot::initCoilboard() {
 */
 void Robot::RunCaptureTest()
 {
-	cv::Mat frameBGR = m_pCamera->Capture();
+	/*
+	cv::Mat frameBGR = m_pVision->Capture();
 	std::cout << frameBGR.type() << std::endl;
 	while (true)
 	{
-		frameBGR = m_pCamera->Capture();
+		frameBGR = m_pVision->Capture();
 		//cvtColor(frameBGR, frameBGR, cv::COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
 		//m_pDisplay->ShowImage(frameBGR);
-		//m_pDisplay->putText("fps: " + std::to_string(m_pCamera->GetFPS()), cv::Point(-140, 20), 0.5, cv::Scalar(255, 255, 255));
-		cv::putText(frameBGR, std::to_string(m_pCamera->GetFPS()), cv::Point(140, 20), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(0, 0, 0));
+		//m_pDisplay->putText("fps: " + std::to_string(m_pVision->GetFPS()), cv::Point(-140, 20), 0.5, cv::Scalar(255, 255, 255));
+		cv::putText(frameBGR, std::to_string(m_pVision->GetFPS()), cv::Point(140, 20), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(0, 0, 0));
 		cv::imshow("frame", frameBGR);
 		cv::waitKey(1);
 	}
+	*/
 }
 void Robot::Run()
 {
@@ -296,12 +297,12 @@ void Robot::Run()
 	//refCom->setField(&gFieldState);
 
 	/* Vision modules */
-	//AutoCalibrator visionModule(m_pCamera, this);
-	//MouseVision mouseVision(m_pCamera, m_pDisplay, &gFieldState);
+	//AutoCalibrator m_pVision(m_pVision, this);
+	//MouseVision mouseVision(m_pVision, m_pDisplay, &gFieldState);
 
-	//AutoCalibrator calibrator(m_pCamera, m_pDisplay);
+	//AutoCalibrator calibrator(m_pVision, m_pDisplay);
 
-	//DistanceCalibrator distanceCalibrator(m_pCamera, m_pDisplay);
+	//DistanceCalibrator distanceCalibrator(m_pVision, m_pDisplay);
 
 	/* Communication modules */
 
@@ -333,29 +334,29 @@ void Robot::Run()
 		/* Main UI */
 		if (STATE_NONE == state) {
 			START_DIALOG
-				autoPilot->enableTestMode(false);
-				comModule->Drive(0);
+				m_pAutoPilot->enableTestMode(false);
+				m_pComModule->Drive(0);
 				STATE_BUTTON("(A)utoCalibrate objects", 'a', STATE_AUTOCALIBRATE)
 				//STATE_BUTTON("(M)anualCalibrate objects", STATE_CALIBRATE)
 				//STATE_BUTTON("(C)Change Gate [" + ((int)gFieldState.GetTargetGate().distance == (int)(gFieldState.blueGate.distance) ? "blue" : "yellow") + "]", 'c', STATE_SELECT_GATE)
 				STATE_BUTTON("(G)ive Referee Command", 'g', STATE_GIVE_COMMAND)
-				//STATE_BUTTON("Auto(P)ilot [" + (autoPilot->running ? "On" : "Off") + "]", 'p', STATE_LAUNCH)
+				//STATE_BUTTON("Auto(P)ilot [" + (m_pAutoPilot->running ? "On" : "Off") + "]", 'p', STATE_LAUNCH)
 				m_pDisplay->createButton(std::string("Referee : ") + (gFieldState.isPlaying ? "STOP" : "START"), 'v', [this]{
 					gFieldState.isPlaying = !gFieldState.isPlaying;
 
 					this->last_state = STATE_END_OF_GAME; // force dialog redraw
 				});
 
-				//m_pDisplay->createButton(std::string("Save video: ") + (visionModule.captureFrames() ? "on" : "off"), 'v', [this, &visionModule]{
-				//	visionModule.captureFrames(!visionModule.captureFrames());
+				//m_pDisplay->createButton(std::string("Save video: ") + (m_pVision.captureFrames() ? "on" : "off"), 'v', [this, &m_pVision]{
+				//	m_pVision.captureFrames(!m_pVision.captureFrames());
 				//
 				//	this->last_state = STATE_END_OF_GAME; // force dialog redraw
 				//});
-				std::stringstream sset;
-				sset << " [ robot: " << refCom->FIELD_MARKER << refCom->ROBOT_MARKER << ", team: " << refCom->TEAM_MARKER << 
-					", color: " << ((gFieldState.robotColor == ROBOT_COLOR_YELLOW_UP) ? "Yellow Up" : "Blue Up")  << "]";
-				
-				STATE_BUTTON("(S)ettings" + sset.str(), 's', STATE_SETTINGS)
+				//std::stringstream sset;
+				//sset << " [ robot: " << refCom->FIELD_MARKER << refCom->ROBOT_MARKER << ", team: " << refCom->TEAM_MARKER << 
+				//	", color: " << ((gFieldState.robotColor == ROBOT_COLOR_YELLOW_UP) ? "Yellow Up" : "Blue Up")  << "]";
+				//
+				//STATE_BUTTON("(S)ettings" + sset.str(), 's', STATE_SETTINGS)
 
 				m_pDisplay->createButton("Swap displays", '-', [this] {
 					m_pDisplay->SwapDisplays();
@@ -363,9 +364,9 @@ void Robot::Run()
 				m_pDisplay->createButton("Toggle main display on/off", '-', [this] {
 					m_pDisplay->ToggleDisplay();
 				});
-				m_pDisplay->createButton("Pause/Play video", 'f', [this] {
-					m_pCamera->TogglePlay();
-				});
+				//m_pDisplay->createButton("Pause/Play video", 'f', [this] {
+				//	m_pVision->TogglePlay();
+				//});
 
 
 
@@ -381,7 +382,7 @@ void Robot::Run()
 			START_DIALOG
 				m_pDisplay->createButton(OBJECT_LABELS[BLUE_GATE], '-', [this]{
 				//gFieldState.SetTargetGate(BLUE_GATE);
-				//Simulator *pSim = dynamic_cast<Simulator*>(this->m_pCamera);
+				//Simulator *pSim = dynamic_cast<Simulator*>(this->m_pVision);
 				//if (pSim!=NULL){
 				//	pSim->self.gFieldStateCoords = cv::Point2d(155, 230);
 				//	pSim->self.polarMetricCoords.y = -30;
@@ -390,7 +391,7 @@ void Robot::Run()
 			});
 			m_pDisplay->createButton(OBJECT_LABELS[YELLOW_GATE], '-', [this]{
 				//gFieldState.SetTargetGate(YELLOW_GATE);
-				//Simulator *pSim = dynamic_cast<Simulator*>(this->m_pCamera);
+				//Simulator *pSim = dynamic_cast<Simulator*>(this->m_pVision);
 				//if (pSim != NULL){
 				//	pSim->self.gFieldStateCoords = cv::Point2d(-155, -230);
 				//	pSim->self.polarMetricCoords.y = 150;
@@ -402,20 +403,20 @@ void Robot::Run()
 		}
 		else if (STATE_SETTINGS == state) {
 			START_DIALOG
-				IConfigurableModule *pModule = static_cast<IConfigurableModule*>(visionModule);
+				IConfigurableModule *pModule = dynamic_cast<IConfigurableModule*>(m_pVision);
 				for (auto setting : pModule->GetSettings()){
 					m_pDisplay->createButton(setting.first + ": " + std::get<0>(setting.second)(), '-', [this, setting]{
 						std::get<1>(setting.second)();
 						this->last_state = STATE_END_OF_GAME; // force dialog redraw
 					});
 				}
-				pModule = static_cast<IConfigurableModule*>(refCom);
-				for (auto setting : pModule->GetSettings()){
-					m_pDisplay->createButton(setting.first + ": " + std::get<0>(setting.second)(), '-', [this, setting]{
-						std::get<1>(setting.second)();
-						this->last_state = STATE_END_OF_GAME; // force dialog redraw
-					});
-				}
+				//pModule = static_cast<IConfigurableModule*>(refCom);
+				//for (auto setting : pModule->GetSettings()){
+				//	m_pDisplay->createButton(setting.first + ": " + std::get<0>(setting.second)(), '-', [this, setting]{
+				//		std::get<1>(setting.second)();
+				//		this->last_state = STATE_END_OF_GAME; // force dialog redraw
+				//	});
+				//}
 				m_pDisplay->createButton(std::string("Our Color: ") + ((gFieldState.robotColor == ROBOT_COLOR_YELLOW_UP) ? "Yellow Up" : "Blue Up"), '-', [this]{
 					gFieldState.robotColor = (RobotColor)(!gFieldState.robotColor);
 					this->last_state = STATE_END_OF_GAME; // force dialog redraw
@@ -437,9 +438,9 @@ void Robot::Run()
 					}
 					*/
 					//SetState(STATE_SELECT_GATE);
-					comModule->ToggleTribbler(0);
-					comModule->Drive(0);
-					//autoPilot->Enable(!autoPilot->running);
+					m_pComModule->ToggleTribbler(0);
+					m_pComModule->Drive(0);
+					//m_pAutoPilot->Enable(!m_pAutoPilot->running);
 					SetState(STATE_NONE);
 				}
 				catch (...){
@@ -449,41 +450,41 @@ void Robot::Run()
 				}
 			//}
 		}
-		else if (STATE_TEST == state) {
-			START_DIALOG
-				autoPilot->enableTestMode(true);
-				for (const auto d : autoPilot->driveModes) {
-					m_pDisplay->createButton(d.second->name, '-', [this, d]{
-						autoPilot->setTestMode(d.first);
-					});
-				}
-				last_state = STATE_TEST;
-				STATE_BUTTON("BACK", 8, STATE_NONE)
-			END_DIALOG
-		}
-		else if (STATE_GIVE_COMMAND == state) {
-			START_DIALOG
-				for (std::pair < std::string, GameMode> entry : refCommands) {
-					m_pDisplay->createButton(entry.first, '-', [this, entry]{
-						refCom->giveCommand(entry.second);
-					});
-				}
-			STATE_BUTTON("BACK", 8, STATE_NONE)
-				END_DIALOG
-		}
+		//else if (STATE_TEST == state) {
+		//	START_DIALOG
+		//		m_pAutoPilot->enableTestMode(true);
+		//		for (const auto d : m_pAutoPilot->driveModes) {
+		//			m_pDisplay->createButton(d.second->name, '-', [this, d]{
+		//				m_pAutoPilot->setTestMode(d.first);
+		//			});
+		//		}
+		//		last_state = STATE_TEST;
+		//		STATE_BUTTON("BACK", 8, STATE_NONE)
+		//	END_DIALOG
+		//}
+		//else if (STATE_GIVE_COMMAND == state) {
+		//	START_DIALOG
+		//		for (std::pair < std::string, GameMode> entry : refCommands) {
+		//			m_pDisplay->createButton(entry.first, '-', [this, entry]{
+		//				refCom->giveCommand(entry.second);
+		//			});
+		//		}
+		//	STATE_BUTTON("BACK", 8, STATE_NONE)
+		//		END_DIALOG
+		//}
 		else if (STATE_END_OF_GAME == state) {
 			break;
 		}
 		 
 		subtitles.str("");
 		//subtitles << oss.str();
-		subtitles << "|" << autoPilot->GetDebugInfo();
-		subtitles << "|" << comModule->GetDebugInfo();
-		if (!comModule->IsReal()) {
-			subtitles << "|" << "WARNING: Serial not connected!";
-		} 
+		subtitles << "|" << m_pAutoPilot->GetDebugInfo();
+		subtitles << "|" << m_pComModule->GetDebugInfo();
+		//if (!m_pComModule->IsReal()) {
+		//	subtitles << "|" << "WARNING: Serial not connected!";
+		//} 
 
-		m_pDisplay->putShadowedText( "fps: " + std::to_string(m_pCamera->GetFPS()), cv::Point(-140, 20), 0.5, cv::Scalar(255, 255, 255));
+		m_pDisplay->putShadowedText( "fps: " + std::to_string(m_pVision->GetCamera()->GetFPS()), cv::Point(-140, 20), 0.5, cv::Scalar(255, 255, 255));
 		//assert(STATE_END_OF_GAME != state);
 		m_pDisplay->putShadowedText("state: " + STATE_LABELS[state], cv::Point(-140, 40), 0.5, cv::Scalar(255, 255, 255));
 		m_pDisplay->putShadowedText(std::string("running: ") +(gFieldState.isPlaying ? "yes":"no"), cv::Point(-140, 460), 0.5, cv::Scalar(255, 255, 255));
@@ -491,8 +492,8 @@ void Robot::Run()
 		//m_pDisplay->putShadowedText( std::string("Gate:") + (targetGatePos.distance >0 ? "yes" : "no"), cv::Point(-140, 80), 0.5, cv::Scalar(255, 255, 255));
 
 		
-		m_pDisplay->putShadowedText( std::string("Trib:") + (comModule->BallInTribbler() ? "yes" : "no"), cv::Point(-140, 100), 0.5, cv::Scalar(255, 255, 255));
-		m_pDisplay->putShadowedText( std::string("Trib-x:") + (comModule->BallInTribbler(true) ? "yes" : "no"), cv::Point(-140, 80), 0.5, cv::Scalar(255, 255, 255));
+		m_pDisplay->putShadowedText( std::string("Trib:") + (m_pComModule->BallInTribbler() ? "yes" : "no"), cv::Point(-140, 100), 0.5, cv::Scalar(255, 255, 255));
+		m_pDisplay->putShadowedText( std::string("Trib-x:") + (m_pComModule->BallInTribbler(true) ? "yes" : "no"), cv::Point(-140, 80), 0.5, cv::Scalar(255, 255, 255));
 		m_pDisplay->putShadowedText( std::string("Sight:") + (gFieldState.gateObstructed ? "obst" : "free"), cv::Point(-140, 120), 0.5, cv::Scalar(255, 255, 255));
 		//m_pDisplay->putShadowedText( std::string("OnWay:") + (somethingOnWay ? "yes" : "no"), cv::Point(-140, 140), 0.5, cv::Scalar(255, 255, 255));
 		
@@ -519,7 +520,7 @@ void Robot::Run()
 		//ss.precision(3);
 		//ss << "robot x:" << gFieldState.self.gFieldStateCoords.x<< " y: "<<gFieldState.self.gFieldStateCoords.y<< " r: " << gFieldState.self.angle;
 		//m_pDisplay->putShadowedText(ss.str(), cv::Point(-250, 240), 0.4, cv::Scalar(255, 255, 255));
-		//Simulator *pSim = dynamic_cast<Simulator*>(m_pCamera);
+		//Simulator *pSim = dynamic_cast<Simulator*>(m_pVision);
 		//if (pSim != NULL){
 		//	ss.str("");
 		//	ss << "sim   x:" << pSim->self.gFieldStateCoords.x << " y: " << pSim->self.gFieldStateCoords.y << " r: " << pSim->self.angle;
@@ -552,9 +553,9 @@ void Robot::Run()
 		}
 
 		/* robot tracker */
-		cv::Point2i center(-100, 200);
-		double velocity = 0, direction = 0, rotate = 0;
-		auto speed = comModule->GetTargetSpeed();
+		//cv::Point2i center(-100, 200);
+		//double velocity = 0, direction = 0, rotate = 0;
+		//auto speed = m_pComModule->GetTargetSpeed();
 
 		/*
 		//Draw circle
@@ -580,34 +581,8 @@ void Robot::Run()
 		delete outputVideo;
 	}
 
-	if (autoPilot != NULL)
-		delete autoPilot;
+	if (m_pAutoPilot != NULL)
+		delete m_pAutoPilot;
 //	refCom->setField(NULL);
 }
 
-
-bool Robot::ParseOptions(int argc, char* argv[])
-{
-	po::options_description desc("Allowed options");
-	desc.add_options()
-		("help", "produce help message")
-		("camera", po::value<std::string>(), "set m_pCamera index or path")
-		("app-size", po::value<std::string>(), "main window size: width x height")
-		("locate_cursor", "find cursor instead of ball")
-		("skip-ports", "skip ALL COM port checks")
-		("skip-missing-ports", "skip missing COM ports")
-		("save-frames", "Save captured frames to disc")
-		("play-mode", po::value<std::string>(), "Play mode: single, opponent, master, slave")
-		("twitter-port", po::value<int>(), "UDP port for communication between robots");
-
-
-	po::store(po::parse_command_line(argc, argv, desc), config);
-	po::notify(config);
-
-	if (config.count("help")) {
-		std::cout << desc << std::endl;
-		return false;
-	}
-
-	return true;
-}

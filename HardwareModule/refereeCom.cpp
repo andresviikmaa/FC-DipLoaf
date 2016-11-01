@@ -90,8 +90,8 @@ void RefereeCom::handleMessage(const std::string & message){
 /**********************************
 * HARDWARE RECEIVER IMPLEMENTATION
 ***********************************/
-LLAPReceiver::LLAPReceiver(boost::asio::io_service &io_service, std::string port, unsigned int baud_rate, const std::string &name)
-	: RefereeCom(name), SimpleSerial(io_service, port, baud_rate) {}
+LLAPReceiver::LLAPReceiver(ISerial *pSerial, const std::string &name)
+	: RefereeCom(name), m_pSerial(pSerial) {}
 
 LLAPReceiver::~LLAPReceiver()
 {

@@ -5,7 +5,7 @@
 #include <boost/property_tree/ini_parser.hpp>
 #include "../CommonModule/ThreadedClass.h"
 #include <mutex>
-#include "HardwareInterfaces.h"
+#include "../CommonModule/Interfaces.h"
 
 class CoilBoard : public ThreadedClass, public ISerialListener
 {

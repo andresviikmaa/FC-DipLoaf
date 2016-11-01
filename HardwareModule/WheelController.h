@@ -5,7 +5,7 @@
 #include "../CommonModule/ThreadedClass.h"
 #include <atomic>
 #include <opencv2/core.hpp>
-#include "HardwareInterfaces.h"
+#include "../CommonModule/Interfaces.h"
 
 class WheelController : public ThreadedClass {
 

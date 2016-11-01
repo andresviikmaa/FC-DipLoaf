@@ -2,10 +2,11 @@
 //#include "types.h"
 #include "CoilBoard.h"
 #include "WheelController.h"
-#include "HardwareInterfaces.h"
+#include "../CommonModule/Interfaces.h"
+#include "refereeCom.h"
 
 class ComModule :
-	public ICommunicationModule
+	public ICommunicationModule, public ISerial
 {
 public:
 	ComModule(ISerial *pSerialPort);
@@ -44,9 +45,17 @@ public:
 	bool IsReal(){
 		return true;
 	}
+	virtual void ProcessRefereeCommand() {};
+
+	virtual void DataReceived(const std::string & message);
+	virtual void SendCommand(int id, const std::string &cmd, int param = INT_MAX);
+	virtual void WriteString(const std::string &s);
 
 protected:
 	WheelController *m_pWheels;
 	CoilBoard * m_pCoilGun;
+	RefereeCom * m_pRefCom;
+	ISerial *m_pSerial;
+
 };
 

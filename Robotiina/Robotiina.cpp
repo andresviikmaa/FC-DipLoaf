@@ -10,6 +10,11 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 
+#include "../HardwareModule/ComModule.h"
+#include "../VisionModule/FrontCameraVision.h"
+#include "../StateMachine/SingleModePlay.h"
+#include "../StateMachine/MultiModePlay.h"
+
 po::options_description desc("Allowed options");
 
 
@@ -65,44 +70,14 @@ int main(int argc, char* argv[])
 	else
 		m_pCamera = new Camera(0);
 	std::cout << "Done" << std::endl;
-	SimpleSerial *m_pSerial = NULL;
-	try {
-		using boost::property_tree::ptree;
-		ptree pt;
-		read_ini("conf/ports.ini", pt);
-		std::string port = pt.get<std::string>(std::to_string(ID_COM));
-		m_pSerial = new SimpleSerial(io, port, 19200);
-		//Sleep(100);
-	}
-	catch (std::exception const&  ex) {
-		std::cout << "Main board com port fail: " << ex.what() << std::endl;
-	}
-	RefereeCom * refCom = NULL;
-	std::cout << "Init referee communications" << std::endl;
-	try {
-		using boost::property_tree::ptree;
-		ptree pt;
-		read_ini("conf/ports.ini", pt);
-		std::string port = pt.get<std::string>(std::to_string(ID_REF));
-		refCom = new LLAPReceiver(io, port);
-	}
-	catch (...) {
-		std::cout << "Referee com LLAP reciever couldn't be initialized" << std::endl;
-		refCom = new RefereeCom();
-	}
-
 	Dialog display("Robotiina", winSize, m_pCamera->GetFrameSize());
-
-	Robot robot(io, m_pCamera, m_pSerial, &display, refCom);
+	
+	Robot robot(m_pCamera, NULL, &display);
 	robot.Launch(play_mode);
 
 	if (m_pCamera) {
 		delete m_pCamera;
 	}
-	if (refCom)
-		delete refCom;
-	if (m_pSerial)
-		delete m_pSerial;
 
 	return 0;
 }

@@ -10,6 +10,9 @@
 #include "../CommonModule/DistanceCalculator.h"
 #include "../RobotModule/Robot.h"
 #include "../DisplayModule/Dialog.h"
+#include "../VisionModule/FrontCameraVision.h"
+#include "../StateMachine/SingleModePlay.h"
+#include "../StateMachine/MultiModePlay.h"
 
 extern DistanceCalculator gDistanceCalculator;
 extern cv::Mat wheelAngles;
@@ -486,7 +489,8 @@ void Simulator::giveCommand(GameMode command) {
 	if (isMaster) {
 		SendMessage("REF " + std::to_string(command) + " #");
 	}
-	RefereeCom::giveCommand(command);
+	assert(false);
+	//RefereeCom::giveCommand(command);
 }
 
 void Simulator::drawRect(cv::Rect rec, int thickness, const cv::Scalar &color) {
@@ -585,7 +589,7 @@ int main(int argc, char* argv[])
 
 	Dialog display("Robotiina", winSize, Sim.GetFrameSize());
 
-	Robot robot(io, &Sim, &Sim, &display, &Sim);
+	Robot robot(&Sim, &Sim, &display, NULL);
 	robot.Launch(play_mode);
 
     return 0;

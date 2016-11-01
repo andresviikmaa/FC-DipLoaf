@@ -5,8 +5,6 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VisionModule", "VisionModule\VisionModule.vcxproj", "{F82D0056-53CD-42BE-B3F3-E529AE56F929}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Calibrator", "Calibrator\Calibrator.vcxproj", "{3AC03CFE-DAC8-4C4A-9544-A3791D362ED4}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HardwareModule", "HardwareModule\HardwareModule.vcxproj", "{F52DF89E-2159-41CA-A933-E0EDE1D92464}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CommonModule", "CommonModule\CommonModule.vcxproj", "{38231CB7-5801-4469-9397-43287E40625B}"
@@ -44,14 +42,6 @@ Global
 		{F82D0056-53CD-42BE-B3F3-E529AE56F929}.Release|x64.Build.0 = Release|x64
 		{F82D0056-53CD-42BE-B3F3-E529AE56F929}.Release|x86.ActiveCfg = Release|Win32
 		{F82D0056-53CD-42BE-B3F3-E529AE56F929}.Release|x86.Build.0 = Release|Win32
-		{3AC03CFE-DAC8-4C4A-9544-A3791D362ED4}.Debug|x64.ActiveCfg = Debug|x64
-		{3AC03CFE-DAC8-4C4A-9544-A3791D362ED4}.Debug|x64.Build.0 = Debug|x64
-		{3AC03CFE-DAC8-4C4A-9544-A3791D362ED4}.Debug|x86.ActiveCfg = Debug|Win32
-		{3AC03CFE-DAC8-4C4A-9544-A3791D362ED4}.Debug|x86.Build.0 = Debug|Win32
-		{3AC03CFE-DAC8-4C4A-9544-A3791D362ED4}.Release|x64.ActiveCfg = Release|x64
-		{3AC03CFE-DAC8-4C4A-9544-A3791D362ED4}.Release|x64.Build.0 = Release|x64
-		{3AC03CFE-DAC8-4C4A-9544-A3791D362ED4}.Release|x86.ActiveCfg = Release|Win32
-		{3AC03CFE-DAC8-4C4A-9544-A3791D362ED4}.Release|x86.Build.0 = Release|Win32
 		{F52DF89E-2159-41CA-A933-E0EDE1D92464}.Debug|x64.ActiveCfg = Debug|x64
 		{F52DF89E-2159-41CA-A933-E0EDE1D92464}.Debug|x64.Build.0 = Debug|x64
 		{F52DF89E-2159-41CA-A933-E0EDE1D92464}.Debug|x86.ActiveCfg = Debug|Win32

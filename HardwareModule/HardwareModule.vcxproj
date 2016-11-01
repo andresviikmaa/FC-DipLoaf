@@ -140,8 +140,8 @@
     <ClInclude Include="ComModule.h" />
     <ClInclude Include="HardwareInterfaces.h" />
     <ClInclude Include="refereeCom.h" />
+    <ClInclude Include="SerialToUdp.h" />
     <ClInclude Include="SimpleSerial.h" />
-    <ClInclude Include="UdpServer.h" />
     <ClInclude Include="WheelController.h" />
   </ItemGroup>
   <ItemGroup>
@@ -149,7 +149,7 @@
     <ClCompile Include="CoilBoard.cpp" />
     <ClCompile Include="ComModule.cpp" />
     <ClCompile Include="refereeCom.cpp" />
-    <ClCompile Include="UdpServer.cpp" />
+    <ClCompile Include="SerialToUdp.cpp" />
     <ClCompile Include="WheelController.cpp" />
   </ItemGroup>
   <ItemGroup>

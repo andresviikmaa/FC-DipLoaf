@@ -2,8 +2,7 @@
 #include "../CommonModule/Types.h"
 #include "../CommonModule/ThreadedClass.h"
 #include "../CommonModule/Interfaces.h"
-#include "../HardwareModule/UdpServer.h"
-#include "../HardwareModule/refereeCom.h"
+#include "../CommonModule/UdpServer.h"
 #include "../VisionModule/BallLocations.h"
 #include "../VisionModule/GatePosition.h"
 #include "../VisionModule/RobotPosition.h"
@@ -11,7 +10,7 @@
 #include <mutex>
 
 const int MAX_ROBOTS = 10;
-class Simulator : public ICamera, public ISerial, public ThreadedClass, public UdpServer, public RefereeCom
+class Simulator : public ICamera, public ISerial, public ThreadedClass, public UdpServer/*, public RefereeCom*/
 {
 	using UdpServer::SendMessage;
 public:
