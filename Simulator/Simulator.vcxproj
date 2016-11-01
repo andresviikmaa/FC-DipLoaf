@@ -164,6 +164,9 @@
     <ProjectReference Include="..\DisplayModule\DisplayModule.vcxproj">
       <Project>{9627a89a-33e4-480d-af29-fae68a404206}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\HardwareModule\HardwareModule.vcxproj">
+      <Project>{f52df89e-2159-41ca-a933-e0ede1d92464}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\RobotModule\RobotModule.vcxproj">
       <Project>{d5f0ecbc-0786-4180-9a14-936d776250f0}</Project>
     </ProjectReference>

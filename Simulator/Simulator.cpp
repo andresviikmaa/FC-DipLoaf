@@ -589,7 +589,7 @@ int main(int argc, char* argv[])
 
 	Dialog display("Robotiina", winSize, Sim.GetFrameSize());
 
-	Robot robot(&Sim, &Sim, &display, NULL);
+	Robot robot(&Sim, &Sim, &display);
 	robot.Launch(play_mode);
 
     return 0;
