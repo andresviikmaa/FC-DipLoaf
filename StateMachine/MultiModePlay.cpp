@@ -6,7 +6,6 @@
 #include "../CommonModule/FieldState.h"
 
 const float KICKOFF_ANGLE = 45.;
-//extern DistanceCalculator gDistanceCalculator;
 extern FieldState gFieldState;
 
 enum MultiModeDriveStates {

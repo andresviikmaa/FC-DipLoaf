@@ -59,6 +59,7 @@ public:
 	virtual void SendPartnerMessage(const std::string message) {};
 	virtual HSVColorRange GetObjectThresholds(int index, const std::string &name);
 	virtual cv::Point2d getPolarCoordinates(const cv::Point2d &pos);
+	double getDistanceInverted(const cv::Point2d &pos, const cv::Point2d &orgin) const;
 
 protected:
 	ISerialListener *messageCallback = NULL;
@@ -76,6 +77,8 @@ protected:
 	void UpdateBallIntTribbler(cv::Mat robotSpeed, double dt);
 	std::mutex mutex;
 	ObjectLocation robots[MAX_ROBOTS];
+	std::map<int, cv::Scalar>  colors;
+
 
 	void drawRect(cv::Rect rec, int thickness, const cv::Scalar &color);
 	void drawLine(cv::Point start, cv::Point end, int thickness, CvScalar color);

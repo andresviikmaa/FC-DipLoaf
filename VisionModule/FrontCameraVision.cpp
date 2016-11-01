@@ -12,7 +12,7 @@ extern FieldState gFieldState;
 //extern int number_of_balls;
 
 
-static double angleBetween(const cv::Point2d &a, const cv::Point2d &b) {
+double angleBetween(const cv::Point2d &a, const cv::Point2d &b) {
 	double alpha = atan2(a.y, a.x) - atan2(b.y, b.x);
 	double alphaDeg = alpha * 180. / CV_PI;
 	if (alphaDeg < 0) alphaDeg += 360;
@@ -245,11 +245,12 @@ void FrontCameraVision::FindGates(double dt) {
 void FrontCameraVision::FindBalls(double dt) {
 	std::vector<cv::Point2i> balls;
 	bool ballsFound = ballFinder.Locate(thresholdedImages[BALL], frameHSV, frameBGR, balls);
-	if (!ballsFound) {
-		resetBallsUpdateState();
-		_balls.updateAndFilterClosest(cv::Point2i(0, 0), balls, false, useKalmanFilter);
-		balls.push_back(_balls.closest.filteredRawCoords);
-	}
+	//TODO: fix and uncomment below
+	//if (!ballsFound) {
+	//	resetBallsUpdateState();
+	//	_balls.updateAndFilterClosest(cv::Point2i(0, 0), balls, false, useKalmanFilter);
+	//	balls.push_back(_balls.closest.filteredRawCoords);
+	//}
 	std::sort(balls.begin(), balls.end(), [](cv::Point2d a, cv::Point2d b)
 	{
 		return cv::norm(a) < cv::norm(b);
@@ -279,10 +280,11 @@ void FrontCameraVision::FindBalls(double dt) {
 		}
 	}
 
-	if (ballsFound) {
-		resetBallsUpdateState();
-		_balls.updateAndFilterClosest(possibleClosest, balls, possibleClosest != theClosest, useKalmanFilter);
-	}
+	//TODO: fix and uncomment below
+	//if (ballsFound) {
+	//	resetBallsUpdateState();
+	//	_balls.updateAndFilterClosest(possibleClosest, balls, possibleClosest != theClosest, useKalmanFilter);
+	//}
 
 	if (!hideUseless) {
 		cv::Rect bounding_rect = cv::Rect(

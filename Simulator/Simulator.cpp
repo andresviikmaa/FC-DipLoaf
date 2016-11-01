@@ -7,15 +7,14 @@
 #include <time.h>       /* time */
 #include <boost/algorithm/string.hpp>
 #include "Simulator.h"
-#include "../CommonModule/DistanceCalculator.h"
 #include "../RobotModule/Robot.h"
 #include "../DisplayModule/Dialog.h"
 #include "../VisionModule/FrontCameraVision.h"
 #include "../StateMachine/SingleModePlay.h"
 #include "../StateMachine/MultiModePlay.h"
 
-extern DistanceCalculator gDistanceCalculator;
 extern cv::Mat wheelAngles;
+double angleBetween(const cv::Point2d &a, const cv::Point2d &b);
 
 const double SIMULATOR_SPEED = 0.5;
 const bool INIT_RANDOM = false;
@@ -36,6 +35,13 @@ Simulator::Simulator(boost::asio::io_service &io, bool master, const std::string
 	*/
 	self.fieldCoords = !INIT_RANDOM ? cv::Point(155, 230) : cv::Point(rand() % 300 - 150, rand() % 460 - 230);
 	self.polarMetricCoords = cv::Point(0, !INIT_RANDOM ? -30 : rand() % 359);
+	colors.insert(std::make_pair(BALL, cv::Scalar(48, 154, 236)));
+	colors.insert(std::make_pair(BLUE_GATE, cv::Scalar(61, 255, 244)));
+	colors.insert(std::make_pair(YELLOW_GATE, cv::Scalar(236, 137, 48)));
+	colors.insert(std::make_pair(FIELD, cv::Scalar(21, 188, 80)));
+	colors.insert(std::make_pair(INNER_BORDER, cv::Scalar(255,255,255)));
+	colors.insert(std::make_pair(OUTER_BORDER, cv::Scalar(0,0,0)));
+
 	if (isMaster) {
 		id = 0;
 		// distribute balls uniformly at random
@@ -179,25 +185,25 @@ void Simulator::UpdateGatePos() {
 
 	frame_blank.copyTo(frame);
 
-	drawRect(cv::Rect(cv::Point(-155, -230), cv::Point(155, 230)), 10, cv::Scalar(0, 0, 0));
-	drawRect(cv::Rect(cv::Point(-145, -220), cv::Point(145, 220)), 10, cv::Scalar(255, 255, 255));
-	drawLine(cv::Point(-145, 0), cv::Point(145, 0), 10, cv::Scalar(255, 255, 255));
-	drawCircle(cv::Point(0, 0), 40, 10, cv::Scalar(255, 255, 255));
+	drawRect(cv::Rect(cv::Point(-155, -230), cv::Point(155, 230)), 10, colors[OUTER_BORDER]);
+	drawRect(cv::Rect(cv::Point(-145, -220), cv::Point(145, 220)), 10, colors[INNER_BORDER]);
+	drawLine(cv::Point(-145, 0), cv::Point(145, 0), 10, colors[INNER_BORDER]);
+	drawCircle(cv::Point(0, 0), 40, 10, colors[INNER_BORDER]);
 
 	blueGate.polarMetricCoords.x = cv::norm(self.fieldCoords - blueGate.fieldCoords);
-	blueGate.polarMetricCoords.y = 360 - gDistanceCalculator.angleBetween(cv::Point(0, 1), self.fieldCoords - (blueGate.fieldCoords)) + self.getAngle();
+	blueGate.polarMetricCoords.y = 360 - angleBetween(cv::Point(0, 1), self.fieldCoords - (blueGate.fieldCoords)) + self.getAngle();
 	yellowGate.polarMetricCoords.x = cv::norm(self.fieldCoords - yellowGate.fieldCoords);;
-	yellowGate.polarMetricCoords.y = 360 - gDistanceCalculator.angleBetween(cv::Point(0, 1), self.fieldCoords - (yellowGate.fieldCoords)) + self.getAngle();
+	yellowGate.polarMetricCoords.y = 360 - angleBetween(cv::Point(0, 1), self.fieldCoords - (yellowGate.fieldCoords)) + self.getAngle();
 
 
 	for (int s = -1; s < 2; s += 2) {
 		cv::Point2d shift1(s * 10, -20);
 		cv::Point2d shift2(s * 10, 20);
-		double a1 = gDistanceCalculator.angleBetween(cv::Point(0, -1), self.fieldCoords - (blueGate.fieldCoords + shift1)) + self.getAngle();
-		double a2 = gDistanceCalculator.angleBetween(cv::Point(0, -1), self.fieldCoords - (yellowGate.fieldCoords + shift2)) + self.getAngle();
+		double a1 = angleBetween(cv::Point(0, -1), self.fieldCoords - (blueGate.fieldCoords + shift1)) + self.getAngle();
+		double a2 = angleBetween(cv::Point(0, -1), self.fieldCoords - (yellowGate.fieldCoords + shift2)) + self.getAngle();
 
-		double d1 = gDistanceCalculator.getDistanceInverted(self.fieldCoords, blueGate.fieldCoords + shift1);
-		double d2 = gDistanceCalculator.getDistanceInverted(self.fieldCoords, yellowGate.fieldCoords + shift2);
+		double d1 = getDistanceInverted(self.fieldCoords, blueGate.fieldCoords + shift1);
+		double d2 = getDistanceInverted(self.fieldCoords, yellowGate.fieldCoords + shift2);
 
 
 		// draw gates
@@ -206,12 +212,11 @@ void Simulator::UpdateGatePos() {
 		double x2 = -d2*sin(a2 / 180 * CV_PI);
 		double y2 = d2*cos(a2 / 180 * CV_PI);
 
-		cv::Scalar color(236, 137, 48);
-		cv::Scalar color2(61, 255, 244);
+
 		double s1 = 8000 / cv::norm(self.fieldCoords - blueGate.fieldCoords);
 		double s2 = 8000 / cv::norm(self.fieldCoords - yellowGate.fieldCoords);
-		cv::circle(frame, cv::Point((int)(x1), (int)(y1)) + cv::Point(frame.size() / 2), s1, color, -1);
-		cv::circle(frame, cv::Point((int)(x2), (int)(y2)) + cv::Point(frame.size() / 2), s2, color2, -1);
+		cv::circle(frame, cv::Point((int)(x1), (int)(y1)) + cv::Point(frame.size() / 2), s1, colors[YELLOW_GATE], -1);
+		cv::circle(frame, cv::Point((int)(x2), (int)(y2)) + cv::Point(frame.size() / 2), s2, colors[BLUE_GATE], -1);
 	}
 
 }
@@ -229,8 +234,8 @@ void Simulator::UpdateBallPos(double dt) {
 			message << (int)balls[i].fieldX << " " << (int)balls[i].fieldY << " ";
 			//SendMessage(message.str());
 		}
-		double a = gDistanceCalculator.angleBetween(cv::Point(0, -1), self.fieldCoords - balls[i].fieldCoords) + self.getAngle();
-		double d = gDistanceCalculator.getDistanceInverted(self.fieldCoords, balls[i].fieldCoords);
+		double a = angleBetween(cv::Point(0, -1), self.fieldCoords - balls[i].fieldCoords) + self.getAngle();
+		double d = getDistanceInverted(self.fieldCoords, balls[i].fieldCoords);
 		double x = -d*sin(a / 180 * CV_PI);
 		double y = d*cos(a / 180 * CV_PI);
 		balls[i].polarMetricCoords.x = cv::norm(self.fieldCoords - balls[i].fieldCoords);
@@ -238,8 +243,7 @@ void Simulator::UpdateBallPos(double dt) {
 		if (a > 360) a -= 360;
 		if (a < 0) a += 360;
 		balls[i].polarMetricCoords.y = a;
-		cv::Scalar color(48, 154, 236);
-		cv::circle(frame, cv::Point(x, y) + cv::Point(frame.size() / 2), 12, color, -1);
+		cv::circle(frame, cv::Point(x, y) + cv::Point(frame.size() / 2), 12, colors[BALL], -1);
 	}
 	if (isMaster) {
 		message << 0 << " " << self.fieldX << " " << self.fieldY << " ";
@@ -247,8 +251,8 @@ void Simulator::UpdateBallPos(double dt) {
 	// draw shared robots
 	for (int i = 0; i < MAX_ROBOTS; i++) {
 		if (abs(robots[i].fieldX) > 1000) continue;
-		double a = gDistanceCalculator.angleBetween(cv::Point(0, -1), self.fieldCoords - robots[i].fieldCoords) + self.getAngle();
-		double d = gDistanceCalculator.getDistanceInverted(self.fieldCoords, robots[i].fieldCoords);
+		double a = angleBetween(cv::Point(0, -1), self.fieldCoords - robots[i].fieldCoords) + self.getAngle();
+		double d = getDistanceInverted(self.fieldCoords, robots[i].fieldCoords);
 		double x = -d*sin(a / 180 * CV_PI);
 		double y = d*cos(a / 180 * CV_PI);
 		cv::Scalar color(i * 52, i * 15 + 100, i * 30);
@@ -298,7 +302,6 @@ void Simulator::UpdateRobotPos(double dt) {
 	UpdateBallIntTribbler(robotSpeed, dt);
 	UpdateBallPos(dt);
 	cv::circle(frame, cv::Point(frame.size() / 2), 55, cv::Scalar::all(160), -1);
-
 	return;
 	{
 		std::lock_guard<std::mutex> lock(mutex);
@@ -509,8 +512,8 @@ void Simulator::drawLine(cv::Point start, cv::Point end, int thickness, CvScalar
 	cv::Point last = { INT_MAX, INT_MAX };
 	for (int i = 0; i < it.count; i++, ++it) {
 		cv::Point xy = (it.pos() - cv::Point(dummyField.size() / 2))*SCALE;
-		double a1 = gDistanceCalculator.angleBetween(cv::Point(0, -1), self.fieldCoords - cv::Point2d(xy)) + self.getAngle();
-		double d1 = gDistanceCalculator.getDistanceInverted(self.fieldCoords, xy);
+		double a1 = angleBetween(cv::Point(0, -1), self.fieldCoords - cv::Point2d(xy)) + self.getAngle();
+		double d1 = getDistanceInverted(self.fieldCoords, xy);
 
 		double x1 = -d1*sin(a1 / 180 * CV_PI);
 		double y1 = d1*cos(a1 / 180 * CV_PI);
@@ -540,9 +543,43 @@ void Simulator::drawCircle(cv::Point start, int radius, int thickness, CvScalar 
 
 	}
 }
+
+
+
+HSVColorRange Simulator::GetObjectThresholds(int index, const std::string &name) {
+
+	cv::Mat rgb(1, 1, CV_8UC3, colors[index]);
+	cv::Mat hsv;
+	cvtColor(rgb, hsv, CV_RGB2HSV);
+
+	return{ { hsv.data[0]-5, hsv.data[0] + 5 },{ hsv.data[1] - 5, hsv.data[1] + 5 },{ hsv.data[2] - 5, hsv.data[2] +5 } };
+
+}
+cv::Point2d Simulator::getPolarCoordinates(const cv::Point2d &pos) {
+	double dist = cv::norm(pos - cameraOrgin);
+	return dist == 0 ? 0.0 : std::max(0.0, 13.13*exp(0.008 * dist));
+
+	double distanceInCm = dist == 0 ? 0.0 : std::max(0.0, 13.13*exp(0.008 * dist));
+
+	double angle = angleBetween(pos - cameraOrgin, { 0, 1 });
+	//double angle = atan((pos.y - cameraOrgin.y) / (pos.x - cameraOrgin.x)) * 180 / PI;
+	//TODO: hack to fix simulator, as 
+	if (distanceInCm < 14 && fabs(fabs(angle) - 270)<0.01)  angle = 0;
+	// flip angle alony y axis
+#ifndef VIRTUAL_FLIP
+	return{ distanceInCm, angle };
+#else
+	return{ distanceInCm, -angle + 360 };
+#endif
+}
 po::options_description desc("Allowed options");
 
+double Simulator::getDistanceInverted(const cv::Point2d &pos, const cv::Point2d &orgin) const {
+	double dist_cm = cv::norm(pos - orgin);
+	double dist_px = 125 * log(dist_cm / 13.13);
+	return dist_px < 0 ? 0 : dist_px;
 
+}
 
 boost::asio::io_service io;
 
