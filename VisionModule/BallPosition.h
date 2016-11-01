@@ -19,7 +19,7 @@ public:
 	virtual ~BallLocation();
 	int id;
 	bool isValid;
-	std::atomic_bool isUpdated;
+	/*std::atomic_*/bool isUpdated;
 	void setIsUpdated(bool updated);
 	void updateFieldCoords(cv::Point2d orgin = cv::Point2d(0, 0), double heading = 0);
 	// for simulator

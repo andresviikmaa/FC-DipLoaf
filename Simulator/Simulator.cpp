@@ -54,8 +54,8 @@ Simulator::Simulator(boost::asio::io_service &io, bool master, const std::string
 		}
 		else {
 			for (int i = 0; i < mNumberOfBalls; i++) {
-				balls[i].fieldX = (int)(((i % 3) - 1) * 100) + (!INIT_RANDOM ? 0 : (rand() % 200) - 100);
-				balls[i].fieldY = (int)((i / 3 - 1.5) * 110) + (!INIT_RANDOM ? 0 : (rand() % 200) - 100);
+				balls[i].fieldCoords.x = (int)(((i % 3) - 1) * 100) + (!INIT_RANDOM ? 0 : (rand() % 200) - 100);
+				balls[i].fieldCoords.y = (int)((i / 3 - 1.5) * 110) + (!INIT_RANDOM ? 0 : (rand() % 200) - 100);
 				balls[i].id = i;
 			}
 			robots[9].fieldCoords = cv::Point(rand() % 300 - 150, rand() % 460 - 230);
@@ -131,8 +131,8 @@ void Simulator::MessageReceived(const std::string & message) { //udp
 			if (_id != id) {
 				std::string x, y, a;
 				ss >> x >> y;
-				balls[_id].fieldX = atoi(x.c_str());
-				balls[_id].fieldY = atoi(y.c_str());
+				balls[_id].fieldCoords.x = atoi(x.c_str());
+				balls[_id].fieldCoords.y = atoi(y.c_str());
 			}
 		}
 		else if (command == "STT") {
@@ -141,8 +141,8 @@ void Simulator::MessageReceived(const std::string & message) { //udp
 			for (int i = 0; i < mNumberOfBalls; i++) {
 				std::string x, y, a;
 				ss >> x >> y;
-				balls[i].fieldX = atoi(x.c_str());
-				balls[i].fieldY = atoi(y.c_str());
+				balls[i].fieldCoords.x = atoi(x.c_str());
+				balls[i].fieldCoords.y = atoi(y.c_str());
 			}
 			std::string r_id;
 			do {
@@ -151,8 +151,8 @@ void Simulator::MessageReceived(const std::string & message) { //udp
 				if (r_id != "99") {
 					int _id = atoi(r_id.c_str());
 					if (_id != id) {
-						robots[_id].fieldX = atoi(x.c_str());
-						robots[_id].fieldY = atoi(y.c_str());
+						robots[_id].fieldCoords.x = atoi(x.c_str());
+						robots[_id].fieldCoords.y = atoi(y.c_str());
 					}
 				}
 
@@ -171,8 +171,8 @@ void Simulator::MessageReceived(const std::string & message) { //udp
 		if (_id != id) {
 			std::string x, y, a;
 			ss >> x >> y >> a;
-			robots[_id].fieldX = atoi(x.c_str());
-			robots[_id].fieldY = atoi(y.c_str());
+			robots[_id].fieldCoords.x = atoi(x.c_str());
+			robots[_id].fieldCoords.y = atoi(y.c_str());
 			robots[_id].angle = atoi(a.c_str());
 			assert(false); //heading ??
 		}
@@ -227,11 +227,11 @@ void Simulator::UpdateBallPos(double dt) {
 	for (int i = 0; i < mNumberOfBalls; i++) {
 		if (isMaster) {
 			if (balls[i].speed > 0.001) {
-				balls[i].fieldX += balls[i].speed*dt * (sin(balls[i].heading / 180 * CV_PI));
-				balls[i].fieldY -= balls[i].speed*dt * (cos(balls[i].heading / 180 * CV_PI));
+				balls[i].fieldCoords.x += balls[i].speed*dt * (sin(balls[i].heading / 180 * CV_PI));
+				balls[i].fieldCoords.y -= balls[i].speed*dt * (cos(balls[i].heading / 180 * CV_PI));
 				balls[i].speed *= 0.8;
 			}
-			message << (int)balls[i].fieldX << " " << (int)balls[i].fieldY << " ";
+			message << (int)balls[i].fieldCoords.x << " " << (int)balls[i].fieldCoords.y << " ";
 			//SendMessage(message.str());
 		}
 		double a = angleBetween(cv::Point(0, -1), self.fieldCoords - balls[i].fieldCoords) + self.getAngle();
@@ -246,11 +246,11 @@ void Simulator::UpdateBallPos(double dt) {
 		cv::circle(frame, cv::Point(x, y) + cv::Point(frame.size() / 2), 12, colors[BALL], -1);
 	}
 	if (isMaster) {
-		message << 0 << " " << self.fieldX << " " << self.fieldY << " ";
+		message << 0 << " " << self.fieldCoords.x << " " << self.fieldCoords.y << " ";
 	}
 	// draw shared robots
 	for (int i = 0; i < MAX_ROBOTS; i++) {
-		if (abs(robots[i].fieldX) > 1000) continue;
+		if (abs(robots[i].fieldCoords.x) > 1000) continue;
 		double a = angleBetween(cv::Point(0, -1), self.fieldCoords - robots[i].fieldCoords) + self.getAngle();
 		double d = getDistanceInverted(self.fieldCoords, robots[i].fieldCoords);
 		double x = -d*sin(a / 180 * CV_PI);
@@ -263,7 +263,7 @@ void Simulator::UpdateBallPos(double dt) {
 		cv::rectangle(frame, cv::Point2d(x - s, y - s) + cv::Point2d(frame.size() / 2), cv::Point2d(x + s, y) + cv::Point2d(frame.size() / 2), color1, -1);
 		cv::rectangle(frame, cv::Point2d(x - s, y) + cv::Point2d(frame.size() / 2), cv::Point2d(x + s, y + s) + cv::Point2d(frame.size() / 2), color2, -1);
 		if (isMaster) {
-			message << i << " " << (int)robots[i].fieldX << " " << (int)robots[i].fieldY << " ";
+			message << i << " " << (int)robots[i].fieldCoords.x << " " << (int)robots[i].fieldCoords.y << " ";
 		}
 	}
 	if (isMaster) {
@@ -287,13 +287,13 @@ void Simulator::UpdateRobotPos(double dt) {
 	double dx = SIMULATOR_SPEED*rotatedSpeed.at<double>(0)*dt;
 	double dy = SIMULATOR_SPEED*rotatedSpeed.at<double>(1)*dt;
 
-	self.fieldX += dx;
-	self.fieldY -= dy;
+	self.fieldCoords.x += dx;
+	self.fieldCoords.y -= dy;
 
 
 	if (!isMaster && id > 0) {
 		std::stringstream message;
-		message << "POS " << id << " " << self.fieldX << " " << self.fieldY << " " << self.getAngle() << " #";
+		message << "POS " << id << " " << self.fieldCoords.x << " " << self.fieldCoords.y << " " << self.getAngle() << " #";
 		SendMessage(message.str());
 	}
 
@@ -342,20 +342,20 @@ void Simulator::UpdateBallIntTribbler(cv::Mat robotSpeed, double dt) {
 
 		cv::Mat rotMat2 = getRotationMatrix2D(self.fieldCoords, dr, 1);
 		cv::Mat ballPos = cv::Mat_<double>(3, 1);
-		ballPos.at<double>(0) = balls[minIndex].fieldX;
-		ballPos.at<double>(1) = balls[minIndex].fieldY;
+		ballPos.at<double>(0) = balls[minIndex].fieldCoords.x;
+		ballPos.at<double>(1) = balls[minIndex].fieldCoords.y;
 		ballPos.at<double>(2) = 1;
 		cv::Mat rotatedPos = rotMat2 * ballPos;
-		balls[minIndex].fieldX = rotatedPos.at<double>(0);
-		balls[minIndex].fieldY = rotatedPos.at<double>(1);
+		balls[minIndex].fieldCoords.x = rotatedPos.at<double>(0);
+		balls[minIndex].fieldCoords.y = rotatedPos.at<double>(1);
 
 		cv::Mat rotMat = getRotationMatrix2D(cv::Point(0, 0), self.getAngle(), 1);
 		cv::Mat rotatedSpeed = rotMat * robotSpeed;
 		double dx = SIMULATOR_SPEED*rotatedSpeed.at<double>(0)*dt;
 		double dy = SIMULATOR_SPEED*rotatedSpeed.at<double>(1)*dt;
 
-		balls[minIndex].fieldX += dx;
-		balls[minIndex].fieldY -= dy;
+		balls[minIndex].fieldCoords.x += dx;
+		balls[minIndex].fieldCoords.y -= dy;
 
 
 
@@ -425,8 +425,8 @@ void Simulator::Drive(double fowardSpeed, double direction, double angularSpeed)
 	self.polarMetricCoords.y += angularSpeed;
 	if (self.polarMetricCoords.y > 360) self.polarMetricCoords.y -= 360;
 	if (self.polarMetricCoords.y < -360) self.polarMetricCoords.y += 360;
-	self.fieldX += (int)(fowardSpeed * sin((direction - self.getAngle()) / 180 * CV_PI));
-	self.fieldY += (int)(fowardSpeed * cos((direction - self.getAngle()) / 180 * CV_PI));
+	self.fieldCoords.x += (int)(fowardSpeed * sin((direction - self.getAngle()) / 180 * CV_PI));
+	self.fieldCoords.y += (int)(fowardSpeed * cos((direction - self.getAngle()) / 180 * CV_PI));
 	*/
 }
 
@@ -598,7 +598,7 @@ int main(int argc, char* argv[])
 		("twitter-port", po::value<int>(), "UDP port for communication between robots");
 
 	std::string play_mode = "single";
-	std::string simulator_mode = "single";
+	std::string simulator_mode = "master"; 
 
 	po::variables_map config;
 
