@@ -17,7 +17,7 @@ public:
 
 	};
 	//cv::Point2d getFieldPos() { return fieldCoords; };
-	virtual void updateRawCoordinates(const cv::Point2d pos, cv::Point2d orgin = cv::Point2d(0, 0)); // Takes raw coordinates of object from frame
+	virtual void updateCoordinates(const cv::Point2d &pixelCoords, const cv::Point2d &polarCoords);
 	virtual ~ObjectLocation(){};
 
 public:

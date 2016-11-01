@@ -1,6 +1,4 @@
 #include "BallPosition.h"
-#include "../CommonModule/DistanceCalculator.h"
-extern DistanceCalculator gDistanceCalculator;
 
 BallLocation::~BallLocation()
 {

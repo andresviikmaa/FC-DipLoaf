@@ -45,7 +45,7 @@ public:
 	bool IsReal(){
 		return true;
 	}
-	virtual void ProcessRefereeCommand() {};
+	virtual void ProcessCommands() {};
 
 	virtual void DataReceived(const std::string & message);
 	virtual void SendCommand(int id, const std::string &cmd, int param = INT_MAX);

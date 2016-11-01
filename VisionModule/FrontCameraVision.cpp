@@ -4,15 +4,31 @@
 #include <queue>          // std::priority_queue
 #include <functional>     // std::greater
 #include "kdNode2D.h"
-#include "../CommonModule/DistanceCalculator.h"
-#include "../CommonModule/CalibrationConfReader.h"
 //#include "VideoRecorder.h"
 #include "../CommonModule/FieldState.h"
 
 
-extern DistanceCalculator gDistanceCalculator;
 extern FieldState gFieldState;
 //extern int number_of_balls;
+
+
+static double angleBetween(const cv::Point2d &a, const cv::Point2d &b) {
+	double alpha = atan2(a.y, a.x) - atan2(b.y, b.x);
+	double alphaDeg = alpha * 180. / CV_PI;
+	if (alphaDeg < 0) alphaDeg += 360;
+	return alphaDeg;
+}
+
+bool angleInRange(cv::Point2d point, cv::Point2d range) {
+	double a1 = -angleBetween(point, cv::Point(0, -1)) + 360;
+	if (range.x < range.y) {
+		return range.x < a1 && range.y > a1;
+	}
+	else {
+		return range.x > a1 && range.y < a1;
+
+	}
+}
 
 FrontCameraVision::FrontCameraVision(ICamera *pCamera, IDisplay *pDisplay) : ConfigurableModule("FrontCameraVision")
 , _yellowGate(YELLOW_GATE), _blueGate(BLUE_GATE), _self(_yellowGate, _blueGate, cv::Point(0, 0)), _balls(11), _opponents(2)
@@ -206,8 +222,8 @@ void FrontCameraVision::FindGates(double dt) {
 			circle(frameBGR, c2, 12, color2, -1, 8, 0);
 			circle(frameBGR, c1, 12, color4, -1, 12, 0);
 		}
-		_blueGate.updateRawCoordinates(c1 - cv::Point2d(frameBGR.size() / 2));
-		_yellowGate.updateRawCoordinates(c2 - cv::Point2d(frameBGR.size() / 2));
+		_blueGate.updateCoordinates(c1, m_pCamera->getPolarCoordinates(c1));
+		_yellowGate.updateCoordinates(c2, m_pCamera->getPolarCoordinates(c2));
 
 		_self.updateFieldCoords(cv::Point2d(0, 0), dt);
 	}
@@ -215,9 +231,9 @@ void FrontCameraVision::FindGates(double dt) {
 		_self.predict(dt);
 		// calculate gates from predicted pos.
 		_blueGate.polarMetricCoords.x = cv::norm(_self.fieldCoords - _blueGate.fieldCoords);
-		_blueGate.polarMetricCoords.y = 360 - gDistanceCalculator.angleBetween(cv::Point(0, 1), _self.fieldCoords - (_blueGate.fieldCoords)) + _self.getAngle();
+		_blueGate.polarMetricCoords.y = 360 - angleBetween(cv::Point(0, 1), _self.fieldCoords - (_blueGate.fieldCoords)) + _self.getAngle();
 		_yellowGate.polarMetricCoords.x = cv::norm(_self.fieldCoords - _yellowGate.fieldCoords);;
-		_yellowGate.polarMetricCoords.y = 360 - gDistanceCalculator.angleBetween(cv::Point(0, 1), _self.fieldCoords - (_yellowGate.fieldCoords)) + _self.getAngle();
+		_yellowGate.polarMetricCoords.y = 360 - angleBetween(cv::Point(0, 1), _self.fieldCoords - (_yellowGate.fieldCoords)) + _self.getAngle();
 	}
 
 	cv::circle(thresholdedImages[FIELD], cv::Point(frameBGR.size() / 2), 70, 255, -1);
@@ -248,7 +264,7 @@ void FrontCameraVision::FindBalls(double dt) {
 		possibleClosest = ball;
 		ballOk = BallFinder::validateBall(thresholdedImages, ball, frameHSV, frameBGR);
 		if (ballOk && _collisionWithBorder) {
-			if (gDistanceCalculator.angleInRange(ball, _collisionRange)) {
+			if (angleInRange(ball, _collisionRange)) {
 				ballOk = false;
 			};
 		}
@@ -342,16 +358,16 @@ void FrontCameraVision::FindOtherRobots(double dt) {
 		auto sortFunc = [](std::pair<cv::Point2i, double> posToDis1, std::pair<cv::Point2i, double> posToDis2) { return (posToDis1.second < posToDis2.second); };
 		std::sort(positionsToDistances.begin(), positionsToDistances.end(), sortFunc);
 		if (positionsToDistances.size() > 0) {
-			_partner.updateRawCoordinates(positionsToDistances[0].first, cv::Point(0, 0));
+			_partner.updateCoordinates(positionsToDistances[0].first, m_pCamera->getPolarCoordinates(positionsToDistances[0].first));
 		}
 		else {
-			_partner.updateRawCoordinates(cv::Point(-1, -1), cv::Point(0, 0));
+			_partner.updateCoordinates(cv::Point(-1, -1), cv::Point(0, 0));
 		}
 		if (!hideUseless)
 			circle(frameBGR, _partner.rawPixelCoords, 10, cv::Scalar(0, 0, 255), 2, 8, 0);
 	}
 	else {
-		_partner.updateRawCoordinates(cv::Point(-1, -1), cv::Point(0, 0));
+		_partner.updateCoordinates(cv::Point(-1, -1), cv::Point(0, 0));
 	}
 }
 void FrontCameraVision::CheckCollisions() {
@@ -424,9 +440,8 @@ void FrontCameraVision::CheckCollisions() {
 
 void FrontCameraVision::Start() {
 	try {
-		CalibrationConfReader calibrator;
 		for (int i = 0; i < NUMBER_OF_OBJECTS; i++) {
-			objectThresholds[(OBJECT)i] = calibrator.GetObjectThresholds(i, OBJECT_LABELS[(OBJECT)i]);
+			objectThresholds[(OBJECT)i] = m_pCamera->GetObjectThresholds(i, OBJECT_LABELS[(OBJECT)i]);
 		}
 	}
 	catch (...){

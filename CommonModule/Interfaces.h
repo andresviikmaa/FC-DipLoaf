@@ -16,6 +16,9 @@ public:
 	virtual double GetFPS() = 0;
 	virtual cv::Mat & GetLastFrame(bool bFullFrame = false) = 0;
 	virtual void TogglePlay() = 0;
+	virtual HSVColorRange GetObjectThresholds(int index, const std::string &name) = 0;
+	virtual cv::Point2d getPolarCoordinates(const cv::Point2d &pos) = 0;
+
 };
 
 class IConfigurableModule {
@@ -87,7 +90,7 @@ public:
 	virtual void Kick(int force) = 0;
 	virtual void ToggleTribbler(int speed) = 0;
 	virtual std::string GetDebugInfo() = 0;
-	virtual void ProcessRefereeCommand() = 0;
+	virtual void ProcessCommands() = 0;
 	//	virtual void SetRobotColor() = 0;
 	//	virtual void SetGateColor() = 0;
 

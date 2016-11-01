@@ -2,9 +2,10 @@
 
 
 const void BallLocations::updateAndFilterClosest(cv::Point2i possibleClosestRaw, std::vector<cv::Point2i> rawBallCoords, bool ballIsNotValid, bool filterEnabled) {
-
+	
+	assert(false); // predict field coords
 	if (!filterEnabled) {
-		closest.updateRawCoordinates(possibleClosestRaw); //Update all coordinates after filtering raw ones
+		closest.updateCoordinates(possibleClosestRaw, cv::Point(0,0)); //Update all coordinates after filtering raw ones
 		closest.lastRawCoords = possibleClosestRaw;
 		closest.isUpdated = true;
 		return;
@@ -35,7 +36,8 @@ const void BallLocations::updateAndFilterClosest(cv::Point2i possibleClosestRaw,
 				closest.predictCoords();
 				//closest.filteredRawCoords = closest.lastRawCoords;
 				closest.rawPixelCoords = possibleClosestRaw;
-				closest.updateRawCoordinates(closest.filteredRawCoords);
+				assert(false); //fix polar coords
+				closest.updateCoordinates(closest.filteredRawCoords, cv::Point(0,0));
 				closest.lastRawCoords = closest.filteredRawCoords;
 				return;
 			}
@@ -47,7 +49,8 @@ const void BallLocations::updateAndFilterClosest(cv::Point2i possibleClosestRaw,
 
 	closest.rawPixelCoords = possibleClosestRaw; //Filter needs the raw coords to be set
 	closest.filterCoords(closest, reset); //Sets filtered raw coords
-	closest.updateRawCoordinates(closest.filteredRawCoords); //Update all coordinates after filtering raw ones
+	assert(false); //fix polar coords
+	closest.updateCoordinates(closest.filteredRawCoords, cv::Point(0,0)); //Update all coordinates after filtering raw ones
 	closest.lastRawCoords = possibleClosestRaw;
 	if (reset) {
 		reset = false;

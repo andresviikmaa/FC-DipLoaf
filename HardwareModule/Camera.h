@@ -19,6 +19,7 @@ private:
 	cv::Mat* m_pFrame = &frame1;
 	cv::VideoCapture *cap;
 	cv::Size frameSize;
+	cv::Point2d cameraOrgin;
 	cv::Rect roi = cv::Rect(175, 60, 960, 960);
 	bool flip = false;
 	double fps;
@@ -57,5 +58,6 @@ public:
 		return fps;
 	}
 
-
+	virtual HSVColorRange GetObjectThresholds(int index, const std::string &name);
+	virtual cv::Point2d getPolarCoordinates(const cv::Point2d &pos);
 };

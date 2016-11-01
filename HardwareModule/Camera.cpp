@@ -1,6 +1,9 @@
 #include "Camera.h"
 #include <opencv2/opencv.hpp>
 #include <thread>
+#include <cmath>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
 #define DOUBLE_BUFFERING
 
 Camera::Camera(const std::string &device): ThreadedClass("Camera") {
@@ -34,6 +37,7 @@ void Camera::Init() {
 	
 	*cap >> frame;
 	frameSize = cv::Size(frame.size());
+	cameraOrgin = cv::Point(frameSize) / 2;
 
 	frame.copyTo(frame1);
 	frame.copyTo(frame2);
@@ -185,4 +189,41 @@ void Camera::Run(){
 		bCaptureNextFrame = false;
 
 	}
+}
+
+HSVColorRange Camera::GetObjectThresholds(int index, const std::string &name) {
+	using boost::property_tree::ptree;
+	HSVColorRange range;
+	ptree pt;
+	try
+	{
+		read_ini(std::string("conf/") + name + ".ini", pt);
+
+		range.hue.low = pt.get<int>("hue.low");
+		range.hue.high = pt.get<int>("hue.high");
+		range.sat.low = pt.get<int>("sat.low");
+		range.sat.high = pt.get<int>("sat.high");
+		range.val.low = pt.get<int>("val.low");
+		range.val.high = pt.get<int>("val.high");
+	}
+	catch (...) {};
+	return range;
+
+}
+cv::Point2d Camera::getPolarCoordinates(const cv::Point2d &pos) {
+	double dist = cv::norm(pos - cameraOrgin);
+	return dist == 0 ? 0.0 : std::max(0.0, 13.13*exp(0.008 * dist));
+
+	double distanceInCm = dist == 0 ? 0.0 : std::max(0.0, 13.13*exp(0.008 * dist));
+	
+	//double angle = angleBetween(pos - cameraOrgin, { 0, 1 });
+	double angle = atan((pos.y - cameraOrgin.y) / (pos.x - cameraOrgin.x)) * 180 / PI;
+	//TODO: hack to fix simulator, as 
+	if (distanceInCm < 14 && fabs(fabs(angle) - 270)<0.01)  angle = 0;
+	// flip angle alony y axis
+#ifndef VIRTUAL_FLIP
+	return{ distanceInCm, angle };
+#else
+	return{ distanceInCm, -angle + 360 };
+#endif
 }

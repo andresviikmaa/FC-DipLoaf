@@ -57,6 +57,9 @@ public:
 		messageCallback = callback;
 	};
 	virtual void SendPartnerMessage(const std::string message) {};
+	virtual HSVColorRange GetObjectThresholds(int index, const std::string &name);
+	virtual cv::Point2d getPolarCoordinates(const cv::Point2d &pos);
+
 protected:
 	ISerialListener *messageCallback = NULL;
 
@@ -65,6 +68,7 @@ protected:
 	cv::Mat frame_copy = cv::Mat(1024, 1280, CV_8UC3);
 	cv::Mat frame_copy2 = cv::Mat(1024, 1280, CV_8UC3);
 	cv::Mat frame_blank = cv::Mat(1024, 1280, CV_8UC3, cv::Scalar(21, 188, 80));
+	cv::Point2d cameraOrgin = cv::Point2d(512, 640);
 	Speed targetSpeed, actualSpeed;
 	void UpdateGatePos();
 	void UpdateBallPos(double dt);
