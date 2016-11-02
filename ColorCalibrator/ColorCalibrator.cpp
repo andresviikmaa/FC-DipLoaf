@@ -2,67 +2,59 @@
 //
 
 #include "stdafx.h"
-#include "ColorCalibrator.h"
+#include "opencv2/highgui.hpp"
+#include <boost/program_options.hpp>
+
+#include "../DisplayModule/dialog.h"
+#include "../HardwareModule/Camera.h"
 #include "AutoCalibrator.h"
-#include <opencv2/highgui.hpp>
-#include <opencv2/core.hpp>
-#include <opencv2/imgproc.hpp>
-#include <iostream>
 
-ColorCalibrator::ColorCalibrator()
+namespace po = boost::program_options;
+po::options_description desc("Allowed options");
+
+
+int main(int argc, char* argv[])
 {
-};
-
-void ColorCalibrator::LoadImage(cv::Mat &image)
-{
-	this->image = image;
-};
-HSVColorRange ColorCalibrator::GetObjectThresholds(int index, const std::string &name)
-{
-	LoadConf(name);
+	desc.add_options()
+		("help", "produce help message")
+		("camera", po::value<std::string>(), "set Camera index or path")
+		("name", po::value<std::string>(), "set Camera config file name");
 
 
-	cvNamedWindow("ColorCalibrator", CV_WINDOW_AUTOSIZE); //create a window called "Control"
-	cvCreateTrackbar("LowH", "ColorCalibrator", &range.hue.low, 179); //Hue (0 - 179)
-	cvCreateTrackbar("HighH", "ColorCalibrator", &range.hue.high, 179);
+	po::variables_map config;
 
+	po::store(po::parse_command_line(argc, argv, desc), config);
+	po::notify(config);
 
-	cvCreateTrackbar("LowS", "ColorCalibrator", &range.sat.low, 255); //Saturation (0 - 255)
-	cvCreateTrackbar("HighS", "ColorCalibrator", &range.sat.high, 255);
-
-
-	cvCreateTrackbar("LowV", "ColorCalibrator", &range.val.low, 255); //Value (0 - 255)
-	cvCreateTrackbar("HighV", "ColorCalibrator", &range.val.high, 255);
-
-	cv::Mat imgThresholded, imgHSV;
-	cvtColor(image, imgHSV, cv::COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
-
-
-
-	while (true)
-	{
-		cv::inRange(imgHSV, cv::Scalar(range.hue.low, range.sat.low, range.val.low), cv::Scalar(range.hue.high, range.sat.high, range.val.high), imgThresholded); //Threshold the image
-
-		cv::imshow(name.c_str(), imgThresholded); //show the thresholded image
-
-		if (cv::waitKey(30) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
-		{
-			cvDestroyWindow(name.c_str());
-			std::cout << "esc key is pressed by user" << std::endl;
-			SaveConf(name);
-			return range;
-		}
+	if (config.count("help")|| !config.count("camera") || !config.count("name")) {
+		std::cout << desc << std::endl;
+		cv::waitKey(0);
+		return -1;
 	}
 
-};
 
-ColorCalibrator::~ColorCalibrator() {
-	cvDestroyWindow("ColorCalibrator");
-}
+	Camera cam(config["name"].as<std::string>(), config["camera"].as<std::string>());
 
+	Dialog display("Color Calibrator", cam.GetFrameSize(), cam.GetFrameSize());
 
-int main()
-{
-    return 0;
+	AutoCalibrator calibrator(&cam, &display);
+
+	display.createButton("Reset", 'r', [&calibrator] {
+		calibrator.Reset();
+	});
+	display.createButton("Take screenshot", 'c', [&calibrator] {
+		calibrator.LoadFrame();
+	});
+	for (int i = 0; i < NUMBER_OF_OBJECTS; i++) {
+		display.createButton(OBJECT_LABELS[(OBJECT)i], '-', [i, &calibrator] {
+			calibrator.GetObjectThresholds(i, OBJECT_LABELS[(OBJECT)i]);
+		});
+	}
+
+	int key = 0;
+	while (key != 27) {
+		calibrator.Step();
+		key = cv::waitKey(30);
+	}
 }
 

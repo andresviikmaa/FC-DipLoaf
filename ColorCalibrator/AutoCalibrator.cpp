@@ -5,8 +5,10 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
-
-AutoCalibrator::AutoCalibrator(ICamera * pCamera, IDisplay *pDisplay) :ThreadedClass("AutoCalibrator")
+#include <direct.h>
+#include <stdlib.h>
+#include <stdio.h>
+AutoCalibrator::AutoCalibrator(ICamera * pCamera, IDisplay *pDisplay)
 {
     range = {{0,179},{0,255},{0,255}};
 	m_pCamera = pCamera;
@@ -14,7 +16,6 @@ AutoCalibrator::AutoCalibrator(ICamera * pCamera, IDisplay *pDisplay) :ThreadedC
 	frame_size = m_pCamera->GetFrameSize();
 	pDisplay->AddEventListener(this);
 	screenshot_mode = LIVE_FEED;
-
 //	reset();
 };
 void AutoCalibrator::LoadFrame()
@@ -28,11 +29,11 @@ HSVColorRange AutoCalibrator::GetObjectThresholds (int index, const std::string 
 {
 	clustered.copyTo(display);
 
-	try {
-		LoadConf(name);
-	}
-	catch (...) {
-	}
+	//try {
+	//	m_pCamera->GetObjectThresholds(index, name);
+	//}
+	//catch (...) {
+	//}
 	// order important, change name before state 
 	this->object_name = name;
 	screenshot_mode = GET_THRESHOLD;
@@ -71,8 +72,22 @@ HSVColorRange AutoCalibrator::GetObjectThresholds (int index, const std::string 
     return range;
 
 };
+void AutoCalibrator::SaveConf(const std::string &name) {
+	using boost::property_tree::ptree;
+
+	ptree pt;
+	pt.put("hue.low", range.hue.low);
+	pt.put("hue.high", range.hue.high);
+	pt.put("sat.low", range.sat.low);
+	pt.put("sat.high", range.sat.high);
+	pt.put("val.low", range.val.low);
+	pt.put("val.high", range.val.high);
+
+	_mkdir((std::string("conf/") + m_pCamera->getName()).c_str());
+	write_ini(std::string("conf/") + m_pCamera->getName() + "/" + name + ".ini", pt);
+}
 bool AutoCalibrator::OnMouseEvent(int event, float x, float y, int flags, bool bMainArea) {
-	if (running && screenshot_mode == CROPPING && bMainArea){
+	if (screenshot_mode == CROPPING && bMainArea){
 		if (event == cv::EVENT_LBUTTONDOWN){
 			thresholdCorner1 = cv::Point((int)(x), (int)(y));
 			thresholdCorner2 = cv::Point((int)(x), (int)(y));
@@ -96,7 +111,7 @@ bool AutoCalibrator::OnMouseEvent(int event, float x, float y, int flags, bool b
 			}
 		}
 		return true;
-	}else if (running && screenshot_mode == GET_THRESHOLD){
+	}else if (screenshot_mode == GET_THRESHOLD){
 		if (event == cv::EVENT_LBUTTONUP && bMainArea) {
 			mouseClicked((int)(x), (int)(y), flags);
 		}
@@ -169,14 +184,12 @@ void AutoCalibrator::mouseClicked(int x, int y, int flags) {
 }
 AutoCalibrator::~AutoCalibrator(){
 	m_pDisplay->RemoveEventListener(this);
-	WaitForStop();
+
 }
 
 
-void AutoCalibrator::Run() {
-	while (!stop_thread)
-	{
-		boost::mutex::scoped_lock lock(mutex); //allow one command at a time
+void AutoCalibrator::Step() {
+
 		if (screenshot_mode == LIVE_FEED){
 			frameBGR = m_pCamera->Capture();
 			frameBGR.copyTo(display);
@@ -225,9 +238,6 @@ void AutoCalibrator::Run() {
 			m_pDisplay->ShowImage(display, true, false);
 
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
-	}
 }
 
 void AutoCalibrator::DetectThresholds(int number_of_objects){

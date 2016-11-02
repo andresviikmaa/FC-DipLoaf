@@ -18,6 +18,7 @@ public:
 	virtual void TogglePlay() = 0;
 	virtual HSVColorRange GetObjectThresholds(int index, const std::string &name) = 0;
 	virtual cv::Point2d getPolarCoordinates(const cv::Point2d &pos) = 0;
+	virtual const std::string & getName() = 0;
 
 };
 

@@ -6,15 +6,19 @@
 #include <boost/property_tree/ini_parser.hpp>
 #define DOUBLE_BUFFERING
 
-Camera::Camera(const std::string &device): ThreadedClass("Camera") {
-	cap = new cv::VideoCapture(device.c_str());
+Camera::Camera(const std::string &name, const std::string &device): ThreadedClass(name), name(name) {
+	if(device == "ximea")
+		cap = new cv::VideoCapture(CV_CAP_XIAPI);
+	else if(device.size() < 2)
+		cap = new cv::VideoCapture(std::stoi(device));
+	else
+		cap = new cv::VideoCapture(device.c_str());
+
 	if (!cap->isOpened())  // if not success, exit program
 	{
 		throw std::runtime_error("Camera not found");
 	}
-	Init();
-}
-void Camera::Init() {
+
 	paused = false;
 	frameCount = (int)(cap->get(CV_CAP_PROP_FRAME_COUNT));
 	//cap->set(CV_CAP_PROP_FPS, 60);
@@ -24,13 +28,14 @@ void Camera::Init() {
 	//  [[960 x 960 from (175, 60)]] 
 #ifndef WIN32
  // !
-	cap->set(CV_CAP_PROP_FRAME_WIDTH  , 960);    
-	cap->set(CV_CAP_PROP_FRAME_HEIGHT , 960);
-	
-	cap->set(CV_CAP_PROP_XI_OFFSET_X, 160);    
-	cap->set(CV_CAP_PROP_XI_OFFSET_Y, 0);    
-	cap->set(CV_CAP_PROP_XI_OFFSET_Y, 0);  
-	cap->set(CV_CAP_PROP_XI_AUTO_WB, 0);
+	if (device == "ximea") {
+		cap->set(CV_CAP_PROP_FRAME_WIDTH, 960);
+		cap->set(CV_CAP_PROP_FRAME_HEIGHT, 960);
+		cap->set(CV_CAP_PROP_XI_OFFSET_X, 160);
+		cap->set(CV_CAP_PROP_XI_OFFSET_Y, 0);
+		cap->set(CV_CAP_PROP_XI_OFFSET_Y, 0);
+		cap->set(CV_CAP_PROP_XI_AUTO_WB, 0);
+	}
 #endif
 //	cap->set(CV_CAP_PROP_EXPOSURE, 10000);    
 //	cap->set(CV_CAP_PROP_XI_OFFSET_Y, 0);    
@@ -87,16 +92,6 @@ void Camera::Init() {
 #endif
 }
 
-Camera::Camera(int device)
-{	
-	cap = new cv::VideoCapture(device);
-	if (!cap->isOpened())  // if not success, exit program
-	{
-		throw std::runtime_error("Camera is missing");
-	}
-	Init();
-
-}
 
 
 cv::Mat &Camera::GetLastFrame(bool bFullFrame){
@@ -193,11 +188,11 @@ void Camera::Run(){
 
 HSVColorRange Camera::GetObjectThresholds(int index, const std::string &name) {
 	using boost::property_tree::ptree;
-	HSVColorRange range;
+	HSVColorRange range = { { 0, 0 },{ 0, 0 },{ 0, 0 } };
 	ptree pt;
 	try
 	{
-		read_ini(std::string("conf/") + name + ".ini", pt);
+		read_ini(std::string("conf/") +this->name + "/" + name + ".ini", pt);
 
 		range.hue.low = pt.get<int>("hue.low");
 		range.hue.high = pt.get<int>("hue.high");

@@ -26,7 +26,7 @@ private:
 	int frames = 0;
 	double time = 0;
 	int frameCount;
-
+	std::string name;
 protected:
 	void Run();
 	void Start() {
@@ -36,13 +36,11 @@ protected:
 	}
 	std::atomic_bool paused;
 public:
-    Camera(const std::string &device);
-	Camera(int device);
-	Camera();
+    Camera(const std::string &name, const std::string &device);
+	//Camera(const std::string &name, int device);
 	cv::Mat & Capture(bool bFullFrame = false);
 	cv::Mat & GetLastFrame(bool bFullFrame = false);
 	const cv::Mat & CaptureHSV();
-	void Init();
 	virtual void TogglePlay(){
 		paused = !paused;
 	};
@@ -51,6 +49,9 @@ public:
 		cap->release();
 		delete cap;
 	}
+	const std::string & getName() {
+		return name;
+	};
 	virtual cv::Size GetFrameSize(bool bFullFrame = false){
 		return !bFullFrame ? cv::Size(roi.width, roi.height) : frameSize;
 	};

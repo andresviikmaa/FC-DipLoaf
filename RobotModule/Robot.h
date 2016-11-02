@@ -1,11 +1,8 @@
 #include "../CommonModule/Types.h"
 #include "../CommonModule/Interfaces.h"
 #include <atomic>
-#include <boost/program_options.hpp>
-#include <boost/asio.hpp>
 #include <boost/thread/mutex.hpp>
 
-namespace po = boost::program_options;
 enum STATE
 {
 	STATE_NONE = 0,

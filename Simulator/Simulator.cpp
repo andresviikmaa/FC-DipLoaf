@@ -5,6 +5,8 @@
 #include <chrono>
 #include <thread>
 #include <time.h>       /* time */
+#include <boost/program_options.hpp>
+#include <boost/asio.hpp>
 #include <boost/algorithm/string.hpp>
 #include "Simulator.h"
 #include "../RobotModule/Robot.h"
@@ -12,6 +14,8 @@
 #include "../VisionModule/FrontCameraVision.h"
 #include "../StateMachine/SingleModePlay.h"
 #include "../StateMachine/MultiModePlay.h"
+
+namespace po = boost::program_options;
 
 extern cv::Mat wheelAngles;
 double angleBetween(const cv::Point2d &a, const cv::Point2d &b);

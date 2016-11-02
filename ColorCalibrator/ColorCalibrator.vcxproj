@@ -150,7 +150,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AutoCalibrator.h" />
-    <ClInclude Include="ColorCalibrator.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -166,6 +165,12 @@
     <ProjectReference Include="..\CommonModule\CommonModule.vcxproj">
       <Project>{38231cb7-5801-4469-9397-43287e40625b}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\DisplayModule\DisplayModule.vcxproj">
+      <Project>{9627a89a-33e4-480d-af29-fae68a404206}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\HardwareModule\HardwareModule.vcxproj">
+      <Project>{f52df89e-2159-41ca-a933-e0ede1d92464}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
@@ -176,6 +181,7 @@
     <Import Project="..\packages\boost_date_time-vc140.1.62.0.0\build\native\boost_date_time-vc140.targets" Condition="Exists('..\packages\boost_date_time-vc140.1.62.0.0\build\native\boost_date_time-vc140.targets')" />
     <Import Project="..\packages\boost_system-vc140.1.62.0.0\build\native\boost_system-vc140.targets" Condition="Exists('..\packages\boost_system-vc140.1.62.0.0\build\native\boost_system-vc140.targets')" />
     <Import Project="..\packages\boost_chrono-vc140.1.62.0.0\build\native\boost_chrono-vc140.targets" Condition="Exists('..\packages\boost_chrono-vc140.1.62.0.0\build\native\boost_chrono-vc140.targets')" />
+    <Import Project="..\packages\boost_program_options-vc140.1.62.0.0\build\native\boost_program_options-vc140.targets" Condition="Exists('..\packages\boost_program_options-vc140.1.62.0.0\build\native\boost_program_options-vc140.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -188,5 +194,6 @@
     <Error Condition="!Exists('..\packages\boost_date_time-vc140.1.62.0.0\build\native\boost_date_time-vc140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_date_time-vc140.1.62.0.0\build\native\boost_date_time-vc140.targets'))" />
     <Error Condition="!Exists('..\packages\boost_system-vc140.1.62.0.0\build\native\boost_system-vc140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_system-vc140.1.62.0.0\build\native\boost_system-vc140.targets'))" />
     <Error Condition="!Exists('..\packages\boost_chrono-vc140.1.62.0.0\build\native\boost_chrono-vc140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_chrono-vc140.1.62.0.0\build\native\boost_chrono-vc140.targets'))" />
+    <Error Condition="!Exists('..\packages\boost_program_options-vc140.1.62.0.0\build\native\boost_program_options-vc140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_program_options-vc140.1.62.0.0\build\native\boost_program_options-vc140.targets'))" />
   </Target>
 </Project>
