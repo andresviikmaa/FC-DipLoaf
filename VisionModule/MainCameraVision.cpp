@@ -1,4 +1,4 @@
-#include "FrontCameraVision.h"
+#include "MainCameraVision.h"
 
 
 #include <queue>          // std::priority_queue
@@ -30,7 +30,7 @@ bool angleInRange(cv::Point2d point, cv::Point2d range) {
 	}
 }
 
-FrontCameraVision::FrontCameraVision(ICamera *pCamera, IDisplay *pDisplay) : ConfigurableModule("FrontCameraVision")
+MainCameraVision::MainCameraVision(ICamera *pCamera, IDisplay *pDisplay) : ConfigurableModule("MainCameraVision")
 , _yellowGate(YELLOW_GATE), _blueGate(BLUE_GATE), _self(_yellowGate, _blueGate, cv::Point(0, 0)), _balls(11), _opponents(2)
 , thresholder(thresholdedImages, objectThresholds)
 {
@@ -54,7 +54,7 @@ FrontCameraVision::FrontCameraVision(ICamera *pCamera, IDisplay *pDisplay) : Con
 }
 
 
-FrontCameraVision::~FrontCameraVision()
+MainCameraVision::~MainCameraVision()
 {
 //	if (videoRecorder != NULL) {
 //		videoRecorder->Stop();
@@ -62,12 +62,12 @@ FrontCameraVision::~FrontCameraVision()
 //		videoRecorder = NULL;
 //	}
 }
-bool FrontCameraVision::captureFrames(){
+bool MainCameraVision::captureFrames(){
 //	return videoRecorder->isRecording;
 	return false;
 }
 
-void FrontCameraVision::captureFrames(bool start){
+void MainCameraVision::captureFrames(bool start){
 //	if (start) {
 //		videoRecorder->Start();
 //	}
@@ -76,7 +76,7 @@ void FrontCameraVision::captureFrames(bool start){
 //	}
 }
 
-void  FrontCameraVision::ProcessFrame(double dt) {
+void  MainCameraVision::ProcessFrame(double dt) {
 	frameBGR = m_pCamera->Capture();
 	ThresholdFrame();
 	CheckGateObstruction();
@@ -91,7 +91,7 @@ void  FrontCameraVision::ProcessFrame(double dt) {
 	}
 
 }
-void FrontCameraVision::ThresholdFrame() {
+void MainCameraVision::ThresholdFrame() {
 
 	//		if (videoRecorder->isRecording){
 	//			videoRecorder->RecordFrame(frameBGR, "");
@@ -112,7 +112,7 @@ void FrontCameraVision::ThresholdFrame() {
 
 
 }
-void FrontCameraVision::CheckGateObstruction() {
+void MainCameraVision::CheckGateObstruction() {
 	if (gateObstructionDetectionEnabled) {
 
 		/**************************************************/
@@ -158,7 +158,7 @@ void FrontCameraVision::CheckGateObstruction() {
 	}
 }
 
-void FrontCameraVision::FindGates(double dt) {
+void MainCameraVision::FindGates(double dt) {
 	/**************************************************/
 	/* STEP 4. extract closest ball and gate positions*/
 	/**************************************************/
@@ -242,7 +242,7 @@ void FrontCameraVision::FindGates(double dt) {
 	cv::circle(thresholdedImages[BALL], cv::Point(frameBGR.size() / 2), 50, 0, -1);
 
 }
-void FrontCameraVision::FindBalls(double dt) {
+void MainCameraVision::FindBalls(double dt) {
 	std::vector<cv::Point2i> balls;
 	bool ballsFound = ballFinder.Locate(thresholdedImages[BALL], frameHSV, frameBGR, balls);
 	//TODO: fix and uncomment below
@@ -320,7 +320,7 @@ void FrontCameraVision::FindBalls(double dt) {
 	}
 
 }
-void FrontCameraVision::FindOtherRobots(double dt) {
+void MainCameraVision::FindOtherRobots(double dt) {
 	if (detectOtherRobots) {
 
 		std::vector<cv::Point2i> robots;
@@ -372,7 +372,7 @@ void FrontCameraVision::FindOtherRobots(double dt) {
 		_partner.updateCoordinates(cv::Point(-1, -1), cv::Point(0, 0));
 	}
 }
-void FrontCameraVision::CheckCollisions() {
+void MainCameraVision::CheckCollisions() {
 	if (borderCollisonEnabled || fieldCollisonEnabled) {
 		bool wasCollisionWithBorder = _collisionWithBorder;
 	bool wasCollisionWithUnknown = _collisionWithUnknown;
@@ -440,7 +440,7 @@ void FrontCameraVision::CheckCollisions() {
 
 }
 
-void FrontCameraVision::Start() {
+void MainCameraVision::Start() {
 	try {
 		for (int i = 0; i < NUMBER_OF_OBJECTS; i++) {
 			objectThresholds[(OBJECT)i] = m_pCamera->GetObjectThresholds(i, OBJECT_LABELS[(OBJECT)i]);

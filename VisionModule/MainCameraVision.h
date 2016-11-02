@@ -15,7 +15,7 @@
 //#include "ParallelImageThresholder.h"
 #include "TBBImageThresholder.h"
 class VideoRecorder;
-class FrontCameraVision :
+class MainCameraVision :
 	public ConfigurableModule, public IVisionModule
 {
 protected:
@@ -79,8 +79,8 @@ protected:
 	void FindOtherRobots(double dt);
 
 public:
-	FrontCameraVision(ICamera * pCamera, IDisplay *pDisplay);
-	virtual ~FrontCameraVision();
+	MainCameraVision(ICamera * pCamera, IDisplay *pDisplay);
+	virtual ~MainCameraVision();
 	void ProcessFrame(double dt);
 	void Start();
 	const cv::Mat & GetFrame() { return m_pCamera->Capture();  }

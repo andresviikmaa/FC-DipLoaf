@@ -141,7 +141,7 @@
     <ClCompile Include="BallLocations.cpp" />
     <ClCompile Include="BallPosition.cpp" />
     <ClCompile Include="DummyVision.cpp" />
-    <ClCompile Include="FrontCameraVision.cpp" />
+    <ClCompile Include="MainCameraVision.cpp" />
     <ClCompile Include="GateFinder.cpp" />
     <ClCompile Include="GatePosition.cpp" />
     <ClCompile Include="ImageThresholder.cpp" />
@@ -159,7 +159,7 @@
     <ClInclude Include="BallLocations.h" />
     <ClInclude Include="BallPosition.h" />
     <ClInclude Include="DummyVision.h" />
-    <ClInclude Include="FrontCameraVision.h" />
+    <ClInclude Include="MainCameraVision.h" />
     <ClInclude Include="GateFinder.h" />
     <ClInclude Include="GatePosition.h" />
     <ClInclude Include="ImageThresholder.h" />

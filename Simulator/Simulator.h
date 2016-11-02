@@ -12,11 +12,44 @@
 const int MAX_ROBOTS = 10;
 class Simulator : public ICamera, public ISerial, public ThreadedClass, public UdpServer/*, public RefereeCom*/
 {
+	class FrontCamera : public ICamera {
+	protected:
+		std::string sName = "front";
+		Simulator * pSim;
+	public:
+		FrontCamera(Simulator* sim) {
+			pSim = sim;
+		}
+		cv::Mat & Capture(bool bFullFrame = false) {
+			return pSim->front_frame_copy;
+		}
+		cv::Size GetFrameSize(bool bFullFrame = false) {
+			return pSim->front_frame_copy.size();
+		}
+		double GetFPS() { 
+			return pSim->GetFPS();
+		};
+		cv::Mat & GetLastFrame(bool bFullFrame = false) {
+			return pSim->front_frame;
+		}
+		void TogglePlay() {};
+		HSVColorRange GetObjectThresholds(int index, const std::string &name) {
+			return pSim->GetObjectThresholds(index, name);
+		}
+		cv::Point2d getPolarCoordinates(const cv::Point2d &pos);
+		const std::string & getName() { return sName;  }
+		double getDistanceInverted(const cv::Point2d &pos, const cv::Point2d &orgin) const;
+
+	};
 	using UdpServer::SendMessage;
 public:
 	Simulator(boost::asio::io_service &io, bool master, const std::string game_mode);
 	virtual ~Simulator();
-
+	ICamera & GetFrontCamera() {
+		return m_frontCamera;
+	}
+	std::string sName = "main";
+	const std::string & getName() { return sName; }
 	virtual cv::Mat & Capture(bool bFullFrame = false);
 	virtual cv::Size GetFrameSize(bool bFullFrame = false);
 	virtual double GetFPS();
@@ -63,12 +96,19 @@ public:
 
 protected:
 	ISerialListener *messageCallback = NULL;
-
+	FrontCamera m_frontCamera;
 	double orientation;
+	// main camera
 	cv::Mat frame = cv::Mat(1024, 1280, CV_8UC3);
 	cv::Mat frame_copy = cv::Mat(1024, 1280, CV_8UC3);
 	cv::Mat frame_copy2 = cv::Mat(1024, 1280, CV_8UC3);
 	cv::Mat frame_blank = cv::Mat(1024, 1280, CV_8UC3, cv::Scalar(21, 188, 80));
+	// front camera
+	cv::Mat front_frame = cv::Mat(640, 480, CV_8UC3);
+	cv::Mat front_frame_copy = cv::Mat(640, 480, CV_8UC3);
+	//cv::Mat frame_copy2 = cv::Mat(1024, 1280, CV_8UC3);
+	//cv::Mat frame_blank = cv::Mat(1024, 1280, CV_8UC3, cv::Scalar(21, 188, 80));
+
 	cv::Point2d cameraOrgin = cv::Point2d(512, 640);
 	Speed targetSpeed, actualSpeed;
 	void UpdateGatePos();

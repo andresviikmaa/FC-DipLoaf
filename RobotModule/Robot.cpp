@@ -13,7 +13,7 @@
 #include "../StateMachine/SingleModePlay.h"
 #include "../StateMachine/MultiModePlay.h"
 #include "../HardwareModule/ComModule.h"
-#include "../VisionModule/FrontCameraVision.h"
+#include "../VisionModule/MainCameraVision.h"
 #include "../CommonModule/FieldState.h"
 
 extern FieldState gFieldState;
@@ -42,9 +42,9 @@ boost::asio::ip::address bind_addr = boost::asio::ip::address::from_string("0.0.
 boost::asio::ip::address brdc_addr = boost::asio::ip::address_v4::broadcast(); // local network
 #endif
 
-Robot::Robot(ICamera *pCamera, ISerial* pSerial, IDisplay*pDisplay)
+Robot::Robot(ICamera *pMainCamera, ICamera *pFrontCamera, ISerial* pSerial, IDisplay*pDisplay)
 {
-	m_pVision = new FrontCameraVision(pCamera, pDisplay);
+	m_pVision = new MainCameraVision(pMainCamera, pDisplay);
 	m_pDisplay = pDisplay;
 	m_pComModule = new ComModule(pSerial);
 

@@ -49,7 +49,7 @@ protected:
 //	SimpleSerial *serialPort;
 
 public:
-    Robot(ICamera *, ISerial*, IDisplay*);
+    Robot(ICamera *pMainCamera, ICamera *pFrontCamera, ISerial*, IDisplay*);
 	bool Launch(const std::string & play_mode);
 	~Robot();
 

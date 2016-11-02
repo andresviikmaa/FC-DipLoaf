@@ -27,9 +27,6 @@
     <ClCompile Include="BallPosition.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FrontCameraVision.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GateFinder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -69,15 +66,15 @@
     <ClCompile Include="DummyVision.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MainCameraVision.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BallFinder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BallPosition.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FrontCameraVision.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GateFinder.h">
@@ -129,6 +126,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DummyVision.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MainCameraVision.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

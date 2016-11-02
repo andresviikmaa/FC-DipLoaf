@@ -11,7 +11,7 @@
 #include "Simulator.h"
 #include "../RobotModule/Robot.h"
 #include "../DisplayModule/Dialog.h"
-#include "../VisionModule/FrontCameraVision.h"
+#include "../VisionModule/MainCameraVision.h"
 #include "../StateMachine/SingleModePlay.h"
 #include "../StateMachine/MultiModePlay.h"
 
@@ -28,7 +28,8 @@ Simulator::Simulator(boost::asio::io_service &io, bool master, const std::string
 	, ThreadedClass("Simulator"), UdpServer(io, 31000, master)
 	, isMaster(master)
 	, balls(game_mode == "master" || game_mode == "slave" ? 1 : 11)
-	, yellowGate(YELLOW_GATE), blueGate(BLUE_GATE), self(yellowGate, blueGate, cv::Point(0, 0))
+	, yellowGate(YELLOW_GATE), blueGate(BLUE_GATE), self(yellowGate, blueGate, cv::Point(0, 0)),
+	m_frontCamera(this)
 {
 	srand((unsigned int) ::time(NULL));
 	/*
@@ -577,6 +578,14 @@ cv::Point2d Simulator::getPolarCoordinates(const cv::Point2d &pos) {
 #endif
 }
 
+cv::Point2d Simulator::FrontCamera::getPolarCoordinates(const cv::Point2d &pos) {
+	return cv::Point2d(0, 0);
+}
+
+double Simulator::FrontCamera::getDistanceInverted(const cv::Point2d &pos, const cv::Point2d &orgin) const {
+	return 100;
+}
+
 po::options_description desc("Allowed options");
 
 double Simulator::getDistanceInverted(const cv::Point2d &pos, const cv::Point2d &orgin) const {
@@ -631,7 +640,7 @@ int main(int argc, char* argv[])
 
 	Dialog display("Robotiina", winSize, Sim.GetFrameSize());
 
-	Robot robot(&Sim, &Sim, &display);
+	Robot robot(&Sim, &Sim.GetFrontCamera(), &Sim, &display);
 	robot.Launch(play_mode);
 
     return 0;
