@@ -24,12 +24,6 @@
     <ClCompile Include="ThreadedClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CalibrationConfReader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DistanceCalculator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="FieldState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -51,12 +45,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Types.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CalibrationConfReader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DistanceCalculator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FieldState.h">

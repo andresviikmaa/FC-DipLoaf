@@ -1,6 +1,5 @@
 #include "RobotPosition.h"
-#include "../CommonModule/DistanceCalculator.h"
-extern DistanceCalculator gDistanceCalculator;
+double angleBetween(const cv::Point2d &a, const cv::Point2d &b);
 
 //RobotLocation::RobotPosition() {
 //	this->polarMetricCoords = cv::Point(0, 0);
@@ -58,8 +57,8 @@ void RobotLocation::updateFieldCoordsNew(cv::Point2d orgin, double dt) {
 	fieldCoords.y = (y1 + y2) / 2;
 	fieldCoords = filter.doFiltering(cv::Point(fieldCoords.x, fieldCoords.y));
 	// no that we know robot position, we can calculate it's angle to blue or yellow gate on the field
-	double angleToBlueGate = DistanceCalculator::angleBetween(fieldCoords - blueGate.fieldCoords, { 0, 1 });
-	double angleToYellowGate = DistanceCalculator::angleBetween(fieldCoords - yellowGate.fieldCoords, { 0, 1 });
+	double angleToBlueGate = angleBetween(fieldCoords - blueGate.fieldCoords, { 0, 1 });
+	double angleToYellowGate = angleBetween(fieldCoords - yellowGate.fieldCoords, { 0, 1 });
 	// now add real gate angle to this angle
 	auto da1 = (angleToBlueGate - blueGate.getAngle());
 	auto da2 = (angleToYellowGate - yellowGate.getAngle());

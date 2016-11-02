@@ -134,18 +134,14 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CalibrationConfReader.cpp" />
     <ClCompile Include="ConfigurableModule.cpp" />
-    <ClCompile Include="DistanceCalculator.cpp" />
     <ClCompile Include="FieldState.cpp" />
     <ClCompile Include="ThreadedClass.cpp" />
     <ClCompile Include="UdpServer.cpp" />
     <ClCompile Include="WheelConfig.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CalibrationConfReader.h" />
     <ClInclude Include="ConfigurableModule.h" />
-    <ClInclude Include="DistanceCalculator.h" />
     <ClInclude Include="FieldState.h" />
     <ClInclude Include="Interfaces.h" />
     <ClInclude Include="ThreadedClass.h" />
