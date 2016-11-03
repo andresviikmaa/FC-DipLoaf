@@ -11,9 +11,15 @@
 #include <boost/property_tree/ini_parser.hpp>
 
 #include "../HardwareModule/ComModule.h"
-#include "../VisionModule/FrontCameraVision.h"
+#include "../VisionModule/MainCameraVision.h"
 #include "../StateMachine/SingleModePlay.h"
 #include "../StateMachine/MultiModePlay.h"
+
+#include <boost/program_options.hpp>
+#include <boost/asio.hpp>
+#include <boost/algorithm/string.hpp>
+
+namespace po = boost::program_options;
 
 po::options_description desc("Allowed options");
 
@@ -61,18 +67,24 @@ int main(int argc, char* argv[])
 
 	}
 	Camera * m_pCamera;
-	std::cout << "Initializing Camera... " << std::endl;
-	if (config.count("camera"))
-		if (config["camera"].as<std::string>() == "ximea")
-			m_pCamera = new Camera(CV_CAP_XIAPI);
-		else
-			m_pCamera = new Camera(config["camera"].as<std::string>());
+	Camera * m_pFrontCamera;
+	std::cout << "Initializing Main Camera... " << std::endl;
+	if (config.count("main-camera"))
+		m_pCamera = new Camera("main", config["camera"].as<std::string>());
 	else
-		m_pCamera = new Camera(0);
+		m_pCamera = new Camera("main","0");
+	std::cout << "Done" << std::endl;
+
+	std::cout << "Initializing Front Camera... " << std::endl;
+	if (config.count("front-camera"))
+		m_pFrontCamera = new Camera("main", config["camera"].as<std::string>());
+	else
+		m_pFrontCamera = new Camera("main", "0");
+
 	std::cout << "Done" << std::endl;
 	Dialog display("Robotiina", winSize, m_pCamera->GetFrameSize());
 	
-	Robot robot(m_pCamera, NULL, &display);
+	Robot robot(m_pCamera, m_pFrontCamera, NULL, &display);
 	robot.Launch(play_mode);
 
 	if (m_pCamera) {
