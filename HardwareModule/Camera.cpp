@@ -205,9 +205,13 @@ HSVColorRange Camera::GetObjectThresholds(int index, const std::string &name) {
 	return range;
 
 }
-cv::Point2d Camera::getPolarCoordinates(const cv::Point2d &pos) {
+void Camera::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos) {
+	object.rawPixelCoords = pos;
+	if (pos.x < 0) {
+		object.isValid = false;
+		return;
+	}
 	double dist = cv::norm(pos - cameraOrgin);
-	return dist == 0 ? 0.0 : std::max(0.0, 13.13*exp(0.008 * dist));
 
 	double distanceInCm = dist == 0 ? 0.0 : std::max(0.0, 13.13*exp(0.008 * dist));
 	
@@ -217,8 +221,15 @@ cv::Point2d Camera::getPolarCoordinates(const cv::Point2d &pos) {
 	if (distanceInCm < 14 && fabs(fabs(angle) - 270)<0.01)  angle = 0;
 	// flip angle alony y axis
 #ifndef VIRTUAL_FLIP
-	return{ distanceInCm, angle };
+	object.polarMetricCoords = { distanceInCm, angle };
 #else
-	return{ distanceInCm, -angle + 360 };
+	object.polarMetricCoords = { distanceInCm, -angle + 360 };
 #endif
+	object.distance = distanceInCm;
+	object.angle = object.polarMetricCoords.y;
+	if (object.angle> 0)
+		object.heading = object.angle > 180 ? object.angle - 360 : object.angle;
+	else
+		object.heading = object.angle < -180 ? object.angle + 360 : object.angle;
+
 }

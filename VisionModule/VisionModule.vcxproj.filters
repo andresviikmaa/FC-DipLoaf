@@ -45,6 +45,9 @@
     <ClCompile Include="MainCameraVision.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FrontCameraVision.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BallFinder.h">
@@ -81,6 +84,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MainCameraVision.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FrontCameraVision.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -39,7 +39,7 @@ public:
 	DriveMode step(double dt)
 	{
 		speed = {0,0, 0};
-		auto &target = gFieldState.closestBall;
+		auto &target = gFieldState.balls[gFieldState.closestBall];
 		if (target.distance < 50) {
 			m_pCom->ToggleTribbler(true);
 		} else if (target.distance > 170) {
@@ -91,7 +91,7 @@ public:
 	DriveMode step(double dt)
 	{
 
-		auto &target = gFieldState.closestBall;
+		auto &target = gFieldState.balls[gFieldState.closestBall];
 
 		if (m_pCom->BallInTribbler(true)) {
 			std::cout << "BallInTribbler" << std::endl;
@@ -120,7 +120,7 @@ public:
 				else return DRIVEMODE_2V2_OFFENSIVE;
 			};
 
-	const BallPosition & target = gFieldState.closestBall;
+	const BallPosition & target = gFieldState.balls[gFieldState.closestBall];
 	double heading = target.heading;
 		if (/*STUCK_IN_STATE(3000) ||*/ target.distance > (initDist + 10)) return DRIVEMODE_DRIVE_TO_BALL;
 	speed.velocity, speed.heading, speed.rotation = 0;
@@ -215,7 +215,7 @@ public:
 	virtual DriveMode step(double dt){
 		if (m_pCom->BallInTribbler(true)){
 			//Reverese to GOAL			
-			const ObjectPosition &gate = gFieldState.targetGate;
+			const ObjectPosition &gate = gFieldState.gates[gFieldState.targetGate];
 			double reverseHeading = gate.heading - 180 * sign0(gate.heading);
 			double targetHeading = gate.heading;
 			double targetDistance = gate.distance;
@@ -254,8 +254,8 @@ public:
 		if (/*partner not goal keeper become goal keeper*/ true){ return DRIVEMODE_2V2_DRIVE_HOME;}//ToDo goalKeeper message 
 		else{
 			auto & opponent = gFieldState.opponents[0];//get the one with ball?
-			//auto & opponent = gFieldState.targetGate; for testing
-			auto & homeGate = gFieldState.homeGate;
+			//auto & opponent = gFieldState.gates[gFieldState.targetGate]; for testing
+			auto & homeGate = gFieldState.gates[gFieldState.homeGate];
 			double gateHeading = homeGate.heading - 180 * sign0(homeGate.heading);
 			double gateAngle = homeGate.heading - 180 * sign0(homeGate.heading);;
 			double opponentAngle = opponent.angle;
@@ -314,12 +314,12 @@ protected:
 public:
 	AimPartner() : DriveInstruction("2V2_AIM_PARTNER"){};
 	void onEnter(){ 
-		initialHeading = gFieldState.homeGate.polarMetricCoords.y;
+		initialHeading = gFieldState.gates[gFieldState.homeGate].polarMetricCoords.y;
 	}
 	virtual DriveMode step(double dt){
 
 		//auto & target = gFieldState.partner;
-		auto target = gFieldState.homeGate;
+		auto target = gFieldState.gates[gFieldState.homeGate];
 		//std::cout << target.polarMetricCoords.y << std::endl;
 		if (aimTarget(target, speed, KICKOFF_ANGLE)){
 			m_pCom->Drive(0, 0, sign0(gFieldState.self.heading)*20);
@@ -343,7 +343,7 @@ public:
 	AimGate2v2() : DriveInstruction("2V2_AIM_GATE"){};
 	virtual DriveMode step(double dt){
 
-		ObjectPosition &lastGatePosition = gFieldState.targetGate;
+		ObjectPosition &lastGatePosition = gFieldState.gates[gFieldState.targetGate];
 		bool sightObstructed = gFieldState.gateObstructed;
 		if (!m_pCom->BallInTribbler(true)) return DRIVEMODE_2V2_OFFENSIVE;
 		if (aimTarget(lastGatePosition, speed, 2)){
@@ -379,7 +379,7 @@ class DriveHome2v2 : public DriveInstruction
 public:
 	DriveHome2v2() : DriveInstruction("2V2_DRIVE_HOME"){};
 	virtual DriveMode step(double dt){
-		ObjectPosition &lastGatePosition = gFieldState.homeGate;
+		ObjectPosition &lastGatePosition = gFieldState.gates[gFieldState.homeGate];
 		if (DriveInstruction::driveToTargetWithAngle(lastGatePosition, speed, 65))return DRIVEMODE_2V2_GOAL_KEEPER;
 		m_pCom->Drive(speed.velocity, speed.heading, speed.rotation);
 		return DRIVEMODE_2V2_DRIVE_HOME;
@@ -391,13 +391,13 @@ class OpponentKickoff : public DriveInstruction
 public:
 	OpponentKickoff(bool mode) : DriveInstruction("2V2_OPPONENT_KICKOFF"), mode(mode){};
 	void onEnter(){
-		ball = gFieldState.closestBall;
+		ball = gFieldState.balls[gFieldState.closestBall];
 		std::this_thread::sleep_for(std::chrono::milliseconds(500)); //half second wait.
 	}
 
 	DriveMode step(double dt){
 		if (ball.distance > 500) return DRIVEMODE_2V2_DEFENSIVE;
-		const BallPosition& newBall = gFieldState.closestBall;
+		const BallPosition& newBall = gFieldState.balls[gFieldState.closestBall];
 		if (abs(ball.distance - newBall.distance) > 10 || abs(ball.angle - newBall.angle) > 5){ return DRIVEMODE_2V2_OFFENSIVE;	}
 		else{
 			std::this_thread::sleep_for(std::chrono::milliseconds(500)); //half second wait.
@@ -417,7 +417,7 @@ public:
 	GoalKeeper() : DriveInstruction("2V2_GOAL_KEEPER"){};
 
 	virtual DriveMode step(double dt){
-		auto &target = gFieldState.closestBall;
+		auto &target = gFieldState.balls[gFieldState.closestBall];
 		if (target.distance == 0.0) {
 			speed = { 0, 0, 0 };
 			m_pCom->Drive(speed.velocity, speed.heading, speed.rotation);
@@ -426,7 +426,7 @@ public:
 		if (target.distance < 35 && !gFieldState.obstacleNearBall) {
 			return DRIVEMODE_DRIVE_TO_BALL;
 		}
-		auto homeGate = gFieldState.homeGate;
+		auto homeGate = gFieldState.gates[gFieldState.homeGate];
 		double homeGateDist = homeGate.distance;
 		double gateAngle = homeGate.heading - 180 * sign0(homeGate.heading);
 		aimTarget(target, speed,2);	
@@ -456,8 +456,8 @@ public:
 	DriveMode step(double dt) {
 		if (m_pCom->BallInTribbler()) return DRIVEMODE_2V2_AIM_PARTNER;
 
-		const ObjectPosition &ball = gFieldState.closestBall;
-		const ObjectPosition &gate = gFieldState.homeGate;
+		const ObjectPosition &ball = gFieldState.balls[gFieldState.closestBall];
+		const ObjectPosition &gate = gFieldState.gates[gFieldState.homeGate];
 		double gateHeading = gate.heading;
 		double ballHeading = ball.heading;
 		double ballDistance = ball.distance;

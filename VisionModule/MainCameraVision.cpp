@@ -172,9 +172,7 @@ void MainCameraVision::FindGates(double dt) {
 			vertices[i] = blueGate[i];
 		}
 		cv::fillConvexPoly(thresholdedImages[BALL], vertices, 4, cv::Scalar::all(0));
-		localState.gates[BLUE_GATE].rawPixelCoords = blueGateCenter;
-		localState.gates[BLUE_GATE].polarMetricCoords = m_pCamera->getPolarCoordinates(blueGateCenter);
-		localState.gates[BLUE_GATE].isValid = true;
+		m_pCamera->UpdateObjectPostion(localState.gates[BLUE_GATE], blueGateCenter);
 		
 	}
 
@@ -186,9 +184,7 @@ void MainCameraVision::FindGates(double dt) {
 			vertices[i] = yellowGate[i];
 		}
 		cv::fillConvexPoly(thresholdedImages[BALL], vertices, 4, cv::Scalar::all(0));
-		localState.gates[YELLOW_GATE].rawPixelCoords = yellowGateCenter;
-		localState.gates[YELLOW_GATE].polarMetricCoords = m_pCamera->getPolarCoordinates(yellowGateCenter);
-		localState.gates[YELLOW_GATE].isValid = true;
+		m_pCamera->UpdateObjectPostion(localState.gates[YELLOW_GATE], yellowGateCenter);
 
 	}
 
@@ -231,11 +227,9 @@ void MainCameraVision::FindGates(double dt) {
 			circle(frameBGR, c1, 12, color4, -1, 12, 0);
 		}
 
-		localState.gates[BLUE_GATE].rawPixelCoords = c1;
-		localState.gates[BLUE_GATE].polarMetricCoords = m_pCamera->getPolarCoordinates(c1);
+		m_pCamera->UpdateObjectPostion(localState.gates[BLUE_GATE], c1);
+		m_pCamera->UpdateObjectPostion(localState.gates[YELLOW_GATE], c2);
 
-		localState.gates[YELLOW_GATE].rawPixelCoords = c2;
-		localState.gates[YELLOW_GATE].polarMetricCoords = m_pCamera->getPolarCoordinates(c2);
 
 		//_blueGate.updateCoordinates(c1, m_pCamera->getPolarCoordinates(c1));
 		//_yellowGate.updateCoordinates(c2, m_pCamera->getPolarCoordinates(c2));
@@ -258,12 +252,11 @@ void MainCameraVision::FindGates(double dt) {
 
 }
 void MainCameraVision::FindBalls(double dt) {
-	std::vector<cv::Point2i> balls;
+	std::vector<cv::Point2d> balls;
 	bool ballsFound = ballFinder.Locate(thresholdedImages[BALL], frameHSV, frameBGR, balls);
 	localState.ballCount = 0;
 	for (auto ball : balls) {
-		localState.balls[localState.ballCount].rawPixelCoords = ball;
-		localState.balls[localState.ballCount].polarMetricCoords = m_pCamera->getPolarCoordinates(ball);
+		m_pCamera->UpdateObjectPostion(localState.balls[localState.ballCount], ball);
 		localState.ballCount++;
 	}
 
@@ -309,8 +302,7 @@ void MainCameraVision::FindOtherRobots(double dt) {
 		auto sortFunc = [](std::pair<cv::Point2i, double> posToDis1, std::pair<cv::Point2i, double> posToDis2) { return (posToDis1.second < posToDis2.second); };
 		std::sort(positionsToDistances.begin(), positionsToDistances.end(), sortFunc);
 		if (positionsToDistances.size() > 0) {
-			localState.partner.rawPixelCoords = positionsToDistances[0].first;
-			localState.partner.polarMetricCoords = m_pCamera->getPolarCoordinates(positionsToDistances[0].first);
+			m_pCamera->UpdateObjectPostion(localState.partner, positionsToDistances[0].first);
 		}
 	}
 }

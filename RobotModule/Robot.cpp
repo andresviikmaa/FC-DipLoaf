@@ -142,12 +142,12 @@ void Robot::Run()
 
 			//m_pDisplay->putShadowedText( "border: " + std::to_string(borderDistance.distance), cv::Point(-140, 280), 0.5, cv::Scalar(255, 255, 255));
 
-			m_pDisplay->putShadowedText("Blue gate d: " + std::to_string((int)gFieldState.blueGate.distance) + " a: " + std::to_string(gFieldState.blueGate.angle - 180 * sign0(gFieldState.blueGate.angle)), cv::Point(-250, 280), 0.4, cv::Scalar(255, 255, 255));
+			m_pDisplay->putShadowedText("Blue gate d: " + std::to_string((int)gFieldState.gates[BLUE_GATE].distance) + " a: " + std::to_string(gFieldState.gates[BLUE_GATE].angle - 180 * sign0(gFieldState.gates[BLUE_GATE].angle)), cv::Point(-250, 280), 0.4, cv::Scalar(255, 255, 255));
 			//		if (pSim != NULL)
-			//			m_pDisplay->putShadowedText("Blue gate d: " + std::to_string((int)pSim->blueGate.distance) + " a: " + std::to_string(pSim->blueGate.angle), cv::Point(-250, 280), 0.4, cv::Scalar(255, 255, 255));
-			m_pDisplay->putShadowedText("Yell gate d: " + std::to_string((int)gFieldState.yellowGate.distance) + " a: " + std::to_string(gFieldState.yellowGate.angle - 180 * sign0(gFieldState.yellowGate.angle)), cv::Point(-250, 310), 0.4, cv::Scalar(255, 255, 255));
+			//			m_pDisplay->putShadowedText("Blue gate d: " + std::to_string((int)pSim->gates[BLUE_GATE].distance) + " a: " + std::to_string(pSim->gates[BLUE_GATE].angle), cv::Point(-250, 280), 0.4, cv::Scalar(255, 255, 255));
+			m_pDisplay->putShadowedText("Yell gate d: " + std::to_string((int)gFieldState.gates[YELLOW_GATE].distance) + " a: " + std::to_string(gFieldState.gates[YELLOW_GATE].angle - 180 * sign0(gFieldState.gates[YELLOW_GATE].angle)), cv::Point(-250, 310), 0.4, cv::Scalar(255, 255, 255));
 			//		if (pSim != NULL)
-			//			m_pDisplay->putShadowedText("Yell gate d: " + std::to_string((int)pSim->yellowGate.distance) + " a: " + std::to_string(pSim->yellowGate.angle), cv::Point(-250, 330), 0.4, cv::Scalar(255, 255, 255));
+			//			m_pDisplay->putShadowedText("Yell gate d: " + std::to_string((int)pSim->gates[YELLOW_GATE].distance) + " a: " + std::to_string(pSim->gates[YELLOW_GATE].angle), cv::Point(-250, 330), 0.4, cv::Scalar(255, 255, 255));
 
 			m_pDisplay->putShadowedText("Partner d: " + std::to_string((int)gFieldState.partner.distance) + " a: " + std::to_string(gFieldState.partner.angle), cv::Point(-250, 360), 0.4, cv::Scalar(255, 255, 255));
 

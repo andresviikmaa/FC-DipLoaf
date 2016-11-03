@@ -3,9 +3,6 @@
 #include "../CommonModule/ThreadedClass.h"
 #include "../CommonModule/Interfaces.h"
 #include "../CommonModule/UdpServer.h"
-#include "../VisionModule/BallLocations.h"
-#include "../VisionModule/GatePosition.h"
-#include "../VisionModule/RobotPosition.h"
 
 #include <mutex>
 
@@ -36,7 +33,7 @@ class Simulator : public ICamera, public ISerial, public ThreadedClass, public U
 		HSVColorRange GetObjectThresholds(int index, const std::string &name) {
 			return pSim->GetObjectThresholds(index, name);
 		}
-		cv::Point2d getPolarCoordinates(const cv::Point2d &pos);
+		virtual void UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos);
 		const std::string & getName() { return sName;  }
 		double getDistanceInverted(const cv::Point2d &pos, const cv::Point2d &orgin) const;
 
@@ -63,8 +60,8 @@ public:
 	bool IsReal() { return false; }
 	void Run();
 	virtual void SetTargetGate(OBJECT gate) {}
-	virtual GateLocation &GetTargetGate() { return blueGate; };
-	virtual GateLocation &GetHomeGate() { return yellowGate; };
+	virtual GatePosition &GetTargetGate() { return blueGate; };
+	virtual GatePosition &GetHomeGate() { return yellowGate; };
 	virtual bool BallInTribbler();
 	virtual void Kick(int force = 800);
 	virtual void ToggleTribbler(bool start) {
@@ -91,7 +88,7 @@ public:
 	};
 	virtual void SendPartnerMessage(const std::string message) {};
 	virtual HSVColorRange GetObjectThresholds(int index, const std::string &name);
-	virtual cv::Point2d getPolarCoordinates(const cv::Point2d &pos);
+	virtual void UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos);
 	double getDistanceInverted(const cv::Point2d &pos, const cv::Point2d &orgin) const;
 
 protected:
@@ -116,10 +113,10 @@ protected:
 	void UpdateRobotPos(double dt);
 	void UpdateBallIntTribbler(cv::Mat robotSpeed, double dt);
 	std::mutex mutex;
-	ObjectLocation robots[MAX_ROBOTS];
+	ObjectPosition robots[MAX_ROBOTS];
 	std::map<int, cv::Scalar>  colors;
 
-
+	ushort ballCount;
 	void drawRect(cv::Rect rec, int thickness, const cv::Scalar &color);
 	void drawLine(cv::Point start, cv::Point end, int thickness, CvScalar color);
 	void drawCircle(cv::Point start, int radius, int thickness, CvScalar color);
@@ -139,8 +136,8 @@ private:
 	bool ball_in_tribbler = false;
 	cv::Mat wheelSpeeds = (cv::Mat_<double>(4, 1) << 0.0, 0.0, 0.0, 0.0);
 
-	BallLocations balls;
-	GateLocation blueGate;
-	GateLocation yellowGate;
-	RobotLocation self; //Robot distance on field
+	BallPosition balls[12];
+	GatePosition blueGate;
+	GatePosition yellowGate;
+	RobotPosition self; //Robot distance on field
 };

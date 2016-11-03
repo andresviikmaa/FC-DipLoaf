@@ -14,6 +14,7 @@
 #include "../VisionModule/MainCameraVision.h"
 #include "../StateMachine/SingleModePlay.h"
 #include "../StateMachine/MultiModePlay.h"
+#include "opencv2/imgproc.hpp"
 
 namespace po = boost::program_options;
 
@@ -27,8 +28,7 @@ Simulator::Simulator(boost::asio::io_service &io, bool master, const std::string
 	mNumberOfBalls(game_mode == "master" || game_mode == "slave" ? 1 : 11)
 	, ThreadedClass("Simulator"), UdpServer(io, 31000, master)
 	, isMaster(master)
-	, balls(game_mode == "master" || game_mode == "slave" ? 1 : 11)
-	, yellowGate(YELLOW_GATE), blueGate(BLUE_GATE), self(yellowGate, blueGate, cv::Point(0, 0)),
+	, ballCount(game_mode == "master" || game_mode == "slave" ? 1 : 11),
 	m_frontCamera(this)
 {
 	srand((unsigned int) ::time(NULL));
@@ -196,16 +196,16 @@ void Simulator::UpdateGatePos() {
 	drawCircle(cv::Point(0, 0), 40, 10, colors[INNER_BORDER]);
 
 	blueGate.polarMetricCoords.x = cv::norm(self.fieldCoords - blueGate.fieldCoords);
-	blueGate.polarMetricCoords.y = 360 - angleBetween(cv::Point(0, 1), self.fieldCoords - (blueGate.fieldCoords)) + self.getAngle();
+	blueGate.polarMetricCoords.y = 360 - angleBetween(cv::Point(0, 1), self.fieldCoords - (blueGate.fieldCoords)) + self.angle;
 	yellowGate.polarMetricCoords.x = cv::norm(self.fieldCoords - yellowGate.fieldCoords);;
-	yellowGate.polarMetricCoords.y = 360 - angleBetween(cv::Point(0, 1), self.fieldCoords - (yellowGate.fieldCoords)) + self.getAngle();
+	yellowGate.polarMetricCoords.y = 360 - angleBetween(cv::Point(0, 1), self.fieldCoords - (yellowGate.fieldCoords)) + self.angle;
 
 
 	for (int s = -1; s < 2; s += 2) {
 		cv::Point2d shift1(s * 10, -20);
 		cv::Point2d shift2(s * 10, 20);
-		double a1 = angleBetween(cv::Point(0, -1), self.fieldCoords - (blueGate.fieldCoords + shift1)) + self.getAngle();
-		double a2 = angleBetween(cv::Point(0, -1), self.fieldCoords - (yellowGate.fieldCoords + shift2)) + self.getAngle();
+		double a1 = angleBetween(cv::Point(0, -1), self.fieldCoords - (blueGate.fieldCoords + shift1)) + self.angle;
+		double a2 = angleBetween(cv::Point(0, -1), self.fieldCoords - (yellowGate.fieldCoords + shift2)) + self.angle;
 
 		double d1 = getDistanceInverted(self.fieldCoords, blueGate.fieldCoords + shift1);
 		double d2 = getDistanceInverted(self.fieldCoords, yellowGate.fieldCoords + shift2);
@@ -239,7 +239,7 @@ void Simulator::UpdateBallPos(double dt) {
 			message << (int)balls[i].fieldCoords.x << " " << (int)balls[i].fieldCoords.y << " ";
 			//SendMessage(message.str());
 		}
-		double a = angleBetween(cv::Point(0, -1), self.fieldCoords - balls[i].fieldCoords) + self.getAngle();
+		double a = angleBetween(cv::Point(0, -1), self.fieldCoords - balls[i].fieldCoords) + self.angle;
 		double d = getDistanceInverted(self.fieldCoords, balls[i].fieldCoords);
 		double x = -d*sin(a / 180 * CV_PI);
 		double y = d*cos(a / 180 * CV_PI);
@@ -256,7 +256,7 @@ void Simulator::UpdateBallPos(double dt) {
 	// draw shared robots
 	for (int i = 0; i < MAX_ROBOTS; i++) {
 		if (abs(robots[i].fieldCoords.x) > 1000) continue;
-		double a = angleBetween(cv::Point(0, -1), self.fieldCoords - robots[i].fieldCoords) + self.getAngle();
+		double a = angleBetween(cv::Point(0, -1), self.fieldCoords - robots[i].fieldCoords) + self.angle;
 		double d = getDistanceInverted(self.fieldCoords, robots[i].fieldCoords);
 		double x = -d*sin(a / 180 * CV_PI);
 		double y = d*cos(a / 180 * CV_PI);
@@ -287,7 +287,7 @@ void Simulator::UpdateRobotPos(double dt) {
 	self.polarMetricCoords.y -= dr;
 	if (self.polarMetricCoords.y > 360) self.polarMetricCoords.y -= 360;
 	if (self.polarMetricCoords.y < -360) self.polarMetricCoords.y += 360;
-	cv::Mat rotMat = getRotationMatrix2D(cv::Point(0, 0), self.getAngle(), 1);
+	cv::Mat rotMat = getRotationMatrix2D(cv::Point(0, 0), self.angle, 1);
 	cv::Mat rotatedSpeed = rotMat * robotSpeed;
 	double dx = SIMULATOR_SPEED*rotatedSpeed.at<double>(0)*dt;
 	double dy = SIMULATOR_SPEED*rotatedSpeed.at<double>(1)*dt;
@@ -298,7 +298,7 @@ void Simulator::UpdateRobotPos(double dt) {
 
 	if (!isMaster && id > 0) {
 		std::stringstream message;
-		message << "POS " << id << " " << self.fieldCoords.x << " " << self.fieldCoords.y << " " << self.getAngle() << " #";
+		message << "POS " << id << " " << self.fieldCoords.x << " " << self.fieldCoords.y << " " << self.angle << " #";
 		SendMessage(message.str());
 	}
 
@@ -331,7 +331,7 @@ void Simulator::UpdateBallIntTribbler(cv::Mat robotSpeed, double dt) {
 	for (int i = 0; i < mNumberOfBalls; i++) {
 		dist = cv::norm(self.fieldCoords - balls[i].fieldCoords);
 		//std::cout << dist << std::endl;
-		if (dist < minDist /*&& (fabs(balls[i].getHeading()) < 10 || was_in_tribbler || (fabs(balls[i].getHeading()) - 90)< 1)*/) {
+		if (dist < minDist /*&& (fabs(balls[i].heading) < 10 || was_in_tribbler || (fabs(balls[i].heading) - 90)< 1)*/) {
 			minDist = dist;
 			minIndex = i;
 		}
@@ -341,7 +341,7 @@ void Simulator::UpdateBallIntTribbler(cv::Mat robotSpeed, double dt) {
 		return;
 	}
 	if (minDist < (was_in_tribbler ? 30 : 24)) {
-		ball_in_tribbler = fabs(balls[minIndex].getHeading()) < 10;
+		ball_in_tribbler = fabs(balls[minIndex].heading) < 10;
 
 		double dr = SIMULATOR_SPEED*(robotSpeed.at<double>(2)*dt);
 
@@ -354,7 +354,7 @@ void Simulator::UpdateBallIntTribbler(cv::Mat robotSpeed, double dt) {
 		balls[minIndex].fieldCoords.x = rotatedPos.at<double>(0);
 		balls[minIndex].fieldCoords.y = rotatedPos.at<double>(1);
 
-		cv::Mat rotMat = getRotationMatrix2D(cv::Point(0, 0), self.getAngle(), 1);
+		cv::Mat rotMat = getRotationMatrix2D(cv::Point(0, 0), self.angle, 1);
 		cv::Mat rotatedSpeed = rotMat * robotSpeed;
 		double dx = SIMULATOR_SPEED*rotatedSpeed.at<double>(0)*dt;
 		double dy = SIMULATOR_SPEED*rotatedSpeed.at<double>(1)*dt;
@@ -430,8 +430,8 @@ void Simulator::Drive(double fowardSpeed, double direction, double angularSpeed)
 	self.polarMetricCoords.y += angularSpeed;
 	if (self.polarMetricCoords.y > 360) self.polarMetricCoords.y -= 360;
 	if (self.polarMetricCoords.y < -360) self.polarMetricCoords.y += 360;
-	self.fieldCoords.x += (int)(fowardSpeed * sin((direction - self.getAngle()) / 180 * CV_PI));
-	self.fieldCoords.y += (int)(fowardSpeed * cos((direction - self.getAngle()) / 180 * CV_PI));
+	self.fieldCoords.x += (int)(fowardSpeed * sin((direction - self.angle) / 180 * CV_PI));
+	self.fieldCoords.y += (int)(fowardSpeed * cos((direction - self.angle) / 180 * CV_PI));
 	*/
 }
 
@@ -483,11 +483,11 @@ void Simulator::Kick(int force) {
 	}
 	if (isMaster) {
 		balls[minDistIndex].speed = force;
-		balls[minDistIndex].heading = self.getAngle();
+		balls[minDistIndex].heading = self.angle;
 
 	}
 	else {
-		SendMessage("KCK " + std::to_string(minDistIndex) + " " + std::to_string(force) + " " + std::to_string(self.getAngle()) + " #");
+		SendMessage("KCK " + std::to_string(minDistIndex) + " " + std::to_string(force) + " " + std::to_string(self.angle) + " #");
 	}
 	//balls[minDistIndex] = balls[mNumberOfBalls - 1];
 	//balls[mNumberOfBalls - 1].~BallPosition();
@@ -517,7 +517,7 @@ void Simulator::drawLine(cv::Point start, cv::Point end, int thickness, CvScalar
 	cv::Point last = { INT_MAX, INT_MAX };
 	for (int i = 0; i < it.count; i++, ++it) {
 		cv::Point xy = (it.pos() - cv::Point(dummyField.size() / 2))*SCALE;
-		double a1 = angleBetween(cv::Point(0, -1), self.fieldCoords - cv::Point2d(xy)) + self.getAngle();
+		double a1 = angleBetween(cv::Point(0, -1), self.fieldCoords - cv::Point2d(xy)) + self.angle;
 		double d1 = getDistanceInverted(self.fieldCoords, xy);
 
 		double x1 = -d1*sin(a1 / 180 * CV_PI);
@@ -560,26 +560,43 @@ HSVColorRange Simulator::GetObjectThresholds(int index, const std::string &name)
 	return{ { hsv.data[0]-5, hsv.data[0] + 5 },{ hsv.data[1] - 5, hsv.data[1] + 5 },{ hsv.data[2] - 5, hsv.data[2] +5 } };
 
 }
-cv::Point2d Simulator::getPolarCoordinates(const cv::Point2d &pos) {
+void Simulator::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos){
+
+	object.rawPixelCoords = pos;
+	if (pos.x < 0) {
+		object.isValid = false;
+		return;
+	}
 	double dist = cv::norm(pos - cameraOrgin);
-	return dist == 0 ? 0.0 : std::max(0.0, 13.13*exp(0.008 * dist));
 
 	double distanceInCm = dist == 0 ? 0.0 : std::max(0.0, 13.13*exp(0.008 * dist));
 
-	double angle = angleBetween(pos - cameraOrgin, { 0, 1 });
-	//double angle = atan((pos.y - cameraOrgin.y) / (pos.x - cameraOrgin.x)) * 180 / PI;
+	//double angle = angleBetween(pos - cameraOrgin, { 0, 1 });
+	double angle = atan((pos.y - cameraOrgin.y) / (pos.x - cameraOrgin.x)) * 180 / PI;
 	//TODO: hack to fix simulator, as 
 	if (distanceInCm < 14 && fabs(fabs(angle) - 270)<0.01)  angle = 0;
 	// flip angle alony y axis
 #ifndef VIRTUAL_FLIP
-	return{ distanceInCm, angle };
+	object.polarMetricCoords = { distanceInCm, angle };
 #else
-	return{ distanceInCm, -angle + 360 };
+	object.polarMetricCoords = { distanceInCm, -angle + 360 };
 #endif
+	object.distance = distanceInCm;
+	object.angle = object.polarMetricCoords.y;
+	if (object.angle> 0)
+		object.heading = object.angle > 180 ? object.angle - 360 : object.angle;
+	else
+		object.heading = object.angle < -180 ? object.angle + 360 : object.angle;
+
 }
 
-cv::Point2d Simulator::FrontCamera::getPolarCoordinates(const cv::Point2d &pos) {
-	return cv::Point2d(0, 0);
+
+void Simulator::FrontCamera::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos){
+	object.rawPixelCoords = pos;
+	if (pos.x < 0) {
+		object.isValid = false;
+		return;
+	}
 }
 
 double Simulator::FrontCamera::getDistanceInverted(const cv::Point2d &pos, const cv::Point2d &orgin) const {

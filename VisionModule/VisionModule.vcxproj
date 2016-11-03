@@ -139,6 +139,7 @@
   <ItemGroup>
     <ClCompile Include="BallFinder.cpp" />
     <ClCompile Include="DummyVision.cpp" />
+    <ClCompile Include="FrontCameraVision.cpp" />
     <ClCompile Include="MainCameraVision.cpp" />
     <ClCompile Include="GateFinder.cpp" />
     <ClCompile Include="ImageThresholder.cpp" />
@@ -149,6 +150,7 @@
   <ItemGroup>
     <ClInclude Include="BallFinder.h" />
     <ClInclude Include="DummyVision.h" />
+    <ClInclude Include="FrontCameraVision.h" />
     <ClInclude Include="MainCameraVision.h" />
     <ClInclude Include="GateFinder.h" />
     <ClInclude Include="ImageThresholder.h" />

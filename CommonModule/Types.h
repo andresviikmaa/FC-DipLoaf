@@ -45,8 +45,11 @@ typedef struct {
 struct ObjectPosition
 {
 	bool isValid;
+	double distance;
+	double angle;
+	double heading;
 	cv::Point2d fieldCoords = cv::Point2d(INT_MAX, INT_MAX); // (x, y) Coordinates to display objects on field by, relative to field
-	cv::Point2i rawPixelCoords; // (x, y) Raw from frame
+	cv::Point2d rawPixelCoords; // (x, y) Raw from frame
 	cv::Point2d polarMetricCoords;      // (distance, angle) Relative to robot
 };
 
@@ -54,6 +57,7 @@ struct BallPosition: public ObjectPosition
 {
 	int id;
 	bool isUpdated;
+	double speed;
 };
 struct GatePosition : public ObjectPosition
 {
