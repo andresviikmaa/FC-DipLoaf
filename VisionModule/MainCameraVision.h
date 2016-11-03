@@ -3,10 +3,7 @@
 #include "../CommonModule/ThreadedClass.h"
 #include "../CommonModule/ConfigurableModule.h"
 #include "VisionInterfaces.h"
-//#include "FieldState.h"
-#include "BallLocations.h"
-#include "RobotPosition.h"
-#include "GatePosition.h"
+#include "../CommonModule/FieldState.h"
 #include "GateFinder.h"
 #include "BallFinder.h"
 #include "RobotFinder.h"
@@ -42,19 +39,13 @@ protected:
 	VideoRecorder *videoRecorder  = NULL;
 	double time = 0;
 
-	bool _collisionWithBorder;
-	bool _collisionWithUnknown;
-	bool _obstacleNearBall;
-	cv::Point2d _collisionRange; // which directions are blocked
-	bool _gateObstructed;
+	//bool _collisionWithBorder;
+	//bool _collisionWithUnknown;
+	//bool _obstacleNearBall;
+	//cv::Point2d _collisionRange; // which directions are blocked
+	//bool _gateObstructed;
 	bool _somethingOnWay;
-	BallLocations _balls;
-	GateLocation _blueGate;
-	GateLocation _yellowGate;
-	RobotLocation _self; //Robot distance on field
-	ObjectLocation _partner;
-	BallLocations _opponents;
-	ObjectLocation _partnerHomeGate;
+	FieldState localState;
 
 
 	GateFinder blueGateFinder;
@@ -63,9 +54,10 @@ protected:
 	RobotFinder robotFinder;
 
 	void resetBallsUpdateState() {
-		for (size_t i = 0, isize = _balls.size(); i < isize; i++) {
-			_balls[i].setIsUpdated(false);
-		}
+		return;
+		//for (size_t i = 0, isize = _balls.size(); i < isize; i++) {
+		//	_balls[i].setIsUpdated(false);
+		//}
 	}
 	std::vector<cv::Point2i> notBlueGates, notYellowGates;
 

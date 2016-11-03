@@ -1,7 +1,6 @@
 #pragma once
 #include "Types.h"
 
-typedef std::vector<BallPosition> BallArray;
 class FieldState {
 public:
 	GameMode gameMode;
@@ -14,17 +13,20 @@ public:
 		double x;
 		double y;
 	} collisionRange; // which directions are blocked
-					  //BallPosition balls[number_of_balls]; //All others are distance from self and heading to it
-	BallArray balls;
-	BallPosition closestBall;
-	GatePosition blueGate;
+	ushort ballCount; // number or balls visible
+	ushort closestBall; // index to closeset ball by distance
+	ushort closestBallInFront;
+	BallPosition balls[14];
+	GatePosition gates[3]; //0 - unused 1 - BLUE_GATE, 2 -YELLOW_GATE
 	GatePosition yellowGate;
 	RobotPosition self; //Robot distance on field
 	ObjectPosition partner;
-	BallArray opponents;
-	GatePosition partnerHomeGate;
+	ObjectPosition opponents[2];
+	//GatePosition partnerHomeGate;
 	bool gateObstructed;
 	//virtual void SetTargetGate(OBJECT gate) = 0;
-	GatePosition targetGate;
-	GatePosition homeGate;
+	//GatePosition targetGate;
+	//GatePosition homeGate;
+	OBJECT targetGate;
+	OBJECT homeGate;
 };

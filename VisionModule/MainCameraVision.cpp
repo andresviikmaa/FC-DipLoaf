@@ -3,10 +3,9 @@
 
 #include <queue>          // std::priority_queue
 #include <functional>     // std::greater
-#include "kdNode2D.h"
 //#include "VideoRecorder.h"
 #include "../CommonModule/FieldState.h"
-
+#include <opencv2/imgproc.hpp>
 
 extern FieldState gFieldState;
 //extern int number_of_balls;
@@ -31,7 +30,6 @@ bool angleInRange(cv::Point2d point, cv::Point2d range) {
 }
 
 MainCameraVision::MainCameraVision(ICamera *pCamera, IDisplay *pDisplay) : ConfigurableModule("MainCameraVision")
-, _yellowGate(YELLOW_GATE), _blueGate(BLUE_GATE), _self(_yellowGate, _blueGate, cv::Point(0, 0)), _balls(11), _opponents(2)
 , thresholder(thresholdedImages, objectThresholds)
 {
 	m_pCamera = pCamera;
@@ -77,6 +75,7 @@ void MainCameraVision::captureFrames(bool start){
 }
 
 void  MainCameraVision::ProcessFrame(double dt) {
+	return;
 	frameBGR = m_pCamera->Capture();
 	ThresholdFrame();
 	CheckGateObstruction();
@@ -142,12 +141,12 @@ void MainCameraVision::CheckGateObstruction() {
 		// step 3.2
 		int count = countNonZero(thresholdedImages[SIGHT_MASK]);
 		std::cout << "obsCount: " << count << std::endl;
-		_gateObstructed = count > 900;
+		localState.gateObstructed = count > 900;
 		//cv::putText(thresholdedImages[SIGHT_MASK], osstr.str(), cv::Point(20, 20), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(255, 255, 255));
 		//cv::imshow("mmm", thresholdedImages[SIGHT_MASK]);
 	}
 	else {
-		_gateObstructed = false;
+		localState.gateObstructed = false;
 	}
 	if (greenAreaDetectionEnabled) {
 		bool notEnoughtGreen = countNonZero(thresholdedImages[FIELD]) < 640 * 120;
@@ -164,6 +163,7 @@ void MainCameraVision::FindGates(double dt) {
 	/**************************************************/
 	cv::Point2f blueGate[4], yellowGate[4];
 	cv::Point blueGateCenter, yellowGateCenter;
+
 	//Blue gate pos
 	bool blueFound = blueGateFinder.Locate(thresholdedImages[BLUE_GATE], frameHSV, frameBGR, blueGateCenter, blueGate, notBlueGates);
 	if (blueFound) {
@@ -172,6 +172,10 @@ void MainCameraVision::FindGates(double dt) {
 			vertices[i] = blueGate[i];
 		}
 		cv::fillConvexPoly(thresholdedImages[BALL], vertices, 4, cv::Scalar::all(0));
+		localState.gates[BLUE_GATE].rawPixelCoords = blueGateCenter;
+		localState.gates[BLUE_GATE].polarMetricCoords = m_pCamera->getPolarCoordinates(blueGateCenter);
+		localState.gates[BLUE_GATE].isValid = true;
+		
 	}
 
 	//Yellow gate pos
@@ -182,6 +186,10 @@ void MainCameraVision::FindGates(double dt) {
 			vertices[i] = yellowGate[i];
 		}
 		cv::fillConvexPoly(thresholdedImages[BALL], vertices, 4, cv::Scalar::all(0));
+		localState.gates[YELLOW_GATE].rawPixelCoords = yellowGateCenter;
+		localState.gates[YELLOW_GATE].polarMetricCoords = m_pCamera->getPolarCoordinates(yellowGateCenter);
+		localState.gates[YELLOW_GATE].isValid = true;
+
 	}
 
 	// ajust gate positions to ..
@@ -222,19 +230,26 @@ void MainCameraVision::FindGates(double dt) {
 			circle(frameBGR, c2, 12, color2, -1, 8, 0);
 			circle(frameBGR, c1, 12, color4, -1, 12, 0);
 		}
-		_blueGate.updateCoordinates(c1, m_pCamera->getPolarCoordinates(c1));
-		_yellowGate.updateCoordinates(c2, m_pCamera->getPolarCoordinates(c2));
 
-		_self.updateFieldCoords(cv::Point2d(0, 0), dt);
+		localState.gates[BLUE_GATE].rawPixelCoords = c1;
+		localState.gates[BLUE_GATE].polarMetricCoords = m_pCamera->getPolarCoordinates(c1);
+
+		localState.gates[YELLOW_GATE].rawPixelCoords = c2;
+		localState.gates[YELLOW_GATE].polarMetricCoords = m_pCamera->getPolarCoordinates(c2);
+
+		//_blueGate.updateCoordinates(c1, m_pCamera->getPolarCoordinates(c1));
+		//_yellowGate.updateCoordinates(c2, m_pCamera->getPolarCoordinates(c2));
+		//
+		//_self.updateFieldCoords(cv::Point2d(0, 0), dt);
 	}
-	else {
-		_self.predict(dt);
-		// calculate gates from predicted pos.
-		_blueGate.polarMetricCoords.x = cv::norm(_self.fieldCoords - _blueGate.fieldCoords);
-		_blueGate.polarMetricCoords.y = 360 - angleBetween(cv::Point(0, 1), _self.fieldCoords - (_blueGate.fieldCoords)) + _self.getAngle();
-		_yellowGate.polarMetricCoords.x = cv::norm(_self.fieldCoords - _yellowGate.fieldCoords);;
-		_yellowGate.polarMetricCoords.y = 360 - angleBetween(cv::Point(0, 1), _self.fieldCoords - (_yellowGate.fieldCoords)) + _self.getAngle();
-	}
+	//else {
+	//	_self.predict(dt);
+	//	// calculate gates from predicted pos.
+	//	_blueGate.polarMetricCoords.x = cv::norm(_self.fieldCoords - _blueGate.fieldCoords);
+	//	_blueGate.polarMetricCoords.y = 360 - angleBetween(cv::Point(0, 1), _self.fieldCoords - (_blueGate.fieldCoords)) + _self.getAngle();
+	//	_yellowGate.polarMetricCoords.x = cv::norm(_self.fieldCoords - _yellowGate.fieldCoords);;
+	//	_yellowGate.polarMetricCoords.y = 360 - angleBetween(cv::Point(0, 1), _self.fieldCoords - (_yellowGate.fieldCoords)) + _self.getAngle();
+	//}
 
 	cv::circle(thresholdedImages[FIELD], cv::Point(frameBGR.size() / 2), 70, 255, -1);
 	cv::circle(thresholdedImages[OUTER_BORDER], cv::Point(frameBGR.size() / 2), 70, 0, -1);
@@ -245,82 +260,16 @@ void MainCameraVision::FindGates(double dt) {
 void MainCameraVision::FindBalls(double dt) {
 	std::vector<cv::Point2i> balls;
 	bool ballsFound = ballFinder.Locate(thresholdedImages[BALL], frameHSV, frameBGR, balls);
-	//TODO: fix and uncomment below
-	//if (!ballsFound) {
-	//	resetBallsUpdateState();
-	//	_balls.updateAndFilterClosest(cv::Point2i(0, 0), balls, false, useKalmanFilter);
-	//	balls.push_back(_balls.closest.filteredRawCoords);
-	//}
-	std::sort(balls.begin(), balls.end(), [](cv::Point2d a, cv::Point2d b)
-	{
-		return cv::norm(a) < cv::norm(b);
-	});
-	// validate balls
-	bool ballOk;
-
-	cv::Point2i possibleClosest;
-	cv::Point2i theClosest = balls.size()>0 ? balls[0] : cv::Point2i(0, 0);
-
+	localState.ballCount = 0;
 	for (auto ball : balls) {
-		possibleClosest = ball;
-		ballOk = BallFinder::validateBall(thresholdedImages, ball, frameHSV, frameBGR);
-		if (ballOk && _collisionWithBorder) {
-			if (angleInRange(ball, _collisionRange)) {
-				ballOk = false;
-			};
-		}
-		if (ballOk) {
-			break;
-		}
-		else {
-			cv::Rect bounding_rect = cv::Rect(possibleClosest - cv::Point(20, 20) + cv::Point(frameBGR.size() / 2),
-				possibleClosest + cv::Point(20, 20) + cv::Point(frameBGR.size() / 2));
-			if (!hideUseless)
-				rectangle(frameBGR, bounding_rect.tl(), bounding_rect.br(), cv::Scalar(255, 0, 255), 2, 8, 0);
-		}
-	}
-
-	//TODO: fix and uncomment below
-	//if (ballsFound) {
-	//	resetBallsUpdateState();
-	//	_balls.updateAndFilterClosest(possibleClosest, balls, possibleClosest != theClosest, useKalmanFilter);
-	//}
-
-	if (!hideUseless) {
-		cv::Rect bounding_rect = cv::Rect(
-			(useKalmanFilter ? _balls.closest.filteredRawCoords : possibleClosest) - cv::Point(20, 20) + cv::Point(frameBGR.size() / 2),
-			(useKalmanFilter ? _balls.closest.filteredRawCoords : possibleClosest) + cv::Point(20, 20) + cv::Point(frameBGR.size() / 2)
-		);
-		rectangle(frameBGR, bounding_rect.tl(), bounding_rect.br(), cv::Scalar(255, 0, 0), 2, 8, 0);
-	}
-
-
-	// check if air is clear around ball
-	if (detectObjectsNearBall) {
-
-		cv::bitwise_or(thresholdedImages[INNER_BORDER], thresholdedImages[FIELD], thresholdedImages[FIELD]);
-
-		//cv::bitwise_or(thresholdedImages[BALL], thresholdedImages[FIELD], thresholdedImages[FIELD]);
-		cv::Rect bigAreaAroundBall = cv::Rect(_balls.closest.filteredRawCoords - cv::Point(50, 50) + cv::Point(frameBGR.size() / 2),
-			_balls.closest.filteredRawCoords + cv::Point(50, 50) + cv::Point(frameBGR.size() / 2));
-		try {
-			cv::Mat roiField(thresholdedImages[FIELD], bigAreaAroundBall);
-			//std::cout << cv::countNonZero(roiField) << std::endl;
-			bool cb = cv::countNonZero(roiField) < 9000/*tune this*/;
-			if (!hideUseless)
-				rectangle(frameBGR, bigAreaAroundBall.tl(), bigAreaAroundBall.br(), cv::Scalar(255, 50, cb ? 255 : 50), 2, 8, 0);
-			_obstacleNearBall = cb;
-		}
-		catch (...) {
-			//std::cout << "ball is near image border!" << std::endl;
-			//std::cout << _balls.closest.filteredRawCoords << std::endl;
-			//std::cout << bigAreaAroundBall << std::endl;
-			_obstacleNearBall = true;
-		}
+		localState.balls[localState.ballCount].rawPixelCoords = ball;
+		localState.balls[localState.ballCount].polarMetricCoords = m_pCamera->getPolarCoordinates(ball);
+		localState.ballCount++;
 	}
 
 }
 void MainCameraVision::FindOtherRobots(double dt) {
+	
 	if (detectOtherRobots) {
 
 		std::vector<cv::Point2i> robots;
@@ -360,22 +309,15 @@ void MainCameraVision::FindOtherRobots(double dt) {
 		auto sortFunc = [](std::pair<cv::Point2i, double> posToDis1, std::pair<cv::Point2i, double> posToDis2) { return (posToDis1.second < posToDis2.second); };
 		std::sort(positionsToDistances.begin(), positionsToDistances.end(), sortFunc);
 		if (positionsToDistances.size() > 0) {
-			_partner.updateCoordinates(positionsToDistances[0].first, m_pCamera->getPolarCoordinates(positionsToDistances[0].first));
+			localState.partner.rawPixelCoords = positionsToDistances[0].first;
+			localState.partner.polarMetricCoords = m_pCamera->getPolarCoordinates(positionsToDistances[0].first);
 		}
-		else {
-			_partner.updateCoordinates(cv::Point(-1, -1), cv::Point(0, 0));
-		}
-		if (!hideUseless)
-			circle(frameBGR, _partner.rawPixelCoords, 10, cv::Scalar(0, 0, 255), 2, 8, 0);
-	}
-	else {
-		_partner.updateCoordinates(cv::Point(-1, -1), cv::Point(0, 0));
 	}
 }
 void MainCameraVision::CheckCollisions() {
 	if (borderCollisonEnabled || fieldCollisonEnabled) {
-		bool wasCollisionWithBorder = _collisionWithBorder;
-	bool wasCollisionWithUnknown = _collisionWithUnknown;
+		bool wasCollisionWithBorder = localState.collisionWithBorder;
+	bool wasCollisionWithUnknown = localState.collisionWithUnknown;
 	// mask ourself
 	//cv::circle(frameBGR, cv::Point(frameBGR.size() / 2), 70, 255, -1);
 	cv::bitwise_or(thresholdedImages[INNER_BORDER], thresholdedImages[FIELD], thresholdedImages[FIELD]);
@@ -384,7 +326,7 @@ void MainCameraVision::CheckCollisions() {
 	//			cv::bitwise_or(thresholdedImages[FIELD], thresholdedImages[YELLOW_GATE], thresholdedImages[FIELD]);
 	//imshow("a", thresholdedImages[FIELD]);
 	//cv::waitKey(1);
-	_collisionRange = { -1, -1 };
+	localState.collisionRange = { -1, -1 };
 	bool collisionWithBorder = false;
 	bool collisonWithUnknown = false;
 
@@ -407,14 +349,14 @@ void MainCameraVision::CheckCollisions() {
 		//}
 		if (cb || cu) {
 			if (!collisionWithBorder) {// no previous collison
-				_collisionRange.x = c * 90. - 180;
-				_collisionRange.y = c * 90. - 90;
+				localState.collisionRange.x = c * 90. - 180;
+				localState.collisionRange.y = c * 90. - 90;
 			}
-			else if (_collisionRange.y + 90. < c*90. - 90.) {
-				_collisionRange.x = c * 90. - 180;
+			else if (localState.collisionRange.y + 90. < c*90. - 90.) {
+				localState.collisionRange.x = c * 90. - 180;
 			}
 			else {
-				_collisionRange.y = c * 90. - 90;
+				localState.collisionRange.y = c * 90. - 90;
 			}
 			collisionWithBorder |= cb;
 			collisonWithUnknown |= cu;
@@ -430,12 +372,12 @@ void MainCameraVision::CheckCollisions() {
 		}
 		//std::cout << "coll b: " << cv::countNonZero(roiOuterBorder) << std::endl;
 	}
-	_collisionWithBorder = collisionWithBorder;
-	_collisionWithUnknown = collisonWithUnknown;
+	localState.collisionWithBorder = collisionWithBorder;
+	localState.collisionWithUnknown = collisonWithUnknown;
 }
 		else {
-			_collisionWithBorder = false;
-			_collisionWithUnknown = false;
+			localState.collisionWithBorder = false;
+			localState.collisionWithUnknown = false;
 		}
 
 }

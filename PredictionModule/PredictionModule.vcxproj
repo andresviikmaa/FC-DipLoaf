@@ -19,9 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{F82D0056-53CD-42BE-B3F3-E529AE56F929}</ProjectGuid>
+    <ProjectGuid>{4DD524A2-CFC0-4BF7-B251-9DD700078CAB}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>VisionModule</RootNamespace>
+    <RootNamespace>PredictionModule</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -134,36 +134,27 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BallLocations.cpp" />
+    <ClCompile Include="BallPosition.cpp" />
+    <ClCompile Include="GatePosition.cpp" />
+    <ClCompile Include="KalmanFilter.cpp" />
+    <ClCompile Include="kdNode2D.cpp" />
+    <ClCompile Include="ObjectPosition.cpp" />
+    <ClCompile Include="RobotPosition.cpp" />
+    <ClCompile Include="TargetPosition.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BallLocations.h" />
+    <ClInclude Include="BallPosition.h" />
+    <ClInclude Include="GatePosition.h" />
+    <ClInclude Include="KalmanFilter.h" />
+    <ClInclude Include="kdNode2D.h" />
+    <ClInclude Include="ObjectPosition.h" />
+    <ClInclude Include="RobotPosition.h" />
+    <ClInclude Include="TargetPosition.h" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="BallFinder.cpp" />
-    <ClCompile Include="DummyVision.cpp" />
-    <ClCompile Include="MainCameraVision.cpp" />
-    <ClCompile Include="GateFinder.cpp" />
-    <ClCompile Include="ImageThresholder.cpp" />
-    <ClCompile Include="ObjectFinder.cpp" />
-    <ClCompile Include="RobotFinder.cpp" />
-    <ClCompile Include="SimpleImageThresholder.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="BallFinder.h" />
-    <ClInclude Include="DummyVision.h" />
-    <ClInclude Include="MainCameraVision.h" />
-    <ClInclude Include="GateFinder.h" />
-    <ClInclude Include="ImageThresholder.h" />
-    <ClInclude Include="ObjectFinder.h" />
-    <ClInclude Include="ParallelImageThresholder.h" />
-    <ClInclude Include="RobotFinder.h" />
-    <ClInclude Include="SimpleImageThresholder.h" />
-    <ClInclude Include="TBBImageThresholder.h" />
-    <ClInclude Include="ThreadedImageThresholder.h" />
-    <ClInclude Include="VisionInterfaces.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CommonModule\CommonModule.vcxproj">
-      <Project>{38231cb7-5801-4469-9397-43287e40625b}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

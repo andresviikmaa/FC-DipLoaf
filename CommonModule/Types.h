@@ -2,6 +2,7 @@
 #define PI 3.14159265
 #define TAU (2*PI)
 #include <vector>
+#include <opencv2/core.hpp>
 
 struct ColorRange
 {
@@ -43,11 +44,10 @@ typedef struct {
 
 struct ObjectPosition
 {
-	double distance;
-	double angle;
-	double heading;
-	double fieldX;
-	double fieldY;
+	bool isValid;
+	cv::Point2d fieldCoords = cv::Point2d(INT_MAX, INT_MAX); // (x, y) Coordinates to display objects on field by, relative to field
+	cv::Point2i rawPixelCoords; // (x, y) Raw from frame
+	cv::Point2d polarMetricCoords;      // (distance, angle) Relative to robot
 };
 
 struct BallPosition: public ObjectPosition
@@ -57,8 +57,7 @@ struct BallPosition: public ObjectPosition
 };
 struct GatePosition : public ObjectPosition
 {
-	Point minCornerPolarCoords;
-	Point polarMetricCoords;
+	cv::Point2d minCornerPolarCoords;
 };
 struct RobotPosition : public ObjectPosition
 {
