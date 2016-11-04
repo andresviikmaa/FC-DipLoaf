@@ -31,6 +31,9 @@ Simulator::Simulator(boost::asio::io_service &io, bool master, const std::string
 	, ballCount(game_mode == "master" || game_mode == "slave" ? 1 : 11),
 	m_frontCamera(this)
 {
+	blueGate.fieldCoords = cv::Point(0, 230);	
+	yellowGate.fieldCoords = cv::Point(0, -230);
+
 	srand((unsigned int) ::time(NULL));
 	/*
 	wheelSpeeds.push_back({ 0, 0 });
@@ -199,7 +202,8 @@ void Simulator::UpdateGatePos() {
 	blueGate.polarMetricCoords.y = 360 - angleBetween(cv::Point(0, 1), self.fieldCoords - (blueGate.fieldCoords)) + self.angle;
 	yellowGate.polarMetricCoords.x = cv::norm(self.fieldCoords - yellowGate.fieldCoords);;
 	yellowGate.polarMetricCoords.y = 360 - angleBetween(cv::Point(0, 1), self.fieldCoords - (yellowGate.fieldCoords)) + self.angle;
-
+	SYNC_OBJECT(blueGate);
+	SYNC_OBJECT(yellowGate);
 
 	for (int s = -1; s < 2; s += 2) {
 		cv::Point2d shift1(s * 10, -20);
@@ -248,6 +252,7 @@ void Simulator::UpdateBallPos(double dt) {
 		if (a > 360) a -= 360;
 		if (a < 0) a += 360;
 		balls[i].polarMetricCoords.y = a;
+		SYNC_OBJECT(balls[i]);
 		cv::circle(frame, cv::Point(x, y) + cv::Point(frame.size() / 2), 12, colors[BALL], -1);
 	}
 	if (isMaster) {
@@ -271,7 +276,11 @@ void Simulator::UpdateBallPos(double dt) {
 			message << i << " " << (int)robots[i].fieldCoords.x << " " << (int)robots[i].fieldCoords.y << " ";
 		}
 	}
-	if (isMaster) {
+	double t2 = (double)cv::getTickCount();
+	double dt2 = (t2 - state_time) / cv::getTickFrequency();
+
+	if (isMaster && dt2 > 0.1) {
+		state_time = t2;
 		message << " 99 0 0 #";
 		SendMessage(message.str());
 	}
@@ -294,7 +303,7 @@ void Simulator::UpdateRobotPos(double dt) {
 
 	self.fieldCoords.x += dx;
 	self.fieldCoords.y -= dy;
-
+	SYNC_OBJECT(self);
 
 	if (!isMaster && id > 0) {
 		std::stringstream message;
@@ -581,13 +590,15 @@ void Simulator::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &
 #else
 	object.polarMetricCoords = { distanceInCm, -angle + 360 };
 #endif
+	SYNC_OBJECT(object);
+	/*
 	object.distance = distanceInCm;
 	object.angle = object.polarMetricCoords.y;
 	if (object.angle> 0)
 		object.heading = object.angle > 180 ? object.angle - 360 : object.angle;
 	else
 		object.heading = object.angle < -180 ? object.angle + 360 : object.angle;
-
+*/
 }
 
 

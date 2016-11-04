@@ -68,6 +68,13 @@ struct RobotPosition : public ObjectPosition
 
 };
 
+#define SYNC_OBJECT(object) object.distance =  object.polarMetricCoords.x; \
+object.angle = object.polarMetricCoords.y;	\
+if (object.angle> 0) \
+	object.heading = object.angle > 180 ? object.angle - 360 : object.angle; \
+else \
+	object.heading = object.angle < -180 ? object.angle + 360 : object.angle; 
+
 //for conf file
 const int ID_COM = 1;
 const int ID_REF = 2;

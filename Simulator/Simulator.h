@@ -126,8 +126,9 @@ private:
 	int frames = 0;
 	double fps;
 	bool tribblerRunning = false;
-	double time = 0;
-	double time2 = 0;
+	double time = (double)cv::getTickCount();
+	double time2 = (double)cv::getTickCount();
+	double state_time = (double)cv::getTickCount();
 	bool isMaster = false;
 	bool isMasterPresent = false;
 	int id = -1;

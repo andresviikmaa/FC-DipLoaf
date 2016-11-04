@@ -75,7 +75,6 @@ void MainCameraVision::captureFrames(bool start){
 }
 
 void  MainCameraVision::ProcessFrame(double dt) {
-	return;
 	frameBGR = m_pCamera->Capture();
 	ThresholdFrame();
 	CheckGateObstruction();
