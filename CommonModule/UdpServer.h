@@ -20,6 +20,7 @@ protected:
 
 	virtual void MessageReceived(const std::string & message){};
 	void SendMessage(const std::string &message);
+	void SendData(const char * data, size_t size);
 private:
 	boost::asio::ip::udp::socket recv_socket;
 	boost::asio::ip::udp::socket broadcast_socket;

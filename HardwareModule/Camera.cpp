@@ -206,17 +206,17 @@ HSVColorRange Camera::GetObjectThresholds(int index, const std::string &name) {
 
 }
 void Camera::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos) {
-	object.rawPixelCoords = pos;
+	object.rawPixelCoords = pos - cameraOrgin;
 	if (pos.x < 0) {
 		object.isValid = false;
 		return;
 	}
-	double dist = cv::norm(pos - cameraOrgin);
+	double dist = cv::norm(object.rawPixelCoords);
 
 	double distanceInCm = dist == 0 ? 0.0 : std::max(0.0, 13.13*exp(0.008 * dist));
 	
 	//double angle = angleBetween(pos - cameraOrgin, { 0, 1 });
-	double angle = atan((pos.y - cameraOrgin.y) / (pos.x - cameraOrgin.x)) * 180 / PI;
+	double angle = atan((object.rawPixelCoords.y) / (object.rawPixelCoords.x)) * 180 / PI;
 	//TODO: hack to fix simulator, as 
 	if (distanceInCm < 14 && fabs(fabs(angle) - 270)<0.01)  angle = 0;
 	// flip angle alony y axis
@@ -231,5 +231,5 @@ void Camera::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos
 		object.heading = object.angle > 180 ? object.angle - 360 : object.angle;
 	else
 		object.heading = object.angle < -180 ? object.angle + 360 : object.angle;
-
+	object.isValid = true;
 }

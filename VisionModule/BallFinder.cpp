@@ -25,13 +25,13 @@ bool BallFinder::Locate(cv::Mat &imgThresholded, cv::Mat &frameHSV, cv::Mat &fra
 			std::cout << "Image thresholding has failed" << std::endl;
 			return false;
 		}
-		cv::Mat dst(imgThresholded.rows, imgThresholded.cols, CV_8U, cv::Scalar::all(0));
+		//cv::Mat dst(imgThresholded.rows, imgThresholded.cols, CV_8U, cv::Scalar::all(0));
 
 		std::vector<std::vector<cv::Point>> contours; // Vector for storing contour
 		std::vector<cv::Vec4i> hierarchy;
 
-		cv::Scalar blackColor(0, 0, 0);
-		cv::Scalar whiteColor(255, 255, 255);
+		//cv::Scalar blackColor(0, 0, 0);
+		//cv::Scalar whiteColor(255, 255, 255);
 		cv::Scalar redColor(0, 0, 255);
 
 		cv::findContours(imgThresholded, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE); // Find the contours in the image
@@ -40,16 +40,16 @@ bool BallFinder::Locate(cv::Mat &imgThresholded, cv::Mat &frameHSV, cv::Mat &fra
 			return false;
 		}
 		int ballsUpdatedCount = 0;
-		cv::Point2d frameCenter = cv::Point2d(frameHSV.size()) / 2;
+		//cv::Point2d frameCenter = cv::Point2d(frameHSV.size()) / 2;
 	
 		for (unsigned int i = 0; i < contours.size(); i++)
 		{
 			int ballArea = (int)(cv::contourArea(contours[i], false));
 			if (ballArea >= smallestBallArea) {
 				cv::Moments M = cv::moments(contours[i]);
-				//cv::Rect bounding_rect = cv::boundingRect(contours[i]);
-				//rectangle(frameBGR, bounding_rect.tl(), bounding_rect.br(), redColor, 1, 8, 0);
-				try{objectCoords.push_back(cv::Point2d((M.m10 / M.m00), (M.m01 / M.m00)) - frameCenter);}
+				cv::Rect bounding_rect = cv::boundingRect(contours[i]);
+				rectangle(frameBGR, bounding_rect.tl(), bounding_rect.br(), redColor, 1, 8, 0);
+				try{objectCoords.push_back(cv::Point2d((M.m10 / M.m00), (M.m01 / M.m00)) /*- frameCenter*/);}
 				catch(cv::Exception ex){return false;}
 				ballsUpdatedCount++;
 			}

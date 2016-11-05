@@ -55,7 +55,7 @@ struct ObjectPosition
 
 struct BallPosition: public ObjectPosition
 {
-	int id;
+	uchar id;
 	bool isUpdated;
 	double speed;
 };
@@ -82,13 +82,13 @@ const int ID_REF = 2;
 //for actual ID info is sent to
 const int ID_MAIN_BOARD = 5;
 
-enum OBJECT
+enum OBJECT: uchar
 {
-	BALL = 0, BLUE_GATE, YELLOW_GATE, FIELD, INNER_BORDER, OUTER_BORDER, NUMBER_OF_OBJECTS, SIGHT_MASK
+	BLUE_GATE = 0, YELLOW_GATE, BALL, FIELD, INNER_BORDER, OUTER_BORDER, NUMBER_OF_OBJECTS, SIGHT_MASK
 };
 
 
-enum GameMode {
+enum GameMode : uchar {
 	//		GAME_MODE_STOPED = 0,
 	GAME_MODE_START_SINGLE_PLAY = 0,
 
@@ -127,7 +127,7 @@ enum GameMode {
 	GAME_MODE_IN_PROGRESS,
 	GAME_MODE_TAKE_BALL, // other robot passed pall
 };
-enum RobotColor {
+enum RobotColor : uchar {
 	ROBOT_COLOR_YELLOW_UP = 0,
 	ROBOT_COLOR_BLUE_UP
 };

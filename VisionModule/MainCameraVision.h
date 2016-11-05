@@ -13,7 +13,7 @@
 #include "TBBImageThresholder.h"
 class VideoRecorder;
 class MainCameraVision :
-	public ConfigurableModule, public IVisionModule
+	public ConfigurableModule, public IVisionModule, public ThreadedClass
 {
 protected:
 	ICamera *m_pCamera;
@@ -46,7 +46,9 @@ protected:
 	//bool _gateObstructed;
 	bool _somethingOnWay;
 	FieldState localState;
-
+	FieldState localStateCopy;
+	bool stateUpdated = false;
+	bool m_bEnabled = false;
 
 	GateFinder blueGateFinder;
 	GateFinder yellowGateFinder;
@@ -71,10 +73,16 @@ protected:
 	void FindOtherRobots(double dt);
 
 public:
+	boost::mutex state_mutex;
 	MainCameraVision(ICamera * pCamera, IDisplay *pDisplay);
 	virtual ~MainCameraVision();
 	void ProcessFrame(double dt);
+	void PublishState();
+	virtual void Enable(bool enable) {
+		m_bEnabled = enable;
+	}
 	void Start();
+	void Run();
 	const cv::Mat & GetFrame() { return m_pCamera->Capture();  }
 	bool captureFrames();
 	void captureFrames(bool start);

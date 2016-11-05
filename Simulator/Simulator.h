@@ -114,7 +114,7 @@ protected:
 	void UpdateBallIntTribbler(cv::Mat robotSpeed, double dt);
 	std::mutex mutex;
 	ObjectPosition robots[MAX_ROBOTS];
-	std::map<int, cv::Scalar>  colors;
+	std::map<uchar, cv::Scalar>  colors;
 
 	ushort ballCount;
 	void drawRect(cv::Rect rec, int thickness, const cv::Scalar &color);

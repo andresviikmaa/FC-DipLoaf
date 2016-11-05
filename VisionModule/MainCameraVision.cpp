@@ -6,6 +6,7 @@
 //#include "VideoRecorder.h"
 #include "../CommonModule/FieldState.h"
 #include <opencv2/imgproc.hpp>
+#include <opencv2/highgui.hpp>
 
 extern FieldState gFieldState;
 //extern int number_of_balls;
@@ -29,7 +30,7 @@ bool angleInRange(cv::Point2d point, cv::Point2d range) {
 	}
 }
 
-MainCameraVision::MainCameraVision(ICamera *pCamera, IDisplay *pDisplay) : ConfigurableModule("MainCameraVision")
+MainCameraVision::MainCameraVision(ICamera *pCamera, IDisplay *pDisplay) : ConfigurableModule("MainCameraVision"), ThreadedClass("MainCameraVision")
 , thresholder(thresholdedImages, objectThresholds)
 {
 	m_pCamera = pCamera;
@@ -73,9 +74,31 @@ void MainCameraVision::captureFrames(bool start){
 //		videoRecorder->Stop();
 //	}
 }
-
+void MainCameraVision::Run() {
+	while (!stop_thread) {
+		frameBGR = m_pCamera->Capture();
+		if (m_bEnabled) {
+			ProcessFrame(0);
+			{
+				boost::mutex::scoped_lock lock(state_mutex); //allow one command at a time
+				memcpy(&localStateCopy, &localState, sizeof(FieldState));
+				stateUpdated = true;
+			}
+		}
+		else {
+			;//sleep
+			Sleep(10);
+		}
+	}
+}
+void MainCameraVision::PublishState() {
+	boost::mutex::scoped_lock lock(state_mutex); //allow one command at a time
+	if (stateUpdated) {
+		memcpy(&gFieldState, &localStateCopy, sizeof(FieldState));
+		stateUpdated = false;
+	}
+}
 void  MainCameraVision::ProcessFrame(double dt) {
-	frameBGR = m_pCamera->Capture();
 	ThresholdFrame();
 	CheckGateObstruction();
 	FindGates(dt);
@@ -107,6 +130,7 @@ void MainCameraVision::ThresholdFrame() {
 	/**************************************************/
 
 	thresholder.Start(frameHSV, { BALL, BLUE_GATE, YELLOW_GATE, FIELD, INNER_BORDER, OUTER_BORDER });
+
 
 
 }
@@ -165,6 +189,9 @@ void MainCameraVision::FindGates(double dt) {
 
 	//Blue gate pos
 	bool blueFound = blueGateFinder.Locate(thresholdedImages[BLUE_GATE], frameHSV, frameBGR, blueGateCenter, blueGate, notBlueGates);
+	localState.gates[BLUE_GATE].isValid = false;
+	localState.gates[YELLOW_GATE].isValid = false;
+
 	if (blueFound) {
 		cv::Point vertices[4];
 		for (int i = 0; i < 4; ++i) {
@@ -258,6 +285,10 @@ void MainCameraVision::FindBalls(double dt) {
 		m_pCamera->UpdateObjectPostion(localState.balls[localState.ballCount], ball);
 		localState.ballCount++;
 	}
+	//if (localState.ballCount > 11) {
+	//	cv::imshow("err", frameBGR);
+	//	cv::waitKey(0);
+	//}
 
 }
 void MainCameraVision::FindOtherRobots(double dt) {
@@ -378,6 +409,7 @@ void MainCameraVision::Start() {
 		for (int i = 0; i < NUMBER_OF_OBJECTS; i++) {
 			objectThresholds[(OBJECT)i] = m_pCamera->GetObjectThresholds(i, OBJECT_LABELS[(OBJECT)i]);
 		}
+		ThreadedClass::Start();
 	}
 	catch (...){
 		std::cout << "Calibration data is missing!" << std::endl;

@@ -2,6 +2,8 @@
 #include "../CommonModule/Interfaces.h"
 #include <atomic>
 #include <boost/thread/mutex.hpp>
+#include "../CommonModule/UdpServer.h"
+#include <boost/asio.hpp>
 
 enum STATE
 {
@@ -22,7 +24,7 @@ enum STATE
 	STATE_END_OF_GAME /* leave this last*/
 };
 
-class Robot {
+class Robot: public UdpServer {
 private:
 	IVisionModule *m_pVision = NULL;
 	ICommunicationModule *m_pComModule = NULL;
@@ -47,10 +49,10 @@ protected:
 	std::atomic_bool autoPilotEnabled;
 	std::string play_mode = "single";
 //	SimpleSerial *serialPort;
-
+	boost::asio::io_service &io;
 public:
-    Robot(ICamera *pMainCamera, ICamera *pFrontCamera, ISerial*, IDisplay*);
-	bool Launch(const std::string & play_mode);
+    Robot(boost::asio::io_service &io, ICamera *pMainCamera, ICamera *pFrontCamera, ISerial*, IDisplay*, bool master);
+	bool Launch(const std::string &play_mode);
 	~Robot();
 
     int GetState() {
@@ -64,4 +66,5 @@ public:
         state = new_state;
     }
 	void RunCaptureTest();
+	void SendFieldState();
 };

@@ -44,7 +44,8 @@ boost::asio::ip::address brdc_addr = boost::asio::ip::address::from_string("127.
 
 #endif
 
-Robot::Robot(ICamera *pMainCamera, ICamera *pFrontCamera, ISerial* pSerial, IDisplay*pDisplay)
+Robot::Robot(boost::asio::io_service &io, ICamera *pMainCamera, ICamera *pFrontCamera, ISerial* pSerial, IDisplay*pDisplay, bool master)
+	: io(io), UdpServer(io, 30000, master)
 {
 	m_pVision = new MainCameraVision(pMainCamera, pDisplay);
 	m_pDisplay = pDisplay;
@@ -52,6 +53,7 @@ Robot::Robot(ICamera *pMainCamera, ICamera *pFrontCamera, ISerial* pSerial, IDis
 
 	assert(OBJECT_LABELS.size() == NUMBER_OF_OBJECTS);
 	autoPilotEnabled = false;
+	gFieldState.stateSize = sizeof(FieldState);
 
 }
 Robot::~Robot()
@@ -73,6 +75,12 @@ bool Robot::Launch(const std::string &play_mode)
 
 	return true;
 }
+void Robot::SendFieldState() {
+
+	const char * pData = reinterpret_cast<const char*>(&gFieldState);
+	SendData(pData, sizeof FieldState);
+
+}
 
 void Robot::Run()
 {
@@ -80,16 +88,29 @@ void Robot::Run()
 
 
 	std::stringstream subtitles;
+	double fps = 0.;
+	size_t counter = 0;
 	try {
+		m_pVision->Enable(true);
 		while (true)
 		{
 			double t2 = (double)cv::getTickCount();
 			double dt = (t2 - t1) / cv::getTickFrequency();
-			t1 = t2;
+			if (counter > 10) {
+				fps = (double)counter / dt;
+				t1 = t2;
+				counter = 0;
+			}
+			counter++;
 
-			m_pVision->ProcessFrame(dt);
+			m_pVision->PublishState();
 			m_pComModule->ProcessCommands();
 			m_pAutoPilot->Step(dt);
+
+			//io.reset();
+			//io.poll_one();
+
+			SendFieldState();
 
 			subtitles.str("");
 			//subtitles << oss.str();
@@ -99,7 +120,8 @@ void Robot::Run()
 			//	subtitles << "|" << "WARNING: Serial not connected!";
 			//} 
 
-			m_pDisplay->putShadowedText("fps: " + std::to_string(m_pVision->GetCamera()->GetFPS()), cv::Point(-140, 20), 0.5, cv::Scalar(255, 255, 255));
+			m_pDisplay->putShadowedText("clock: " + std::to_string(fps), cv::Point(-140, 20), 0.5, cv::Scalar(255, 255, 255));
+			m_pDisplay->putShadowedText("fps cam1: " + std::to_string(m_pVision->GetCamera()->GetFPS()), cv::Point(-140, 40), 0.5, cv::Scalar(255, 255, 255));
 			//assert(STATE_END_OF_GAME != state);
 			m_pDisplay->putShadowedText(std::string("running: ") + (gFieldState.isPlaying ? "yes" : "no"), cv::Point(-140, 460), 0.5, cv::Scalar(255, 255, 255));
 			//m_pDisplay->putShadowedText( std::string("Ball:") + (ballPos.distance > 0 ? "yes" : "no"), cv::Point(-140, 60), 0.5, cv::Scalar(255, 255, 255));
@@ -123,13 +145,13 @@ void Robot::Run()
 			const BallPosition &ballp = gFieldState.balls.getClosest(true);
 			m_pDisplay->putShadowedText(std::string("Ball'")+ ": " + std::to_string(ballp.polarMetricCoords.x) + " : " + std::to_string(ballp.getHeading()), cv::Point(-250, 160), 0.4, cv::Scalar(255, 255, 255));
 			*/
-			/*
-			for (int i = 0; i < gFieldState.balls.size(); i++) {
+			
+			for (int i = 0; i < gFieldState.ballCount; i++) {
 
 				BallPosition &ball = gFieldState.balls[i];
-				m_pDisplay->putShadowedText( std::string("Ball") + std::to_string(i) + ": "+ std::to_string(ball.polarMetricCoords.x) + " : " + std::to_string(ball.polarMetricCoords.y), cv::Point(-250, i * 15 + 10), 0.3, cv::Scalar(255, 255, 255));
+				m_pDisplay->putShadowedText( std::string("Ball") + std::to_string(i) + ": "+ std::to_string(ball.rawPixelCoords.x) + " : " + std::to_string(ball.rawPixelCoords.y), cv::Point(-250, i * 15 + 10), 0.3, cv::Scalar(255, 255, 255));
 			}
-			*/
+			
 			//std::stringstream ss;
 			//ss.precision(3);
 			//ss << "robot x:" << gFieldState.self.gFieldStateCoords.x<< " y: "<<gFieldState.self.gFieldStateCoords.y<< " r: " << gFieldState.self.angle;
@@ -177,6 +199,7 @@ void Robot::Run()
 			}
 			*/
 			//		frames++;
+			//Sleep(10);
 
 		}
 	}

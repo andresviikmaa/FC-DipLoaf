@@ -1,4 +1,5 @@
 #include "UdpServer.h"
+#include <iostream>
 extern boost::asio::ip::address bind_addr;
 extern boost::asio::ip::address brdc_addr;
 
@@ -35,7 +36,7 @@ void UdpServer::handle_receive(const boost::system::error_code& error,
 	if (!error || error == boost::asio::error::message_size)
 	{
 		std::string message = std::string(recv_buffer_.begin(), recv_buffer_.end());
-		//std::cout << "udp packet:" << message << std::endl;
+		std::cout << "udp packet:" << message << std::endl;
 		MessageReceived(message);
 		/*
 		boost::shared_ptr<std::string> message(
@@ -65,4 +66,13 @@ void UdpServer::SendMessage(const std::string &message){
 		boost::bind(&UdpServer::handle_send, this, x,
 		boost::asio::placeholders::error,
 		boost::asio::placeholders::bytes_transferred));
+}
+
+void UdpServer::SendData(const char * data, size_t size) {
+	boost::shared_ptr<std::string> x(
+		new std::string("binary data"));
+	broadcast_socket.async_send_to(boost::asio::buffer(data, size), broadcast_endpoint,
+		boost::bind(&UdpServer::handle_send, this, x,
+			boost::asio::placeholders::error,
+			boost::asio::placeholders::bytes_transferred));
 }

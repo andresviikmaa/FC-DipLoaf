@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 		("skip-ports", "skip ALL COM port checks")
 		("skip-missing-ports", "skip missing COM ports")
 		("save-frames", "Save captured frames to disc")
-		("simulator-mode", po::value<std::string>(), "Play mode: single, opponent, master, slave")
+		("simulator-mode", po::value<std::string>(), "Play mode: single1, single2, opponent, master, slave")
 		("play-mode", po::value<std::string>(), "Play mode: single, opponent, master, slave")
 		("twitter-port", po::value<int>(), "UDP port for communication between robots");
 
@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
 	std::cout << "Done" << std::endl;
 	Dialog display("Robotiina", winSize, m_pCamera->GetFrameSize());
 	
-	Robot robot(m_pCamera, m_pFrontCamera, NULL, &display);
+	Robot robot(io, m_pCamera, m_pFrontCamera, NULL, &display, play_mode == "single1");
 	robot.Launch(play_mode);
 
 	if (m_pCamera) {

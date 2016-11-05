@@ -43,9 +43,9 @@ Simulator::Simulator(boost::asio::io_service &io, bool master, const std::string
 	*/
 	self.fieldCoords = !INIT_RANDOM ? cv::Point(155, 230) : cv::Point(rand() % 300 - 150, rand() % 460 - 230);
 	self.polarMetricCoords = cv::Point(0, !INIT_RANDOM ? -30 : rand() % 359);
+	colors.insert(std::make_pair(BLUE_GATE, cv::Scalar(236, 137, 48)));
 	colors.insert(std::make_pair(BALL, cv::Scalar(48, 154, 236)));
-	colors.insert(std::make_pair(BLUE_GATE, cv::Scalar(61, 255, 244)));
-	colors.insert(std::make_pair(YELLOW_GATE, cv::Scalar(236, 137, 48)));
+	colors.insert(std::make_pair(YELLOW_GATE, cv::Scalar(61, 255, 244)));
 	colors.insert(std::make_pair(FIELD, cv::Scalar(21, 188, 80)));
 	colors.insert(std::make_pair(INNER_BORDER, cv::Scalar(255,255,255)));
 	colors.insert(std::make_pair(OUTER_BORDER, cv::Scalar(0,0,0)));
@@ -253,7 +253,7 @@ void Simulator::UpdateBallPos(double dt) {
 		if (a < 0) a += 360;
 		balls[i].polarMetricCoords.y = a;
 		SYNC_OBJECT(balls[i]);
-		cv::circle(frame, cv::Point(x, y) + cv::Point(frame.size() / 2), 12, colors[BALL], -1);
+		cv::circle(frame, cv::Point(x+ rand() % 20 - 10, y + rand() % 20 - 10)+ cv::Point(frame.size() / 2), 12, colors[BALL], -1);
 	}
 	if (isMaster) {
 		message << 0 << " " << self.fieldCoords.x << " " << self.fieldCoords.y << " ";
@@ -564,24 +564,25 @@ HSVColorRange Simulator::GetObjectThresholds(int index, const std::string &name)
 
 	cv::Mat rgb(1, 1, CV_8UC3, colors[index]);
 	cv::Mat hsv;
-	cvtColor(rgb, hsv, CV_RGB2HSV);
+	cvtColor(rgb, hsv, CV_BGR2HSV);
 
 	return{ { hsv.data[0]-5, hsv.data[0] + 5 },{ hsv.data[1] - 5, hsv.data[1] + 5 },{ hsv.data[2] - 5, hsv.data[2] +5 } };
 
 }
 void Simulator::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos){
 
-	object.rawPixelCoords = pos;
+	object.rawPixelCoords = pos - cameraOrgin;
+
 	if (pos.x < 0) {
 		object.isValid = false;
 		return;
 	}
-	double dist = cv::norm(pos - cameraOrgin);
+	double dist = cv::norm(object.rawPixelCoords);
 
 	double distanceInCm = dist == 0 ? 0.0 : std::max(0.0, 13.13*exp(0.008 * dist));
 
 	//double angle = angleBetween(pos - cameraOrgin, { 0, 1 });
-	double angle = atan((pos.y - cameraOrgin.y) / (pos.x - cameraOrgin.x)) * 180 / PI;
+	double angle = atan((object.rawPixelCoords.y) / (object.rawPixelCoords.x)) * 180 / PI;
 	//TODO: hack to fix simulator, as 
 	if (distanceInCm < 14 && fabs(fabs(angle) - 270)<0.01)  angle = 0;
 	// flip angle alony y axis
@@ -591,6 +592,7 @@ void Simulator::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &
 	object.polarMetricCoords = { distanceInCm, -angle + 360 };
 #endif
 	SYNC_OBJECT(object);
+	object.isValid = true;
 	/*
 	object.distance = distanceInCm;
 	object.angle = object.polarMetricCoords.y;
@@ -608,6 +610,7 @@ void Simulator::FrontCamera::UpdateObjectPostion(ObjectPosition & object, const 
 		object.isValid = false;
 		return;
 	}
+	object.isValid = true;
 }
 
 double Simulator::FrontCamera::getDistanceInverted(const cv::Point2d &pos, const cv::Point2d &orgin) const {
@@ -623,7 +626,6 @@ double Simulator::getDistanceInverted(const cv::Point2d &pos, const cv::Point2d 
 
 }
 
-boost::asio::io_service io;
 
 int main(int argc, char* argv[])
 {
@@ -636,7 +638,7 @@ int main(int argc, char* argv[])
 		("skip-missing-ports", "skip missing COM ports")
 		("save-frames", "Save captured frames to disc")
 		("simulator-mode", po::value<std::string>(), "Play mode: single, opponent, master, slave")
-		("play-mode", po::value<std::string>(), "Play mode: single, opponent, master, slave")
+		("play-mode", po::value<std::string>(), "Play mode: single1, single2, opponent, master, slave")
 		("twitter-port", po::value<int>(), "UDP port for communication between robots");
 
 	std::string play_mode = "single";
@@ -664,13 +666,27 @@ int main(int argc, char* argv[])
 		winSize.height = atoi(tokens[1].c_str());
 
 	}
+
+
+	
+	std::atomic_bool stop_io;
+	stop_io = false;
+	boost::asio::io_service io;
+	std::thread io_thread([&]() {
+		while (!stop_io)
+		{
+			io.reset();
+			io.run();
+		}
+		std::cout << "io stopting" << std::endl;
+	});
+
 	Simulator Sim(io, simulator_mode == "master", play_mode);
-
 	Dialog display("Robotiina", winSize, Sim.GetFrameSize());
+	Robot robot(io, &Sim, &Sim.GetFrontCamera(), &Sim, &display, play_mode == "single1");
 
-	Robot robot(&Sim, &Sim.GetFrontCamera(), &Sim, &display);
 	robot.Launch(play_mode);
-
+	stop_io = true;
     return 0;
 }
 
