@@ -1,6 +1,6 @@
 #pragma once
-#include <opencv2\core.hpp>
-#include "..\CommonModule\Types.h"
+#include <opencv2/core.hpp>
+#include "../CommonModule/Types.h"
 #include <map>
 
 extern std::map<OBJECT, std::string> OBJECT_LABELS;
