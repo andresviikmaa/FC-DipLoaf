@@ -59,12 +59,12 @@ ADD_LIBRARY( StateMachine STATIC
    StateMachine/SingleModePlay.cpp
    StateMachine/StateMachine.cpp
 )
-#TARGET_LINK_LIBRARIES( CommonModule  ${OpenCV_LIBS} ${Boost_LIBRARIES} atomic )
-#TARGET_LINK_LIBRARIES( DisplayModule CommonModule ${OpenCV_LIBS} ${Boost_LIBRARIES} atomic )
-#TARGET_LINK_LIBRARIES( HardwareModule CommonModule ${OpenCV_LIBS} ${Boost_LIBRARIES} atomic )
-#TARGET_LINK_LIBRARIES( RobotModule CommonModule ${OpenCV_LIBS} ${Boost_LIBRARIES} atomic )
-#TARGET_LINK_LIBRARIES( VisionModule CommonModule ${OpenCV_LIBS} ${Boost_LIBRARIES} atomic )
-#TARGET_LINK_LIBRARIES( StateMachine CommonModule ${OpenCV_LIBS} ${Boost_LIBRARIES} atomic )
+TARGET_LINK_LIBRARIES( CommonModule  ${OpenCV_LIBS} ${Boost_LIBRARIES} atomic )
+TARGET_LINK_LIBRARIES( DisplayModule CommonModule ${OpenCV_LIBS} ${Boost_LIBRARIES} atomic )
+TARGET_LINK_LIBRARIES( HardwareModule CommonModule ${OpenCV_LIBS} ${Boost_LIBRARIES} atomic )
+TARGET_LINK_LIBRARIES( RobotModule CommonModule ${OpenCV_LIBS} ${Boost_LIBRARIES} atomic )
+TARGET_LINK_LIBRARIES( VisionModule CommonModule ${OpenCV_LIBS} ${Boost_LIBRARIES} atomic )
+TARGET_LINK_LIBRARIES( StateMachine CommonModule ${OpenCV_LIBS} ${Boost_LIBRARIES} atomic )
 
 set(ROBOTIINA_FILES  Robotiina/Robotiina.cpp)
 
