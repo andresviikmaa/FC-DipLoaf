@@ -5,7 +5,6 @@ ComModule::ComModule(ISerial *pSerialPort)
 	m_pWheels = new WheelController(this, 4);
 	m_pCoilGun = new CoilBoard(this);
 	m_pRefCom = new LLAPReceiver(this);
-	pSerialPort->SetMessageHandler(this);
 
 }
 

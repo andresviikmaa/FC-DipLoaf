@@ -11,6 +11,7 @@
 #include <boost/property_tree/ini_parser.hpp>
 
 #include "../HardwareModule/ComModule.h"
+#include "../HardwareModule/SerialToUdp.h"
 #include "../VisionModule/MainCameraVision.h"
 #include "../StateMachine/SingleModePlay.h"
 #include "../StateMachine/MultiModePlay.h"
@@ -83,8 +84,8 @@ int main(int argc, char* argv[])
 
 	std::cout << "Done" << std::endl;
 	Dialog display("Robotiina", winSize, m_pCamera->GetFrameSize());
-	
-	Robot robot(io, m_pCamera, m_pFrontCamera, NULL, &display, play_mode == "single1");
+	SerialToUdp mainboard(io, "127.0.0.1", 5000);
+	Robot robot(io, m_pCamera, m_pFrontCamera, &mainboard, &display, play_mode == "single1");
 	robot.Launch(play_mode);
 
 	if (m_pCamera) {
