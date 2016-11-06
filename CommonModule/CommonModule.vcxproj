@@ -136,6 +136,7 @@
   <ItemGroup>
     <ClCompile Include="ConfigurableModule.cpp" />
     <ClCompile Include="FieldState.cpp" />
+    <ClCompile Include="Settings.cpp" />
     <ClCompile Include="ThreadedClass.cpp" />
     <ClCompile Include="UdpServer.cpp" />
     <ClCompile Include="WheelConfig.cpp" />
@@ -144,6 +145,7 @@
     <ClInclude Include="ConfigurableModule.h" />
     <ClInclude Include="FieldState.h" />
     <ClInclude Include="Interfaces.h" />
+    <ClInclude Include="Settings.h" />
     <ClInclude Include="ThreadedClass.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="UdpServer.h" />

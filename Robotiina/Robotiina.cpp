@@ -15,6 +15,7 @@
 #include "../VisionModule/MainCameraVision.h"
 #include "../StateMachine/SingleModePlay.h"
 #include "../StateMachine/MultiModePlay.h"
+#include "../CommonModule/Settings.h"
 
 #include <boost/program_options.hpp>
 #include <boost/asio.hpp>
@@ -40,7 +41,10 @@ int main(int argc, char* argv[])
 		("save-frames", "Save captured frames to disc")
 		("simulator-mode", po::value<std::string>(), "Play mode: single1, single2, opponent, master, slave")
 		("play-mode", po::value<std::string>(), "Play mode: single, opponent, master, slave")
-		("twitter-port", po::value<int>(), "UDP port for communication between robots");
+		("twitter-port", po::value<int>(), "UDP port for communication between robots")
+		("mainboard-port", po::value<int>(), "mainboard UDP port")
+		("mainboard-ip", po::value<std::string>(), "mainboard UDP ip address");
+
 
 	std::string play_mode = "single";
 	std::string simulator_mode = "single";
@@ -49,13 +53,14 @@ int main(int argc, char* argv[])
 
 	po::store(po::parse_command_line(argc, argv, desc), config);
 	po::notify(config);
-
+	Settings settings;
 	if (config.count("help")) {
 		std::cout << desc << std::endl;
 		return false;
 	}
 	if (config.count("play-mode"))
 		play_mode = config["play-mode"].as<std::string>();
+
 	if (config.count("simulator-mode"))
 		simulator_mode = config["simulator-mode"].as<std::string>();
 

@@ -19,4 +19,7 @@ protected:
 };
 
 #define ADD_BOOL_SETTING(setting) AddSetting(#setting, [this](){return this->setting ? "yes" : "no"; }, [this](){this->setting = !this->setting; SaveSettings();});
+#define ADD_STR_SETTING(setting) AddSetting(#setting, [this](){return this->setting;}, [this](){;});
+#define ADD_INT_SETTING(setting) AddSetting(#setting, [this](){return std::to_string(this->setting);}, [this](){;});
+
 
