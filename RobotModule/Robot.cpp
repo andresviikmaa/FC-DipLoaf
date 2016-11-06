@@ -78,7 +78,7 @@ bool Robot::Launch(const std::string &play_mode)
 void Robot::SendFieldState() {
 
 	const char * pData = reinterpret_cast<const char*>(&gFieldState);
-	SendData(pData, sizeof FieldState);
+	SendData(pData, sizeof(FieldState));
 
 }
 
