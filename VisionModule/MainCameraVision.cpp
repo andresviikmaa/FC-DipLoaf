@@ -166,12 +166,7 @@ void MainCameraVision::UpdateObjectPostion(ObjectPosition & object, const cv::Po
 #else
 	object.polarMetricCoords = { distanceInCm, -angle + 360 };
 #endif
-	object.distance = distanceInCm;
-	object.angle = object.polarMetricCoords.y;
-	if (object.angle> 0)
-		object.heading = object.angle > 180 ? object.angle - 360 : object.angle;
-	else
-		object.heading = object.angle < -180 ? object.angle + 360 : object.angle;
+	SYNC_OBJECT(object);
 	object.isValid = true;
 }
 void MainCameraVision::CheckGateObstruction() {

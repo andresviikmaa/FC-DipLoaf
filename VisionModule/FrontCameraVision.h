@@ -10,6 +10,12 @@ class FrontCameraVision :
 	public MainCameraVision
 {
 protected:
+	double Hfov = 35.21;
+	double Vfov = 21.65; //half of cameras vertical field of view (degrees)
+	double CamHeight = 345; //cameras height from ground (mm)
+	double CamAngleDev = 26; //deviation from 90* between ground
+	ObjectPosition ball;
+	ObjectPosition ball_copy;
 public:
 	FrontCameraVision(ICamera * pCamera);
 	~FrontCameraVision();
@@ -17,5 +23,10 @@ public:
 	void ThresholdFrame();
 	void FindGate();
 	void FindBall();
+
+	void UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos);
+	void LoadSettings();
+	void PublishState();
+
 };
 

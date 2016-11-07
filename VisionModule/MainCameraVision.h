@@ -11,6 +11,16 @@
 //#include "ThreadedImageThresholder.h"
 //#include "ParallelImageThresholder.h"
 #include "TBBImageThresholder.h"
+
+#define SYNC_OBJECT(object) object.distance =  object.polarMetricCoords.x; \
+object.angle = object.polarMetricCoords.y;	\
+if (object.angle> 0) \
+	object.heading = object.angle > 180 ? object.angle - 360 : object.angle; \
+else \
+	object.heading = object.angle < -180 ? object.angle + 360 : object.angle; 
+
+
+
 class VideoRecorder;
 class MainCameraVision :
 	public ConfigurableModule, public IVisionModule, public ThreadedClass
