@@ -7,7 +7,7 @@
 #include "../CommonModule/FieldState.h"
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
-#ifdef _DEBUG
+#ifdef SHOW_UI
 #include <opencv2/highgui.hpp>
 #endif // _DEBUG
 
@@ -94,7 +94,7 @@ void MainCameraVision::Run() {
 		counter++;
 
 		frameBGR = m_pCamera->Capture();
-#ifdef _DEBUG
+#ifdef SHOW_UI
 		cv::putText(frameBGR, std::to_string(fps), cv::Point(20, 20), cv::FONT_HERSHEY_DUPLEX, 0.9, cv::Scalar(23, 40, 245));
 #endif // _DEBUG
 
@@ -117,7 +117,7 @@ void MainCameraVision::Run() {
 			;//sleep
 			Sleep(10);
 		}
-#ifdef _DEBUG
+#ifdef SHOW_UI
 		//cv::line(frameBGR, (frameBGR.size / 2) + cv::Size(0, -30), (frameSize / 2) + cv::Size(0, 30), cv::Scalar(0, 0, 255), 3, 8, 0);
 		//cv::line(frameBGR, (frameBGR.size / 2) + cv::Size(-30, 0), (frameSize / 2) + cv::Size(30, 0), cv::Scalar(0, 0, 255), 3, 8, 0);
 		cv::imshow(ThreadedClass::name, frameBGR);
@@ -288,7 +288,7 @@ void MainCameraVision::FindGates() {
 
 		cv::Point2d c2 = (yellowGate[min_j1] + yellowGate[min_j2]) / 2;
 
-#ifdef _DEBUG
+#ifdef SHOW_UI
 			cv::circle(frameBGR, c2, 12, color2, -1, 8, 0);
 			cv::circle(frameBGR, c1, 12, color4, -1, 12, 0);
 #endif
@@ -338,7 +338,7 @@ void MainCameraVision::FindOtherRobots() {
 		std::vector<cv::Point2i> robots;
 		cv::bitwise_or(thresholdedImages[OUTER_BORDER], thresholdedImages[FIELD], thresholdedImages[FIELD]);
 		bool robotsFound = robotFinder.Locate(thresholdedImages[FIELD], frameHSV, frameBGR, robots);
-#ifdef _DEBUG
+#ifdef SHOW_UI
 			for (auto robot : robots) {
 				cv::Rect robotRectangle = cv::Rect(robot - cv::Point(20, 20) + cv::Point(frameBGR.size() / 2),
 					robot + cv::Point(20, 20) + cv::Point(frameBGR.size() / 2));
@@ -422,12 +422,12 @@ void MainCameraVision::CheckCollisions() {
 			}
 			collisionWithBorder |= cb;
 			collisonWithUnknown |= cu;
-#ifdef _DEBUG
+#ifdef SHOW_UI
 				cv::rectangle(frameBGR, privateZone, cv::Scalar(cb * 64 + cu * 128, 0, 255), 2, 8);
 #endif
 		}
 		else {
-#ifdef _DEBUG
+#ifdef SHOW_UI
 				cv::rectangle(frameBGR, privateZone, cv::Scalar(155, 255, 155), 2, 8);
 #endif
 		}
