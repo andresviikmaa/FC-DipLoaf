@@ -60,5 +60,4 @@ public:
 	}
 
 	virtual HSVColorRange GetObjectThresholds(int index, const std::string &name);
-	virtual void UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos);
 };

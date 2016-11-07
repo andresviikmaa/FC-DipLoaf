@@ -161,9 +161,6 @@
     <ProjectReference Include="..\CommonModule\CommonModule.vcxproj">
       <Project>{38231cb7-5801-4469-9397-43287e40625b}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\DisplayModule\DisplayModule.vcxproj">
-      <Project>{9627a89a-33e4-480d-af29-fae68a404206}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\HardwareModule\HardwareModule.vcxproj">
       <Project>{f52df89e-2159-41ca-a933-e0ede1d92464}</Project>
     </ProjectReference>

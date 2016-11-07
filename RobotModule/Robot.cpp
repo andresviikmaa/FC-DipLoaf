@@ -14,6 +14,7 @@
 #include "../StateMachine/MultiModePlay.h"
 #include "../HardwareModule/ComModule.h"
 #include "../VisionModule/MainCameraVision.h"
+#include "../VisionModule/FrontCameraVision.h"
 #include "../CommonModule/FieldState.h"
 
 extern FieldState gFieldState;
@@ -44,11 +45,11 @@ boost::asio::ip::address brdc_addr = boost::asio::ip::address::from_string("127.
 
 #endif
 
-Robot::Robot(boost::asio::io_service &io, ICamera *pMainCamera, ICamera *pFrontCamera, ISerial* pSerial, IDisplay*pDisplay, bool master)
+Robot::Robot(boost::asio::io_service &io, ICamera *pMainCamera, ICamera *pFrontCamera, ISerial* pSerial, bool master)
 	: io(io), UdpServer(io, 30000, master)
 {
-	m_pVision = new MainCameraVision(pMainCamera, pDisplay);
-	m_pDisplay = pDisplay;
+	m_pMainVision = new MainCameraVision(pMainCamera);
+	m_pFrontVision = new FrontCameraVision(pFrontCamera);
 	m_pComModule = new ComModule(pSerial);
 
 	assert(OBJECT_LABELS.size() == NUMBER_OF_OBJECTS);
@@ -91,7 +92,8 @@ void Robot::Run()
 	double fps = 0.;
 	size_t counter = 0;
 	try {
-		m_pVision->Enable(true);
+		m_pMainVision->Enable(true);
+		m_pFrontVision->Enable(true);
 		while (true)
 		{
 			double t2 = (double)cv::getTickCount();
@@ -103,7 +105,8 @@ void Robot::Run()
 			}
 			counter++;
 
-			m_pVision->PublishState();
+			m_pMainVision->PublishState();
+			m_pFrontVision->PublishState();
 			m_pComModule->ProcessCommands();
 			m_pAutoPilot->Step(dt);
 
@@ -111,95 +114,18 @@ void Robot::Run()
 			//io.poll_one();
 
 			SendFieldState();
-
+			/*
 			subtitles.str("");
 			//subtitles << oss.str();
 			subtitles << "|" << m_pAutoPilot->GetDebugInfo();
 			subtitles << "|" << m_pComModule->GetDebugInfo();
-			//if (!m_pComModule->IsReal()) {
-			//	subtitles << "|" << "WARNING: Serial not connected!";
-			//} 
-
-			m_pDisplay->putShadowedText("clock: " + std::to_string(fps), cv::Point(-140, 20), 0.5, cv::Scalar(255, 255, 255));
-			m_pDisplay->putShadowedText("fps cam1: " + std::to_string(m_pVision->GetCamera()->GetFPS()), cv::Point(-140, 40), 0.5, cv::Scalar(255, 255, 255));
-			//assert(STATE_END_OF_GAME != state);
-			m_pDisplay->putShadowedText(std::string("running: ") + (gFieldState.isPlaying ? "yes" : "no"), cv::Point(-140, 460), 0.5, cv::Scalar(255, 255, 255));
-			//m_pDisplay->putShadowedText( std::string("Ball:") + (ballPos.distance > 0 ? "yes" : "no"), cv::Point(-140, 60), 0.5, cv::Scalar(255, 255, 255));
-			//m_pDisplay->putShadowedText( std::string("Gate:") + (targetGatePos.distance >0 ? "yes" : "no"), cv::Point(-140, 80), 0.5, cv::Scalar(255, 255, 255));
-
-
-			m_pDisplay->putShadowedText(std::string("Trib:") + (m_pComModule->BallInTribbler() ? "yes" : "no"), cv::Point(-140, 100), 0.5, cv::Scalar(255, 255, 255));
-			m_pDisplay->putShadowedText(std::string("Trib-x:") + (m_pComModule->BallInTribbler(true) ? "yes" : "no"), cv::Point(-140, 80), 0.5, cv::Scalar(255, 255, 255));
-			m_pDisplay->putShadowedText(std::string("Sight:") + (gFieldState.gateObstructed ? "obst" : "free"), cv::Point(-140, 120), 0.5, cv::Scalar(255, 255, 255));
-			//m_pDisplay->putShadowedText( std::string("OnWay:") + (somethingOnWay ? "yes" : "no"), cv::Point(-140, 140), 0.5, cv::Scalar(255, 255, 255));
-
-			//const BallPosition &ball = gFieldState.balls.getClosest();
-			//m_pDisplay->putShadowedText(std::string("Ball") + ": " + std::to_string(ball.polarMetricCoords.x) + " : " + std::to_string(ball.getHeading()), cv::Point(-250, 140), 0.4, cv::Scalar(255, 255, 255));
-
-			m_pDisplay->putShadowedText(std::string("Collison border") + ": " + (gFieldState.collisionWithBorder ? "yes" : "no"), cv::Point(-250, 160), 0.4, cv::Scalar(255, 255, 255));
-			m_pDisplay->putShadowedText(std::string("Collison unknown") + ": " + (gFieldState.collisionWithUnknown ? "yes" : "no"), cv::Point(-250, 180), 0.4, cv::Scalar(255, 255, 255));
-
-			m_pDisplay->putShadowedText(std::string("Collison range") + ": " + std::to_string(gFieldState.collisionRange.x) + "- " + std::to_string(gFieldState.collisionRange.y), cv::Point(-250, 200), 0.4, cv::Scalar(255, 255, 255));
-
-			/*
-			const BallPosition &ballp = gFieldState.balls.getClosest(true);
-			m_pDisplay->putShadowedText(std::string("Ball'")+ ": " + std::to_string(ballp.polarMetricCoords.x) + " : " + std::to_string(ballp.getHeading()), cv::Point(-250, 160), 0.4, cv::Scalar(255, 255, 255));
 			*/
-			
-			for (int i = 0; i < gFieldState.ballCount; i++) {
-
-				BallPosition &ball = gFieldState.balls[i];
-				m_pDisplay->putShadowedText( std::string("Ball") + std::to_string(i) + ": "+ std::to_string(ball.rawPixelCoords.x) + " : " + std::to_string(ball.rawPixelCoords.y), cv::Point(-250, i * 15 + 10), 0.3, cv::Scalar(255, 255, 255));
-			}
-			
-			//std::stringstream ss;
-			//ss.precision(3);
-			//ss << "robot x:" << gFieldState.self.gFieldStateCoords.x<< " y: "<<gFieldState.self.gFieldStateCoords.y<< " r: " << gFieldState.self.angle;
-			//m_pDisplay->putShadowedText(ss.str(), cv::Point(-250, 240), 0.4, cv::Scalar(255, 255, 255));
-			//Simulator *pSim = dynamic_cast<Simulator*>(m_pVision);
-			//if (pSim != NULL){
-			//	ss.str("");
-			//	ss << "sim   x:" << pSim->self.gFieldStateCoords.x << " y: " << pSim->self.gFieldStateCoords.y << " r: " << pSim->self.angle;
-			//	m_pDisplay->putShadowedText(ss.str(), cv::Point(-250, 260), 0.4, cv::Scalar(255, 255, 255));
-			//}
-
-
-			//m_pDisplay->putShadowedText( "border: " + std::to_string(borderDistance.distance), cv::Point(-140, 280), 0.5, cv::Scalar(255, 255, 255));
-
-			m_pDisplay->putShadowedText("Blue gate d: " + std::to_string((int)gFieldState.gates[BLUE_GATE].distance) + " a: " + std::to_string(gFieldState.gates[BLUE_GATE].angle - 180 * sign0(gFieldState.gates[BLUE_GATE].angle)), cv::Point(-250, 280), 0.4, cv::Scalar(255, 255, 255));
-			//		if (pSim != NULL)
-			//			m_pDisplay->putShadowedText("Blue gate d: " + std::to_string((int)pSim->gates[BLUE_GATE].distance) + " a: " + std::to_string(pSim->gates[BLUE_GATE].angle), cv::Point(-250, 280), 0.4, cv::Scalar(255, 255, 255));
-			m_pDisplay->putShadowedText("Yell gate d: " + std::to_string((int)gFieldState.gates[YELLOW_GATE].distance) + " a: " + std::to_string(gFieldState.gates[YELLOW_GATE].angle - 180 * sign0(gFieldState.gates[YELLOW_GATE].angle)), cv::Point(-250, 310), 0.4, cv::Scalar(255, 255, 255));
-			//		if (pSim != NULL)
-			//			m_pDisplay->putShadowedText("Yell gate d: " + std::to_string((int)pSim->gates[YELLOW_GATE].distance) + " a: " + std::to_string(pSim->gates[YELLOW_GATE].angle), cv::Point(-250, 330), 0.4, cv::Scalar(255, 255, 255));
-
-			m_pDisplay->putShadowedText("Partner d: " + std::to_string((int)gFieldState.partner.distance) + " a: " + std::to_string(gFieldState.partner.angle), cv::Point(-250, 360), 0.4, cv::Scalar(255, 255, 255));
-
-			//TODO: fix putShadowedText newline thing
-			std::vector<std::string> subtitles2;
-			std::string subtitles3 = subtitles.str();
-
-			boost::split(subtitles2, subtitles3, boost::is_any_of("|"));
-
-			int j = 0;
-			for (auto s : subtitles2) {
-				if (s.empty()) s = " "; // opencv 3 crashes on empty string
-				m_pDisplay->putShadowedText(s, cv::Point(10, -150 + j), 0.5, cv::Scalar(255, 255, 255));
-				j += 20;
-			}
-
-			/*
 			int key = cv::waitKey(1);
-			if (key != -1) {
-				KeyPressed(key);
-			}
 			if (key == 27) {
 				std::cout << "exiting program" << std::endl;
 				break;
 			}
-			*/
-			//		frames++;
-			//Sleep(10);
+
 
 		}
 	}
@@ -213,8 +139,10 @@ void Robot::Run()
 		delete m_pAutoPilot;
 	if (m_pComModule != NULL)
 		delete m_pComModule;
-	if (m_pVision != NULL)
-		delete m_pVision;
-//	refCom->setField(NULL);
+	if (m_pMainVision != NULL)
+		delete m_pMainVision;
+	if (m_pFrontVision != NULL)
+		delete m_pFrontVision;
+	//	refCom->setField(NULL);
 }
 

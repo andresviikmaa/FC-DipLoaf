@@ -5,8 +5,12 @@
 #include <functional>     // std::greater
 //#include "VideoRecorder.h"
 #include "../CommonModule/FieldState.h"
+#include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
+#ifdef _DEBUG
 #include <opencv2/highgui.hpp>
+#endif // _DEBUG
+
 
 extern FieldState gFieldState;
 //extern int number_of_balls;
@@ -30,11 +34,10 @@ bool angleInRange(cv::Point2d point, cv::Point2d range) {
 	}
 }
 
-MainCameraVision::MainCameraVision(ICamera *pCamera, IDisplay *pDisplay) : ConfigurableModule("MainCameraVision"), ThreadedClass("MainCameraVision")
+MainCameraVision::MainCameraVision(ICamera *pCamera, const std::string sName) : ConfigurableModule(sName), ThreadedClass(sName)
 , thresholder(thresholdedImages, objectThresholds)
 {
 	m_pCamera = pCamera;
-	m_pDisplay = pDisplay;
 
 	ADD_BOOL_SETTING(gaussianBlurEnabled);
 	ADD_BOOL_SETTING(greenAreaDetectionEnabled);
@@ -45,7 +48,6 @@ MainCameraVision::MainCameraVision(ICamera *pCamera, IDisplay *pDisplay) : Confi
 	ADD_BOOL_SETTING(nightVisionEnabled);
 	ADD_BOOL_SETTING(detectOtherRobots);
 	ADD_BOOL_SETTING(detectObjectsNearBall);
-	ADD_BOOL_SETTING(hideUseless);
 	ADD_BOOL_SETTING(useKalmanFilter);
 //	videoRecorder = new VideoRecorder("videos/", 30, m_pCamera->GetFrameSize(true));
 	LoadSettings();
@@ -75,10 +77,36 @@ void MainCameraVision::captureFrames(bool start){
 //	}
 }
 void MainCameraVision::Run() {
+	cameraOrgin = cv::Point2d(m_pCamera->GetFrameSize() / 2);
+	double t1 = (double)cv::getTickCount();
+	size_t counter = 0;
+	double fps = 0.;
+
 	while (!stop_thread) {
+
+		double t2 = (double)cv::getTickCount();
+		double dt = (t2 - t1) / cv::getTickFrequency();
+		if (counter > 10) {
+			fps = (double)counter / dt;
+			t1 = t2;
+			counter = 0;
+		}
+		counter++;
+
 		frameBGR = m_pCamera->Capture();
+#ifdef _DEBUG
+		cv::putText(frameBGR, std::to_string(fps), cv::Point(20, 20), cv::FONT_HERSHEY_DUPLEX, 0.9, cv::Scalar(23, 40, 245));
+#endif // _DEBUG
+
 		if (m_bEnabled) {
-			ProcessFrame(0);
+
+			if (gaussianBlurEnabled) {
+				cv::GaussianBlur(frameBGR, frameBGR, cv::Size(3, 3), 4);
+			}
+			cvtColor(frameBGR, frameHSV, cv::COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
+
+
+			ProcessFrame();
 			{
 				boost::mutex::scoped_lock lock(state_mutex); //allow one command at a time
 				memcpy(&localStateCopy, &localState, sizeof(FieldState));
@@ -89,6 +117,13 @@ void MainCameraVision::Run() {
 			;//sleep
 			Sleep(10);
 		}
+#ifdef _DEBUG
+		//cv::line(frameBGR, (frameBGR.size / 2) + cv::Size(0, -30), (frameSize / 2) + cv::Size(0, 30), cv::Scalar(0, 0, 255), 3, 8, 0);
+		//cv::line(frameBGR, (frameBGR.size / 2) + cv::Size(-30, 0), (frameSize / 2) + cv::Size(30, 0), cv::Scalar(0, 0, 255), 3, 8, 0);
+		cv::imshow(ThreadedClass::name, frameBGR);
+		cv::waitKey(1);
+#endif // DEBUG
+
 	}
 }
 void MainCameraVision::PublishState() {
@@ -98,41 +133,46 @@ void MainCameraVision::PublishState() {
 		stateUpdated = false;
 	}
 }
-void  MainCameraVision::ProcessFrame(double dt) {
+void  MainCameraVision::ProcessFrame() {
 	ThresholdFrame();
 	CheckGateObstruction();
-	FindGates(dt);
+	FindGates();
 	CheckCollisions();
-	FindBalls(dt);
+	FindBalls();
 
-	if (!hideUseless) {
-		//cv::line(frameBGR, (frameBGR.size / 2) + cv::Size(0, -30), (frameSize / 2) + cv::Size(0, 30), cv::Scalar(0, 0, 255), 3, 8, 0);
-		//cv::line(frameBGR, (frameBGR.size / 2) + cv::Size(-30, 0), (frameSize / 2) + cv::Size(30, 0), cv::Scalar(0, 0, 255), 3, 8, 0);
-		m_pDisplay->ShowImage(frameBGR);
-	}
 
 }
 void MainCameraVision::ThresholdFrame() {
-
-	//		if (videoRecorder->isRecording){
-	//			videoRecorder->RecordFrame(frameBGR, "");
-	//		}
-	/**************************************************/
-	/*	STEP 1. Convert picture to HSV colorspace	  */
-	/**************************************************/
-	if (gaussianBlurEnabled) {
-		cv::GaussianBlur(frameBGR, frameBGR, cv::Size(3, 3), 4);
-	}
-	cvtColor(frameBGR, frameHSV, cv::COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
-
-	/**************************************************/
-	/*	STEP 2. thresholding in parallel	          */
-	/**************************************************/
-
 	thresholder.Start(frameHSV, { BALL, BLUE_GATE, YELLOW_GATE, FIELD, INNER_BORDER, OUTER_BORDER });
+}
 
+void MainCameraVision::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos) {
+	object.rawPixelCoords = pos - cameraOrgin;
+	if (pos.x < 0) {
+		object.isValid = false;
+		return;
+	}
+	double dist = cv::norm(object.rawPixelCoords);
 
+	double distanceInCm = dist == 0 ? 0.0 : std::max(0.0, 13.13*exp(0.008 * dist));
 
+	//double angle = angleBetween(pos - cameraOrgin, { 0, 1 });
+	double angle = atan((object.rawPixelCoords.y) / (object.rawPixelCoords.x)) * 180 / PI;
+	//TODO: hack to fix simulator, as 
+	if (distanceInCm < 14 && fabs(fabs(angle) - 270)<0.01)  angle = 0;
+	// flip angle alony y axis
+#ifndef VIRTUAL_FLIP
+	object.polarMetricCoords = { distanceInCm, angle };
+#else
+	object.polarMetricCoords = { distanceInCm, -angle + 360 };
+#endif
+	object.distance = distanceInCm;
+	object.angle = object.polarMetricCoords.y;
+	if (object.angle> 0)
+		object.heading = object.angle > 180 ? object.angle - 360 : object.angle;
+	else
+		object.heading = object.angle < -180 ? object.angle + 360 : object.angle;
+	object.isValid = true;
 }
 void MainCameraVision::CheckGateObstruction() {
 	if (gateObstructionDetectionEnabled) {
@@ -180,7 +220,7 @@ void MainCameraVision::CheckGateObstruction() {
 	}
 }
 
-void MainCameraVision::FindGates(double dt) {
+void MainCameraVision::FindGates() {
 	/**************************************************/
 	/* STEP 4. extract closest ball and gate positions*/
 	/**************************************************/
@@ -198,7 +238,7 @@ void MainCameraVision::FindGates(double dt) {
 			vertices[i] = blueGate[i];
 		}
 		cv::fillConvexPoly(thresholdedImages[BALL], vertices, 4, cv::Scalar::all(0));
-		m_pCamera->UpdateObjectPostion(localState.gates[BLUE_GATE], blueGateCenter);
+		UpdateObjectPostion(localState.gates[BLUE_GATE], blueGateCenter);
 		
 	}
 
@@ -210,7 +250,7 @@ void MainCameraVision::FindGates(double dt) {
 			vertices[i] = yellowGate[i];
 		}
 		cv::fillConvexPoly(thresholdedImages[BALL], vertices, 4, cv::Scalar::all(0));
-		m_pCamera->UpdateObjectPostion(localState.gates[YELLOW_GATE], yellowGateCenter);
+		UpdateObjectPostion(localState.gates[YELLOW_GATE], yellowGateCenter);
 
 	}
 
@@ -248,13 +288,13 @@ void MainCameraVision::FindGates(double dt) {
 
 		cv::Point2d c2 = (yellowGate[min_j1] + yellowGate[min_j2]) / 2;
 
-		if (!hideUseless) {
-			circle(frameBGR, c2, 12, color2, -1, 8, 0);
-			circle(frameBGR, c1, 12, color4, -1, 12, 0);
-		}
+#ifdef _DEBUG
+			cv::circle(frameBGR, c2, 12, color2, -1, 8, 0);
+			cv::circle(frameBGR, c1, 12, color4, -1, 12, 0);
+#endif
 
-		m_pCamera->UpdateObjectPostion(localState.gates[BLUE_GATE], c1);
-		m_pCamera->UpdateObjectPostion(localState.gates[YELLOW_GATE], c2);
+		UpdateObjectPostion(localState.gates[BLUE_GATE], c1);
+		UpdateObjectPostion(localState.gates[YELLOW_GATE], c2);
 
 
 		//_blueGate.updateCoordinates(c1, m_pCamera->getPolarCoordinates(c1));
@@ -277,12 +317,12 @@ void MainCameraVision::FindGates(double dt) {
 	cv::circle(thresholdedImages[BALL], cv::Point(frameBGR.size() / 2), 50, 0, -1);
 
 }
-void MainCameraVision::FindBalls(double dt) {
+void MainCameraVision::FindBalls() {
 	std::vector<cv::Point2d> balls;
 	bool ballsFound = ballFinder.Locate(thresholdedImages[BALL], frameHSV, frameBGR, balls);
 	localState.ballCount = 0;
 	for (auto ball : balls) {
-		m_pCamera->UpdateObjectPostion(localState.balls[localState.ballCount], ball);
+		UpdateObjectPostion(localState.balls[localState.ballCount], ball);
 		localState.ballCount++;
 	}
 	//if (localState.ballCount > 11) {
@@ -291,20 +331,20 @@ void MainCameraVision::FindBalls(double dt) {
 	//}
 
 }
-void MainCameraVision::FindOtherRobots(double dt) {
+void MainCameraVision::FindOtherRobots() {
 	
 	if (detectOtherRobots) {
 
 		std::vector<cv::Point2i> robots;
 		cv::bitwise_or(thresholdedImages[OUTER_BORDER], thresholdedImages[FIELD], thresholdedImages[FIELD]);
 		bool robotsFound = robotFinder.Locate(thresholdedImages[FIELD], frameHSV, frameBGR, robots);
-		if (!hideUseless) {
+#ifdef _DEBUG
 			for (auto robot : robots) {
 				cv::Rect robotRectangle = cv::Rect(robot - cv::Point(20, 20) + cv::Point(frameBGR.size() / 2),
 					robot + cv::Point(20, 20) + cv::Point(frameBGR.size() / 2));
 				rectangle(frameBGR, robotRectangle.tl(), robotRectangle.br(), cv::Scalar(10, 255, 101), 2, 8, 0);
 			}
-		}
+#endif
 		bool ourRobotBlueBottom = (gFieldState.robotColor == ROBOT_COLOR_YELLOW_UP);
 		//std::vector<cv::Point2d> robots;
 		//bool ballsFound = ballFinder.Locate(thresholdedImages[FIELD], frameHSV, frameBGR, robots);
@@ -332,7 +372,7 @@ void MainCameraVision::FindOtherRobots(double dt) {
 		auto sortFunc = [](std::pair<cv::Point2i, double> posToDis1, std::pair<cv::Point2i, double> posToDis2) { return (posToDis1.second < posToDis2.second); };
 		std::sort(positionsToDistances.begin(), positionsToDistances.end(), sortFunc);
 		if (positionsToDistances.size() > 0) {
-			m_pCamera->UpdateObjectPostion(localState.partner, positionsToDistances[0].first);
+			UpdateObjectPostion(localState.partner, positionsToDistances[0].first);
 		}
 	}
 }
@@ -382,15 +422,14 @@ void MainCameraVision::CheckCollisions() {
 			}
 			collisionWithBorder |= cb;
 			collisonWithUnknown |= cu;
-			if (!hideUseless) {
+#ifdef _DEBUG
 				cv::rectangle(frameBGR, privateZone, cv::Scalar(cb * 64 + cu * 128, 0, 255), 2, 8);
-			}
-
+#endif
 		}
 		else {
-			if (!hideUseless) {
+#ifdef _DEBUG
 				cv::rectangle(frameBGR, privateZone, cv::Scalar(155, 255, 155), 2, 8);
-			}
+#endif
 		}
 		//std::cout << "coll b: " << cv::countNonZero(roiOuterBorder) << std::endl;
 	}

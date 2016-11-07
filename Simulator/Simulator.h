@@ -18,10 +18,10 @@ class Simulator : public ICamera, public ISerial, public ThreadedClass, public U
 			pSim = sim;
 		}
 		cv::Mat & Capture(bool bFullFrame = false) {
-			return pSim->front_frame_copy;
+			return pSim->front_frame;
 		}
 		cv::Size GetFrameSize(bool bFullFrame = false) {
-			return pSim->front_frame_copy.size();
+			return pSim->front_frame.size();
 		}
 		double GetFPS() { 
 			return pSim->GetFPS();
@@ -33,7 +33,6 @@ class Simulator : public ICamera, public ISerial, public ThreadedClass, public U
 		HSVColorRange GetObjectThresholds(int index, const std::string &name) {
 			return pSim->GetObjectThresholds(index, name);
 		}
-		virtual void UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos);
 		const std::string & getName() { return sName;  }
 		double getDistanceInverted(const cv::Point2d &pos, const cv::Point2d &orgin) const;
 
@@ -88,7 +87,6 @@ public:
 	};
 	virtual void SendPartnerMessage(const std::string message) {};
 	virtual HSVColorRange GetObjectThresholds(int index, const std::string &name);
-	virtual void UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos);
 	double getDistanceInverted(const cv::Point2d &pos, const cv::Point2d &orgin) const;
 
 protected:
@@ -97,14 +95,10 @@ protected:
 	double orientation;
 	// main camera
 	cv::Mat frame = cv::Mat(1024, 1280, CV_8UC3);
-	cv::Mat frame_copy = cv::Mat(1024, 1280, CV_8UC3);
-	cv::Mat frame_copy2 = cv::Mat(1024, 1280, CV_8UC3);
 	cv::Mat frame_blank = cv::Mat(1024, 1280, CV_8UC3, cv::Scalar(21, 188, 80));
 	// front camera
-	cv::Mat front_frame = cv::Mat(640, 480, CV_8UC3);
-	cv::Mat front_frame_copy = cv::Mat(640, 480, CV_8UC3);
-	//cv::Mat frame_copy2 = cv::Mat(1024, 1280, CV_8UC3);
-	//cv::Mat frame_blank = cv::Mat(1024, 1280, CV_8UC3, cv::Scalar(21, 188, 80));
+	cv::Mat front_frame = cv::Mat(480, 640, CV_8UC3);
+	cv::Mat front_frame_blank = cv::Mat(480, 640, CV_8UC3, cv::Scalar(21, 188, 80));
 
 	cv::Point2d cameraOrgin = cv::Point2d(512, 640);
 	Speed targetSpeed, actualSpeed;

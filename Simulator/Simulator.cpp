@@ -192,6 +192,7 @@ void Simulator::MessageReceived(const std::string & message) { //udp
 void Simulator::UpdateGatePos() {
 
 	frame_blank.copyTo(frame);
+	front_frame_blank.copyTo(front_frame);
 
 	drawRect(cv::Rect(cv::Point(-155, -230), cv::Point(155, 230)), 10, colors[OUTER_BORDER]);
 	drawRect(cv::Rect(cv::Point(-145, -220), cv::Point(145, 220)), 10, colors[INNER_BORDER]);
@@ -316,14 +317,7 @@ void Simulator::UpdateRobotPos(double dt) {
 	UpdateBallIntTribbler(robotSpeed, dt);
 	UpdateBallPos(dt);
 	cv::circle(frame, cv::Point(frame.size() / 2), 55, cv::Scalar::all(160), -1);
-	return;
-	{
-		std::lock_guard<std::mutex> lock(mutex);
-#ifndef VIRTUAL_FLIP
-		cv::flip(frame, frame, 1);
-#endif
-		frame.copyTo(frame_copy);
-	}
+
 
 }
 
@@ -405,9 +399,6 @@ cv::Mat & Simulator::Capture(bool bFullFrame) {
 	time2 = t2;
 	return frame;
 
-	std::lock_guard<std::mutex> lock(mutex);
-	frame_copy.copyTo(frame_copy2);
-	return frame_copy2;
 }
 
 cv::Size Simulator::GetFrameSize(bool bFullFrame) {
@@ -569,49 +560,6 @@ HSVColorRange Simulator::GetObjectThresholds(int index, const std::string &name)
 	return{ { hsv.data[0]-5, hsv.data[0] + 5 },{ hsv.data[1] - 5, hsv.data[1] + 5 },{ hsv.data[2] - 5, hsv.data[2] +5 } };
 
 }
-void Simulator::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos){
-
-	object.rawPixelCoords = pos - cameraOrgin;
-
-	if (pos.x < 0) {
-		object.isValid = false;
-		return;
-	}
-	double dist = cv::norm(object.rawPixelCoords);
-
-	double distanceInCm = dist == 0 ? 0.0 : std::max(0.0, 13.13*exp(0.008 * dist));
-
-	//double angle = angleBetween(pos - cameraOrgin, { 0, 1 });
-	double angle = atan((object.rawPixelCoords.y) / (object.rawPixelCoords.x)) * 180 / PI;
-	//TODO: hack to fix simulator, as 
-	if (distanceInCm < 14 && fabs(fabs(angle) - 270)<0.01)  angle = 0;
-	// flip angle alony y axis
-#ifndef VIRTUAL_FLIP
-	object.polarMetricCoords = { distanceInCm, angle };
-#else
-	object.polarMetricCoords = { distanceInCm, -angle + 360 };
-#endif
-	SYNC_OBJECT(object);
-	object.isValid = true;
-	/*
-	object.distance = distanceInCm;
-	object.angle = object.polarMetricCoords.y;
-	if (object.angle> 0)
-		object.heading = object.angle > 180 ? object.angle - 360 : object.angle;
-	else
-		object.heading = object.angle < -180 ? object.angle + 360 : object.angle;
-*/
-}
-
-
-void Simulator::FrontCamera::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos){
-	object.rawPixelCoords = pos;
-	if (pos.x < 0) {
-		object.isValid = false;
-		return;
-	}
-	object.isValid = true;
-}
 
 double Simulator::FrontCamera::getDistanceInverted(const cv::Point2d &pos, const cv::Point2d &orgin) const {
 	return 100;
@@ -682,8 +630,7 @@ int main(int argc, char* argv[])
 	});
 
 	Simulator Sim(io, simulator_mode == "master", play_mode);
-	Dialog display("Robotiina", winSize, Sim.GetFrameSize());
-	Robot robot(io, &Sim, &Sim.GetFrontCamera(), &Sim, &display, play_mode == "single1");
+	Robot robot(io, &Sim, &Sim.GetFrontCamera(), &Sim, play_mode == "single1");
 
 	robot.Launch(play_mode);
 	stop_io = true;

@@ -33,7 +33,6 @@ protected:
 	bool nightVisionEnabled = false;
 	bool detectOtherRobots = false;
 	bool detectObjectsNearBall = false;
-	bool hideUseless = false;
 	bool useKalmanFilter = false;
 
 	VideoRecorder *videoRecorder  = NULL;
@@ -67,16 +66,18 @@ protected:
 	TBBImageThresholder thresholder;
 	void ThresholdFrame();
 	void CheckGateObstruction();
-	void FindGates(double dt);
+	void FindGates();
 	void CheckCollisions();
-	void FindBalls(double dt);
-	void FindOtherRobots(double dt);
+	void FindBalls();
+	void FindOtherRobots();
+	cv::Point2d cameraOrgin;
+	virtual void UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos);
 
 public:
 	boost::mutex state_mutex;
-	MainCameraVision(ICamera * pCamera, IDisplay *pDisplay);
+	MainCameraVision(ICamera * pCamera, const std::string sName="MainCameraVision");
 	virtual ~MainCameraVision();
-	void ProcessFrame(double dt);
+	void ProcessFrame();
 	void PublishState();
 	virtual void Enable(bool enable) {
 		m_bEnabled = enable;

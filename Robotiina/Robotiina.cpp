@@ -4,7 +4,6 @@
 #include "stdafx.h"
 
 #include "../RobotModule/Robot.h"
-#include "../DisplayModule/Dialog.h"
 #include <boost/algorithm/string.hpp>
 #include "../HardwareModule/Camera.h"
 #include <boost/property_tree/ptree.hpp>
@@ -88,9 +87,8 @@ int main(int argc, char* argv[])
 		m_pFrontCamera = new Camera("main", "0");
 
 	std::cout << "Done" << std::endl;
-	Dialog display("Robotiina", winSize, m_pCamera->GetFrameSize());
 	SerialToUdp mainboard(io, "127.0.0.1", 5000);
-	Robot robot(io, m_pCamera, m_pFrontCamera, &mainboard, &display, play_mode == "single1");
+	Robot robot(io, m_pCamera, m_pFrontCamera, &mainboard,play_mode == "single1");
 	robot.Launch(play_mode);
 
 	if (m_pCamera) {

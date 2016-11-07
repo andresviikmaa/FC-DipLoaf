@@ -26,10 +26,10 @@ enum STATE
 
 class Robot: public UdpServer {
 private:
-	IVisionModule *m_pVision = NULL;
+	IVisionModule *m_pMainVision = NULL;
+	IVisionModule *m_pFrontVision = NULL;
 	ICommunicationModule *m_pComModule = NULL;
 	IStateMachine *m_pAutoPilot = NULL;
-	IDisplay *m_pDisplay = NULL;
 
 
     //STATE state = STATE_NONE;
@@ -51,7 +51,7 @@ protected:
 //	SimpleSerial *serialPort;
 	boost::asio::io_service &io;
 public:
-    Robot(boost::asio::io_service &io, ICamera *pMainCamera, ICamera *pFrontCamera, ISerial*, IDisplay*, bool master);
+    Robot(boost::asio::io_service &io, ICamera *pMainCamera, ICamera *pFrontCamera, ISerial*, bool master);
 	bool Launch(const std::string &play_mode);
 	~Robot();
 
@@ -65,6 +65,5 @@ public:
 		last_state = (STATE)state;
         state = new_state;
     }
-	void RunCaptureTest();
 	void SendFieldState();
 };
