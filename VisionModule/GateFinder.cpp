@@ -12,8 +12,6 @@ GateFinder::~GateFinder()
 {
 }
 
-extern void drawLine(cv::Mat & img, cv::Mat & img2, cv::Vec4f line, int thickness, CvScalar color, bool nightVision = false);
-
 bool GateFinder::Locate(cv::Mat &imgThresholded, cv::Mat &frameHSV, cv::Mat &frameBGR, cv::Point &center, cv::Point2f *bounds, std::vector<cv::Point2i> &notGates) {
 	int smallestGateArea = 1;
 	double growGateHeight = 1.2;
@@ -61,13 +59,14 @@ bool GateFinder::Locate(cv::Mat &imgThresholded, cv::Mat &frameHSV, cv::Mat &fra
 	else {
 		assert(false);
 	}
+#ifdef SHOW_UI
 	cv::RotatedRect bounding_rect2 = cv::minAreaRect(contours[largest_contour_index]);
 	bounding_rect2.points(bounds);
 
 	for (int j = 0; j < 4; j++) {
 		line(frameBGR, bounds[j], bounds[(j + 1) % 4], color, 1, 8);
 	}
-
+#endif
 	return true;
 }
 

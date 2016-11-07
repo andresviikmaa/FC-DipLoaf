@@ -127,10 +127,10 @@ bool BallFinder::validateBall(ThresholdedImages &HSVRanges, cv::Point2d endPoint
 			}
 		}//lineiterator end
 		alterIterator = alterIterator + 2;
-
+#ifdef SHOW_UI
 		cv::circle(frameBGR, firstOuter, 5, cv::Scalar(0, 0, 0), -1);
 		cv::circle(frameBGR, lastInner, 5, cv::Scalar(200, 200, 200), -1);
-
+#endif
 		double distLiFo = cv::norm(lastInner - firstOuter);
 
 		if (!firstFound || fieldFound){
