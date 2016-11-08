@@ -32,7 +32,8 @@ int main(int argc, char* argv[])
 {
 	desc.add_options()
 		("help", "produce help message")
-		("camera", po::value<std::string>(), "set m_pCamera index or path")
+		("main-camera", po::value<std::string>(), "set main camera index or path")
+		("front-camera", po::value<std::string>(), "set front camera index or path")
 		("app-size", po::value<std::string>(), "main window size: width x height")
 		("locate_cursor", "find cursor instead of ball")
 		("skip-ports", "skip ALL COM port checks")
@@ -75,16 +76,16 @@ int main(int argc, char* argv[])
 	Camera * m_pFrontCamera;
 	std::cout << "Initializing Main Camera... " << std::endl;
 	if (config.count("main-camera"))
-		m_pCamera = new Camera("main", config["camera"].as<std::string>());
+		m_pCamera = new Camera("main", config["main-camera"].as<std::string>());
 	else
 		m_pCamera = new Camera("main","0");
 	std::cout << "Done" << std::endl;
 
 	std::cout << "Initializing Front Camera... " << std::endl;
 	if (config.count("front-camera"))
-		m_pFrontCamera = new Camera("main", config["camera"].as<std::string>());
+		m_pFrontCamera = new Camera("front", config["front-camera"].as<std::string>());
 	else
-		m_pFrontCamera = new Camera("main", "0");
+		m_pFrontCamera = new Camera("front", "0");
 
 	std::cout << "Done" << std::endl;
 	SerialToUdp mainboard(io, "127.0.0.1", 5000);
