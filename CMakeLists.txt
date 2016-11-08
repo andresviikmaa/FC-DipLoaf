@@ -29,6 +29,7 @@ ADD_LIBRARY( CommonModule STATIC
    CommonModule/ThreadedClass.cpp
    CommonModule/UdpServer.cpp
    CommonModule/WheelConfig.cpp
+   CommonModule/Settings.cpp
 )
 ADD_LIBRARY( DisplayModule STATIC
    DisplayModule/Dialog.cpp
