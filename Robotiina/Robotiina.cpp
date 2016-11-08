@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
 		m_pFrontCamera = new Camera("front", "0");
 
 	std::cout << "Done" << std::endl;
-	SerialToUdp mainboard(io, "127.0.0.1", 5000);
+	SerialToUdp mainboard(io, "127.0.0.2", 5000);
 	Robot robot(io, m_pCamera, m_pFrontCamera, &mainboard,play_mode == "single1");
 	robot.Launch(play_mode);
 
