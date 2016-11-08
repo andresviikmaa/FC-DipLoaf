@@ -39,6 +39,7 @@ ADD_LIBRARY( HardwareModule STATIC
    HardwareModule/ComModule.cpp
    HardwareModule/WheelController.cpp
    HardwareModule/refereeCom.cpp
+   HardwareModule/SerialToUdp.cpp
 )
 ADD_LIBRARY( RobotModule STATIC
    RobotModule/Robot.cpp
@@ -69,7 +70,7 @@ TARGET_LINK_LIBRARIES( StateMachine CommonModule ${OpenCV_LIBS} ${Boost_LIBRARIE
 set(ROBOTIINA_FILES  Robotiina/Robotiina.cpp)
 
 add_executable(robotiina ${ROBOTIINA_FILES})
-target_link_libraries( robotiina RobotModule CommonModule HardwareModule DisplayModule VisionModule StateMachine ${OpenCV_LIBS} ${Boost_LIBRARIES} )
+target_link_libraries( robotiina RobotModule CommonModule HardwareModule VisionModule StateMachine ${OpenCV_LIBS} ${Boost_LIBRARIES} )
 
 #set(WHEELEMULATOR_FILES WheelEmulator.cpp)
 #add_executable(wheelemulator ${WHEELEMULATOR_FILES})
