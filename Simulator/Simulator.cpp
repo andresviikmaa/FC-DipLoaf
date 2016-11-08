@@ -43,6 +43,8 @@ Simulator::Simulator(boost::asio::io_service &io, bool master, const std::string
 	*/
 	self.fieldCoords = !INIT_RANDOM ? cv::Point(155, 230) : cv::Point(rand() % 300 - 150, rand() % 460 - 230);
 	self.polarMetricCoords = cv::Point(0, !INIT_RANDOM ? -30 : rand() % 359);
+	self.fieldCoords = cv::Point(0, 230);
+	self.polarMetricCoords.y = 0;
 	colors.insert(std::make_pair(BLUE_GATE, cv::Scalar(236, 137, 48)));
 	colors.insert(std::make_pair(BALL, cv::Scalar(48, 154, 236)));
 	colors.insert(std::make_pair(YELLOW_GATE, cv::Scalar(61, 255, 244)));
@@ -209,26 +211,23 @@ void Simulator::UpdateGatePos() {
 	for (int s = -1; s < 2; s += 2) {
 		cv::Point2d shift1(s * 10, -20);
 		cv::Point2d shift2(s * 10, 20);
-		double a1 = angleBetween(cv::Point(0, -1), self.fieldCoords - (blueGate.fieldCoords + shift1)) + self.angle;
-		double a2 = angleBetween(cv::Point(0, -1), self.fieldCoords - (yellowGate.fieldCoords + shift2)) + self.angle;
-
-		double d1 = getDistanceInverted(self.fieldCoords, blueGate.fieldCoords + shift1);
-		double d2 = getDistanceInverted(self.fieldCoords, yellowGate.fieldCoords + shift2);
 
 
-		// draw gates
-		double x1 = -d1*sin(a1 / 180 * CV_PI);
-		double y1 = d1*cos(a1 / 180 * CV_PI);
-		double x2 = -d2*sin(a2 / 180 * CV_PI);
-		double y2 = d2*cos(a2 / 180 * CV_PI);
 
+		double g1 = cv::norm(self.fieldCoords - blueGate.fieldCoords);
+		double g2 = cv::norm(self.fieldCoords - yellowGate.fieldCoords);
+		double s1 = g1 > 0 ? 8000 / g1 : 90;
+		double s2 = g2 > 0 ? 8000 / g2 : 90;
+		double fs1 = g1 > 0 ? 8000 / g1 : 30;
+		double fs2 = g2 > 0 ? 8000 / g2 : 30;
 
-		double s1 = 8000 / cv::norm(self.fieldCoords - blueGate.fieldCoords);
-		double s2 = 8000 / cv::norm(self.fieldCoords - yellowGate.fieldCoords);
-		cv::circle(frame, cv::Point((int)(x1), (int)(y1)) + cv::Point(frame.size() / 2), s1, colors[YELLOW_GATE], -1);
-		cv::circle(frame, cv::Point((int)(x2), (int)(y2)) + cv::Point(frame.size() / 2), s2, colors[BLUE_GATE], -1);
+		cv::circle(frame, MainCamPos(yellowGate.fieldCoords + shift1), s2, colors[YELLOW_GATE], -1);
+		cv::circle(frame, MainCamPos(blueGate.fieldCoords + shift2), s1, colors[BLUE_GATE], -1);
 
 		// front camera
+		cv::circle(front_frame, FrontCamPos(yellowGate.fieldCoords + shift1), fs2, colors[YELLOW_GATE], -1);
+		cv::circle(front_frame, FrontCamPos(blueGate.fieldCoords + shift1), fs1, colors[BLUE_GATE], -1);
+
 	}
 
 }
@@ -256,9 +255,9 @@ void Simulator::UpdateBallPos(double dt) {
 		if (a < 0) a += 360;
 		balls[i].polarMetricCoords.y = a;
 		SYNC_OBJECT(balls[i]);
-		cv::circle(frame, MainCamPos(balls[i].fieldCoords), 12, colors[BALL], -1);
+		cv::circle(frame, MainCamPos(balls[i].fieldCoords), 12, colors[BALL] + cv::Scalar(i * 4, i * 4, i * 4), -1);
 		// front camera
-		cv::circle(front_frame, FrontCamPos(balls[i].fieldCoords), 12, colors[BALL], -1);
+		cv::circle(front_frame, FrontCamPos(balls[i].fieldCoords), 12, colors[BALL]+cv::Scalar(i*4, i*4, i*4), -1);
 
 	}
 	if (isMaster) {
@@ -538,7 +537,7 @@ void Simulator::drawLine(cv::Point start, cv::Point end, int thickness, CvScalar
 
 		
 		cv::Point fcur = FrontCamPos(cv::Point2d(xy));
-
+		
 		if (flast.x < 1000) {
 			cv::line(front_frame, flast, fcur, color, std::min(30.0, 4 * 1 / d1 * 600));
 		}
@@ -564,18 +563,21 @@ cv::Point Simulator::FrontCamPos(cv::Point2d pos) {
 	double CamAngleDev = 26; //deviation from 90* between ground
 
 	cv::Point center = front_frame.size() / 2;
-	double distance = cv::norm(self.fieldCoords - pos);
+	double diag = cv::norm(self.fieldCoords - pos);
+	double distanceX = sin(a1*PI / 180) * diag;
+	double distanceY = cos(a1*PI / 180) * diag;
 	//double distance = CamHeight / tan(angle * PI / 180);
-	double angle = atan(CamHeight / distance);
+	double angle = atan(CamHeight / distanceY) / PI * 180;
 	// double angle = (Vfov * (point.y - center.y) / center.y) + CamAngleDev;
-	double y = (((angle / PI * 180) - CamAngleDev) / Vfov * center.y) - center.y;
-	double hor_space = tan(Hfov)*distance;
-	//double Hor_angle = atan(HorizontalDev / distance) * 180 / PI;
-	double HorizontalDev = atan(a1*PI / 180) * distance;
-	//	double HorizontalDev = (hor_space * (point.x - center.x) / center.x);
-	double x = HorizontalDev * center.x / hor_space - center.x;
+	double y = (angle - CamAngleDev) / Vfov * (-distanceY);
 
-	return cv::Point(x, y);
+	double hor_space = atan(Hfov/180*PI)*distanceX;
+	//double Hor_angle = atan(HorizontalDev / distance) * 180 / PI;
+	double HorizontalDev = tan(a1*PI / 180) * distanceX;
+	//	double HorizontalDev = (hor_space * (point.x - center.x) / center.x);
+	double x = HorizontalDev * distanceX / hor_space - distanceX;
+
+	return cv::Point(x+center.x, y+ front_frame.size().height)/10 + center;
 
 }
 void Simulator::drawCircle(cv::Point start, int radius, int thickness, CvScalar color) {
