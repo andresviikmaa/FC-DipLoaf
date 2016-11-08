@@ -13,13 +13,13 @@ class Simulator : public ICamera, public ISerial, public ThreadedClass, public U
 	protected:
 		std::string sName = "front";
 		Simulator * pSim;
+		cv::Mat front_frame;
+
 	public:
 		FrontCamera(Simulator* sim) {
 			pSim = sim;
 		}
-		cv::Mat & Capture(bool bFullFrame = false) {
-			return pSim->front_frame;
-		}
+		cv::Mat & Capture(bool bFullFrame = false);
 		cv::Size GetFrameSize(bool bFullFrame = false) {
 			return pSim->front_frame.size();
 		}
@@ -36,6 +36,10 @@ class Simulator : public ICamera, public ISerial, public ThreadedClass, public U
 		const std::string & getName() { return sName;  }
 		double getDistanceInverted(const cv::Point2d &pos, const cv::Point2d &orgin) const;
 
+		double Hfov = 35.21;
+		double Vfov = 21.65; //half of cameras vertical field of view (degrees)
+		double CamHeight = 345; //cameras height from ground (mm)
+		double CamAngleDev = 26; //deviation from 90* between ground
 	};
 	using UdpServer::SendMessage;
 public:
@@ -98,6 +102,7 @@ protected:
 	cv::Mat frame_blank = cv::Mat(1024, 1280, CV_8UC3, cv::Scalar(21, 188, 80));
 	// front camera
 	cv::Mat front_frame = cv::Mat(480, 640, CV_8UC3);
+	cv::Mat front_frame_copy = cv::Mat(480, 640, CV_8UC3);;
 	cv::Mat front_frame_blank = cv::Mat(480, 640, CV_8UC3, cv::Scalar(21, 188, 80));
 
 	cv::Point2d cameraOrgin = cv::Point2d(512, 640);
@@ -115,6 +120,8 @@ protected:
 	void drawLine(cv::Point start, cv::Point end, int thickness, CvScalar color);
 	void drawCircle(cv::Point start, int radius, int thickness, CvScalar color);
 
+	cv::Point Simulator::MainCamPos(cv::Point2d pos);
+	cv::Point Simulator::FrontCamPos(cv::Point2d pos);
 private:
 	int mNumberOfBalls;
 	int frames = 0;

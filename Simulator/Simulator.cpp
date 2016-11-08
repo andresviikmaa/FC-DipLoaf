@@ -227,6 +227,8 @@ void Simulator::UpdateGatePos() {
 		double s2 = 8000 / cv::norm(self.fieldCoords - yellowGate.fieldCoords);
 		cv::circle(frame, cv::Point((int)(x1), (int)(y1)) + cv::Point(frame.size() / 2), s1, colors[YELLOW_GATE], -1);
 		cv::circle(frame, cv::Point((int)(x2), (int)(y2)) + cv::Point(frame.size() / 2), s2, colors[BLUE_GATE], -1);
+
+		// front camera
 	}
 
 }
@@ -254,7 +256,10 @@ void Simulator::UpdateBallPos(double dt) {
 		if (a < 0) a += 360;
 		balls[i].polarMetricCoords.y = a;
 		SYNC_OBJECT(balls[i]);
-		cv::circle(frame, cv::Point(x+ rand() % 20 - 10, y + rand() % 20 - 10)+ cv::Point(frame.size() / 2), 12, colors[BALL], -1);
+		cv::circle(frame, MainCamPos(balls[i].fieldCoords), 12, colors[BALL], -1);
+		// front camera
+		cv::circle(front_frame, FrontCamPos(balls[i].fieldCoords), 12, colors[BALL], -1);
+
 	}
 	if (isMaster) {
 		message << 0 << " " << self.fieldCoords.x << " " << self.fieldCoords.y << " ";
@@ -397,6 +402,10 @@ cv::Mat & Simulator::Capture(bool bFullFrame) {
 	double dt = (t2 - time2) / cv::getTickFrequency();
 	UpdateRobotPos(dt);
 	time2 = t2;
+	{
+		std::lock_guard<std::mutex> lock(mutex);
+		front_frame.copyTo(front_frame_copy);
+	}
 	return frame;
 
 }
@@ -515,22 +524,60 @@ void Simulator::drawLine(cv::Point start, cv::Point end, int thickness, CvScalar
 	cv::Mat dummyField = cv::Mat(cv::Point(608, 608) / SCALE, CV_8UC3, cv::Scalar::all(245));
 	cv::LineIterator it(dummyField, start / SCALE + cv::Point(dummyField.size() / 2), end / SCALE + cv::Point(dummyField.size() / 2), 8);
 	cv::Point last = { INT_MAX, INT_MAX };
+	cv::Point flast = { INT_MAX, INT_MAX };
+
 	for (int i = 0; i < it.count; i++, ++it) {
 		cv::Point xy = (it.pos() - cv::Point(dummyField.size() / 2))*SCALE;
-		double a1 = angleBetween(cv::Point(0, -1), self.fieldCoords - cv::Point2d(xy)) + self.angle;
-		double d1 = getDistanceInverted(self.fieldCoords, xy);
-
-		double x1 = -d1*sin(a1 / 180 * CV_PI);
-		double y1 = d1*cos(a1 / 180 * CV_PI);
-		cv::Point cur = cv::Point((int)(x1), (int)(y1)) + cv::Point(frame.size() / 2);
+		double d1 = cv::norm(self.fieldCoords - cv::Point2d(xy));
+		cv::Point cur = MainCamPos(xy);
 		if (last.x < 1000) {
-			cv::line(frame, last, cur, color, std::min(30.0, 4 * 1 / d1 * 960));
+			cv::line(frame, last, cur, color, std::min(30.0, 4 * 1 / d1 * 600));
 		}
 		last = cur;
+
+
+		
+		cv::Point fcur = FrontCamPos(cv::Point2d(xy));
+
+		if (flast.x < 1000) {
+			cv::line(front_frame, flast, fcur, color, std::min(30.0, 4 * 1 / d1 * 600));
+		}
+		flast = fcur;
 	}
 	return;
 }
+cv::Point Simulator::MainCamPos(cv::Point2d pos) {
+	double a1 = angleBetween(cv::Point(0, -1), self.fieldCoords - pos) + self.angle;
+	double d1 = getDistanceInverted(self.fieldCoords, pos);
 
+	double x1 = -d1*sin(a1 / 180 * CV_PI);
+	double y1 = d1*cos(a1 / 180 * CV_PI);
+	return cv::Point((int)(x1), (int)(y1)) + cv::Point(frame.size() / 2);
+}
+cv::Point Simulator::FrontCamPos(cv::Point2d pos) {
+
+	double a1 = angleBetween(cv::Point(0, -1), self.fieldCoords - pos) + self.angle;
+	//if (a1 > 210 || a1 < 150)  return (-1, -1);
+	double Hfov = 35.21;
+	double Vfov = 21.65; //half of cameras vertical field of view (degrees)
+	double CamHeight = 345; //cameras height from ground (mm)
+	double CamAngleDev = 26; //deviation from 90* between ground
+
+	cv::Point center = front_frame.size() / 2;
+	double distance = cv::norm(self.fieldCoords - pos);
+	//double distance = CamHeight / tan(angle * PI / 180);
+	double angle = atan(CamHeight / distance);
+	// double angle = (Vfov * (point.y - center.y) / center.y) + CamAngleDev;
+	double y = (((angle / PI * 180) - CamAngleDev) / Vfov * center.y) - center.y;
+	double hor_space = tan(Hfov)*distance;
+	//double Hor_angle = atan(HorizontalDev / distance) * 180 / PI;
+	double HorizontalDev = atan(a1*PI / 180) * distance;
+	//	double HorizontalDev = (hor_space * (point.x - center.x) / center.x);
+	double x = HorizontalDev * center.x / hor_space - center.x;
+
+	return cv::Point(x, y);
+
+}
 void Simulator::drawCircle(cv::Point start, int radius, int thickness, CvScalar color) {
 
 	double i, angle, x1, y1;
@@ -564,6 +611,15 @@ HSVColorRange Simulator::GetObjectThresholds(int index, const std::string &name)
 double Simulator::FrontCamera::getDistanceInverted(const cv::Point2d &pos, const cv::Point2d &orgin) const {
 	return 100;
 }
+
+cv::Mat & Simulator::FrontCamera::Capture(bool bFullFrame) {
+	{
+		std::lock_guard<std::mutex> lock(pSim->mutex);
+		pSim->front_frame_copy.copyTo(front_frame);
+	}
+	return front_frame;
+}
+
 
 po::options_description desc("Allowed options");
 
