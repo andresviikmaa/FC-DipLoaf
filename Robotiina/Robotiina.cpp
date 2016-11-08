@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
 			delete m_pFrontCamera;
 		}
 	}
-	catch (const boost::exception const& e)
+	catch (const boost::exception & e)
 	{
 		std::cout << boost::diagnostic_information(e) << std::endl;
 	}
