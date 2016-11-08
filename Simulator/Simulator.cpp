@@ -556,22 +556,19 @@ cv::Point Simulator::MainCamPos(cv::Point2d pos) {
 cv::Point Simulator::FrontCamPos(cv::Point2d pos) {
 
 	double a1 = angleBetween(cv::Point(0, -1), self.fieldCoords - pos) + self.angle;
-	//if (a1 > 210 || a1 < 150)  return (-1, -1);
-	double Hfov = 35.21;
-	double Vfov = 21.65; //half of cameras vertical field of view (degrees)
-	double CamHeight = 345; //cameras height from ground (mm)
-	double CamAngleDev = 5; //deviation from 90* between ground
+
+
 
 	cv::Point center = front_frame.size() / 2;
 	double diag = cv::norm(self.fieldCoords - pos);
 	double distanceX = sin(a1*PI / 180) * diag;
 	double distanceY = cos(a1*PI / 180) * diag;
 	//double distance = CamHeight / tan(angle * PI / 180);
-	double angle = atan(CamHeight / distanceY) / PI * 180;
+	double angle = atan(m_frontCamera.CamHeight / distanceY) / PI * 180;
 	// double angle = (Vfov * (point.y - center.y) / center.y) + CamAngleDev;
-	double y = (angle - CamAngleDev) / Vfov * (-distanceY);
+	double y = (angle - m_frontCamera.CamAngleDev) / m_frontCamera.Vfov * (-distanceY)/1.5;
 	if (angle > 180) angle = angle - 360;
-	double hor_space = atan(Hfov/180*PI)*distanceX;
+	double hor_space = atan(m_frontCamera.Hfov/180*PI)*distanceX;
 	//double Hor_angle = atan(HorizontalDev / distance) * 180 / PI;
 	double HorizontalDev = sin(angle*PI / 180) * distanceX;
 	//	double HorizontalDev = (hor_space * (point.x - center.x) / center.x);
