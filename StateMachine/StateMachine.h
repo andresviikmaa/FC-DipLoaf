@@ -78,5 +78,6 @@ public:
 	virtual ~StateMachine();
 	std::string GetDebugInfo();
 	virtual void Enable(bool enable) {};
+	virtual void ProcessCommand(const std::string &command) {};
 };
 

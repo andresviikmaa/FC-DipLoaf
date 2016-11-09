@@ -21,10 +21,11 @@ void SerialToUdp::WriteString(const std::string &s) {
 	std::lock_guard<std::mutex> lock(writeLock);
 	this->SendMessage(s);
 }
-void SerialToUdp::MessageReceived(const std::string & message) {
+bool SerialToUdp::MessageReceived(const std::string & message) {
 	if (messageCallback != nullptr) {
 		messageCallback->DataReceived(message);
 	}
+	return true;
 }
 
 void SerialToUdp::Run() {

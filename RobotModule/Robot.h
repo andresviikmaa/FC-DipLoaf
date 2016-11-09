@@ -5,25 +5,6 @@
 #include "../CommonModule/UdpServer.h"
 #include <boost/asio.hpp>
 
-enum STATE
-{
-	STATE_NONE = 0,
-	STATE_AUTOCALIBRATE,
-	STATE_CALIBRATE,
-	STATE_LAUNCH,
-	STATE_SELECT_GATE,
-	STATE_RUN,
-	STATE_SETTINGS,
-	STATE_REMOTE_CONTROL,
-	STATE_MANUAL_CONTROL,
-	STATE_DANCE,
-	STATE_TEST,
-	STATE_MOUSE_VISION,
-	STATE_DISTANCE_CALIBRATE,
-	STATE_GIVE_COMMAND,
-	STATE_END_OF_GAME /* leave this last*/
-};
-
 class Robot: public UdpServer {
 private:
 	IVisionModule *m_pMainVision = NULL;
@@ -32,14 +13,7 @@ private:
 	std::map<std::string, IStateMachine *> m_AutoPilots;
 	std::string curPlayMode = "idle";
 	std::string lastPlayMode = "idle";
-    //STATE state = STATE_NONE;
-    std::atomic<STATE> state;
-	std::atomic<STATE> last_state;
-	//void InitHardware();
-	//void InitSimulator(bool master, const std::string game_mode);
-//	void initWheels();
-//	void initCoilboard();
-	//void initRefCom();
+
 
 	void Run();
     boost::mutex remote_mutex;
@@ -55,17 +29,8 @@ public:
 	bool Launch(const std::string &play_mode);
 	~Robot();
 
-    int GetState() {
-        return state;
-    }
-	int GetLastState() {
-		return last_state;
-	}
-    void SetState(STATE new_state) {
-		last_state = (STATE)state;
-        state = new_state;
-    }
 	void SendFieldState();
-	void MessageReceived(const std::string & message);
+	bool MessageReceived(const boost::array<char, BUF_SIZE>& buffer, size_t size);
+	bool MessageReceived(const std::string & message);
 
 };

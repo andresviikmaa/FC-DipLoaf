@@ -3,6 +3,7 @@
 extern "C" {
 	class FieldState {
 	public:
+		uchar reserved = 0;
 		uint stateSize;
 
 		//group 4  together

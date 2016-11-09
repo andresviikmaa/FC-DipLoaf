@@ -22,5 +22,6 @@ public:
 		rotation = 0;
 	
 	};
+	virtual void ProcessCommand(const std::string &command);
 };
 

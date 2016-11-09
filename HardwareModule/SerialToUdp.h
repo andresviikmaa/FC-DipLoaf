@@ -16,7 +16,7 @@ public:
 	SerialToUdp(boost::asio::io_service &io, const std::string &host, unsigned short port);
 	virtual void SendCommand(int id, const std::string &cmd, int param = INT_MAX);
 	virtual void WriteString(const std::string &s);
-	virtual void MessageReceived(const std::string & message);
+	virtual bool MessageReceived(const std::string & message);
 	virtual void SetMessageHandler(ISerialListener* callback) {
 		messageCallback = callback;
 	}

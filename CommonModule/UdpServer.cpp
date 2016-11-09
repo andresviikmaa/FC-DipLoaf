@@ -39,14 +39,18 @@ void UdpServer::start_receive()
 }
 
 void UdpServer::handle_receive(const boost::system::error_code& error,
-	std::size_t /*bytes_transferred*/)
+	std::size_t size /*bytes_transferred*/)
 {
 	//std::cout << "handle_receive" << std::endl;
 	if (!error || error == boost::asio::error::message_size)
 	{
-		std::string message = std::string(recv_buffer_.begin(), recv_buffer_.end());
-		std::cout << "udp packet:" << message << std::endl;
-		MessageReceived(message);
+		if (!MessageReceived(recv_buffer_, size)) {
+
+			std::string message = std::string(recv_buffer_.begin(), recv_buffer_.end());
+			message.resize(size);
+			std::cout << "udp packet:" << message << std::endl;
+			MessageReceived(message);
+		}
 		/*
 		boost::shared_ptr<std::string> message(
 		new std::string(make_daytime_string()));

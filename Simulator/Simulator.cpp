@@ -106,7 +106,7 @@ void Simulator::DataReceived(const std::string & message) {//serial
 		messageCallback->DataReceived(message);
 	}
 }
-void Simulator::MessageReceived(const std::string & message) { //udp
+bool Simulator::MessageReceived(const std::string & message) { //udp
 	std::stringstream ss(message);
 	std::string command, r_id;
 	ss >> command;
@@ -190,6 +190,7 @@ void Simulator::MessageReceived(const std::string & message) { //udp
 	if (id < 0) {
 		SendMessage("ID? #"); // ask slave id again
 	}
+	return true;
 }
 void Simulator::UpdateGatePos() {
 

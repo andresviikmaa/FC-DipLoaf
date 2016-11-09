@@ -19,6 +19,7 @@
 #include "ManualControl.h"
 
 extern FieldState gFieldState;
+extern FieldState gPartnerState;
 
 #define STATE_BUTTON(name, shortcut, new_state) \
 m_pDisplay->createButton(std::string("") + name, shortcut, [&](){ this->SetState(new_state); });
@@ -50,7 +51,11 @@ public:
 
 };
 
-
+enum COMMAND : uchar {
+	COMMAND_STATE = 0,
+	COMMAND_SET_PLAY_MODE,
+	COMMAND_MANUAL_CONTROL,
+};
 
 //TODO: convert to commandline options
 //#define USE_ROBOTIINA_WIFI
@@ -103,9 +108,33 @@ void Robot::SendFieldState() {
 	SendData(pData, sizeof(FieldState));
 
 }
+bool Robot::MessageReceived(const boost::array<char, BUF_SIZE>& buffer, size_t size) {
+	COMMAND code = (COMMAND)buffer[0];
+	if (code == COMMAND_STATE && size == sizeof(FieldState)) {
+		memcpy(&gPartnerState, &buffer, size);
+		return true;
+	}
+	return false; 
+};
 
-void Robot::MessageReceived(const std::string & message) {
+bool Robot::MessageReceived(const std::string & message) {
 	std::cout << "MessageReceived: " << message << std::endl;
+	if (message.empty()) return false;
+	COMMAND code = (COMMAND)message[0];
+	std::string newMode = "";
+	if (code == COMMAND_SET_PLAY_MODE) {
+		std::string newMode = message.substr(1);
+		if (m_AutoPilots.find(newMode) != m_AutoPilots.end()) {
+			m_AutoPilots[curPlayMode]->Enable(false);
+			curPlayMode = newMode;
+			m_AutoPilots[curPlayMode]->Enable(true);
+		}
+	} else if(code == COMMAND_MANUAL_CONTROL) {
+		if (curPlayMode == "manual") {
+			m_AutoPilots[curPlayMode]->ProcessCommand(message.substr(1));
+		}
+	}
+	return true;
 };
 void Robot::Run()
 {
@@ -133,13 +162,15 @@ void Robot::Run()
 			m_pMainVision->PublishState();
 			m_pFrontVision->PublishState();
 			m_pComModule->ProcessCommands();
+			
+			SendFieldState();
+			io.poll();
+
 			m_AutoPilots[curPlayMode]->Step(dt);
 
 			//io.reset();
 			//io.poll_one();
 
-			SendFieldState();
-			io.poll();
 			// MessageReceived handled 
 			/*
 			subtitles.str("");

@@ -72,7 +72,7 @@ public:
 	};
 
 	virtual void DataReceived(const std::string & message);//serial
-	virtual void MessageReceived(const std::string & message); // UDP
+	virtual bool MessageReceived(const std::string & message); // UDP
 
 	void giveCommand(GameMode command);
 	void SendCommand(int id, const std::string &cmd, int param = INT_MAX) {

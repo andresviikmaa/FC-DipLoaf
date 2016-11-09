@@ -66,6 +66,7 @@ public:
 	virtual void enableTestMode(bool enable) = 0;
 	virtual std::string GetDebugInfo() = 0;
 	virtual void Enable(bool enable) = 0;
+	virtual void ProcessCommand(const std::string &command) {};
 };
 
 class ISerialListener {

@@ -3,6 +3,8 @@
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 #include <boost/bind.hpp>
+#include <boost/shared_array.hpp>
+#define BUF_SIZE 4000
 class UdpServer
 {
 public:
@@ -19,7 +21,8 @@ protected:
 		const boost::system::error_code& /*error*/,
 		std::size_t /*bytes_transferred*/);
 
-	virtual void MessageReceived(const std::string & message){};
+	virtual bool MessageReceived(const std::string & message) { return false;  };
+	virtual bool MessageReceived(const boost::array<char, BUF_SIZE>& buffer, size_t size) { return false; };
 	void SendMessage(const std::string &message);
 	void SendData(const char * data, size_t size);
 private:
@@ -27,7 +30,7 @@ private:
 	boost::asio::ip::udp::socket broadcast_socket;
 	boost::asio::ip::udp::endpoint broadcast_endpoint;
 	boost::asio::ip::udp::endpoint recv_endpoint;
-	boost::array<char, 200> recv_buffer_;
+	boost::array<char, BUF_SIZE> recv_buffer_;
 
 };
 
