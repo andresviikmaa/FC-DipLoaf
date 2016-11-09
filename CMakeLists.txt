@@ -22,8 +22,11 @@ find_package(Boost 1.58.0 COMPONENTS program_options system thread chrono date_t
 include_directories(${Boost_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 
 #endif()
+OPTION(SHOW_UI "Show UI" OFF)
 
+IF(SHOW_UI)
     ADD_DEFINITIONS(-DSHOW_UI)
+ENDIF(SHOW_UI)
 
 ADD_LIBRARY( CommonModule STATIC
    CommonModule/ConfigurableModule.cpp
