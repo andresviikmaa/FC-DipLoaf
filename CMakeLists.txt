@@ -23,6 +23,8 @@ include_directories(${Boost_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 
 #endif()
 
+    ADD_DEFINITIONS(-DSHOW_UI)
+
 ADD_LIBRARY( CommonModule STATIC
    CommonModule/ConfigurableModule.cpp
    CommonModule/FieldState.cpp
