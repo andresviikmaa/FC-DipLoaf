@@ -61,8 +61,11 @@ boost::asio::ip::address brdc_addr = boost::asio::ip::address::from_string("10.0
 #else
 // any local network
 boost::asio::ip::address bind_addr = boost::asio::ip::address::from_string("0.0.0.0"); // all interfaces
-//boost::asio::ip::address brdc_addr = boost::asio::ip::address_v4::broadcast(); // local network
+#ifdef WIN32
 boost::asio::ip::address brdc_addr = boost::asio::ip::address::from_string("127.255.255.255"); // netmask 255.255.255.240
+#else
+boost::asio::ip::address brdc_addr = boost::asio::ip::address_v4::broadcast(); // local network
+#endif
 
 #endif
 
