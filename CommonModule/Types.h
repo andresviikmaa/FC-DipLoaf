@@ -19,19 +19,12 @@ struct HSVColorRange
 
 struct Speed
 {
-	union {
-		struct {
-			double velocity;
-			double heading;
-			double rotation;
-		};
-		struct
-		{
-			double x;
-			double y;
-			double r;
-		};
+	struct {
+		double velocity;
+		double heading;
+		double rotation;
 	};
+
 };
 typedef struct {
 	double x;

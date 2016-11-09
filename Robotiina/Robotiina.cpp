@@ -29,6 +29,7 @@ po::options_description desc("Allowed options");
 
 
 boost::asio::io_service io;
+boost::asio::io_service io2;
 
 int main(int argc, char* argv[])
 {
@@ -91,7 +92,7 @@ int main(int argc, char* argv[])
 			m_pFrontCamera = new Camera("front", "0");
 
 		std::cout << "Done" << std::endl;
-		SerialToUdp mainboard(io, "127.0.0.2", 5000);
+		SerialToUdp mainboard(io2, "127.0.0.2", 5000);
 		Robot robot(io, m_pCamera, m_pFrontCamera, &mainboard, play_mode == "single1");
 		robot.Launch(play_mode);
 

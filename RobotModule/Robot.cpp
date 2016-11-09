@@ -16,6 +16,7 @@
 #include "../VisionModule/MainCameraVision.h"
 #include "../VisionModule/FrontCameraVision.h"
 #include "../CommonModule/FieldState.h"
+#include "ManualControl.h"
 
 extern FieldState gFieldState;
 
@@ -28,6 +29,26 @@ m_pDisplay->clearButtons();
 #define END_DIALOG } \
 last_state = (STATE)state; 
 
+
+class StopAndDoNothing :
+	public IStateMachine
+{
+protected:
+	ICommunicationModule *m_pComModule;
+public:
+	StopAndDoNothing(ICommunicationModule *pComModule) :m_pComModule(pComModule) {};
+	~StopAndDoNothing() {};
+	virtual void Step(double dt) {
+		m_pComModule->Drive(0, 0, 0);
+		m_pComModule->ToggleTribbler(0);
+	};
+	virtual void enableTestMode(bool enable) {}
+	virtual std::string GetDebugInfo() {
+		return "";
+	}
+	virtual void Enable(bool enable) {};
+
+};
 
 
 
@@ -64,13 +85,10 @@ Robot::~Robot()
 
 bool Robot::Launch(const std::string &play_mode)
 {
-	/* Logic modules */
-	if (play_mode == "master" || play_mode == "slave") {
-		m_pAutoPilot = new MultiModePlay(m_pComModule, play_mode == "master");
-	}
-	else {
-		m_pAutoPilot = new SingleModePlay(m_pComModule);
-	}
+	m_AutoPilots.insert(std::make_pair("idle", new StopAndDoNothing(m_pComModule)));
+	m_AutoPilots.insert(std::make_pair("1vs1", new SingleModePlay(m_pComModule)));
+	m_AutoPilots.insert(std::make_pair("2vs2", new MultiModePlay(m_pComModule, play_mode == "master")));
+	m_AutoPilots.insert(std::make_pair("manual", new ManualControl(m_pComModule)));
 
 	Run();
 
@@ -83,6 +101,9 @@ void Robot::SendFieldState() {
 
 }
 
+void Robot::MessageReceived(const std::string & message) {
+	std::cout << "MessageReceived: " << message << std::endl;
+};
 void Robot::Run()
 {
 	double t1 = (double)cv::getTickCount();
@@ -91,6 +112,7 @@ void Robot::Run()
 	std::stringstream subtitles;
 	double fps = 0.;
 	size_t counter = 0;
+	//m_AutoPilots[curPlayMode]->Reset();
 	try {
 		m_pMainVision->Enable(true);
 		m_pFrontVision->Enable(true);
@@ -108,12 +130,14 @@ void Robot::Run()
 			m_pMainVision->PublishState();
 			m_pFrontVision->PublishState();
 			m_pComModule->ProcessCommands();
-			m_pAutoPilot->Step(dt);
+			m_AutoPilots[curPlayMode]->Step(dt);
 
 			//io.reset();
 			//io.poll_one();
 
 			SendFieldState();
+			io.poll();
+			// MessageReceived handled 
 			/*
 			subtitles.str("");
 			//subtitles << oss.str();
@@ -134,9 +158,9 @@ void Robot::Run()
 		;
 	}
 
+	for(auto pilot: m_AutoPilots)
+		delete pilot.second;
 
-	if (m_pAutoPilot != NULL)
-		delete m_pAutoPilot;
 	if (m_pComModule != NULL)
 		delete m_pComModule;
 	if (m_pMainVision != NULL)

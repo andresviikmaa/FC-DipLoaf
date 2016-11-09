@@ -29,9 +29,9 @@ private:
 	IVisionModule *m_pMainVision = NULL;
 	IVisionModule *m_pFrontVision = NULL;
 	ICommunicationModule *m_pComModule = NULL;
-	IStateMachine *m_pAutoPilot = NULL;
-
-
+	std::map<std::string, IStateMachine *> m_AutoPilots;
+	std::string curPlayMode = "idle";
+	std::string lastPlayMode = "idle";
     //STATE state = STATE_NONE;
     std::atomic<STATE> state;
 	std::atomic<STATE> last_state;
@@ -66,4 +66,6 @@ public:
         state = new_state;
     }
 	void SendFieldState();
+	void MessageReceived(const std::string & message);
+
 };

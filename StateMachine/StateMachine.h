@@ -77,5 +77,6 @@ public:
 	void enableTestMode(bool enable);
 	virtual ~StateMachine();
 	std::string GetDebugInfo();
+	virtual void Enable(bool enable) {};
 };
 

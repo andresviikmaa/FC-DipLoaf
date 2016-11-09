@@ -685,10 +685,12 @@ int main(int argc, char* argv[])
 	});
 
 	Simulator Sim(io, simulator_mode == "master", play_mode);
-	Robot robot(io, &Sim, &Sim.GetFrontCamera(), &Sim, play_mode == "single1");
-
+	boost::asio::io_service io2;
+	Robot robot(io2, &Sim, &Sim.GetFrontCamera(), &Sim, play_mode == "single1");
+	
 	robot.Launch(play_mode);
 	stop_io = true;
+	io2.stop();
     return 0;
 }
 

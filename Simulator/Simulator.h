@@ -92,7 +92,9 @@ public:
 	virtual void SendPartnerMessage(const std::string message) {};
 	virtual HSVColorRange GetObjectThresholds(int index, const std::string &name);
 	double getDistanceInverted(const cv::Point2d &pos, const cv::Point2d &orgin) const;
-
+	virtual void PollData() {
+		;
+	}
 protected:
 	ISerialListener *messageCallback = NULL;
 	FrontCamera m_frontCamera;

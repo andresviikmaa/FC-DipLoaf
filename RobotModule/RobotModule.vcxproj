@@ -196,9 +196,11 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ManualControl.cpp" />
     <ClCompile Include="Robot.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ManualControl.h" />
     <ClInclude Include="Robot.h" />
   </ItemGroup>
   <ItemGroup>
