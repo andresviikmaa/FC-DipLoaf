@@ -2,7 +2,7 @@
 #include "../CommonModule/Interfaces.h"
 #include "../CommonModule/UdpServer.h"
 #include "../CommonModule/ThreadedClass.h"
-
+#include <mutex>
 class SerialToUdp :
 	public ISerial, public UdpServer, public ThreadedClass
 {

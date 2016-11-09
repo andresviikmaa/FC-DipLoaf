@@ -1,5 +1,5 @@
 #pragma once
-#include "C:\personal\github\FC-DipLoaf\CommonModule\Interfaces.h"
+#include "../CommonModule/Interfaces.h"
 class ManualControl :
 	public IStateMachine
 {

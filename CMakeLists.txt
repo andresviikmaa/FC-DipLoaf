@@ -44,6 +44,7 @@ ADD_LIBRARY( HardwareModule STATIC
 )
 ADD_LIBRARY( RobotModule STATIC
    RobotModule/Robot.cpp
+   RobotModule/ManualControl.cpp
 )
 ADD_LIBRARY( VisionModule STATIC
    VisionModule/BallFinder.cpp
