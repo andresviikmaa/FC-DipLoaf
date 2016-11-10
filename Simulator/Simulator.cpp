@@ -256,9 +256,9 @@ void Simulator::UpdateBallPos(double dt) {
 		if (a < 0) a += 360;
 		balls[i].polarMetricCoords.y = a;
 		SYNC_OBJECT(balls[i]);
-		cv::circle(frame, MainCamPos(balls[i].fieldCoords), 12, colors[BALL] + cv::Scalar(i * 4, i * 4, i * 4), -1);
+		cv::circle(frame, MainCamPos(balls[i].fieldCoords), 12, colors[BALL] , -1);
 		// front camera
-		cv::circle(front_frame, FrontCamPos(balls[i].fieldCoords), 12, colors[BALL]+cv::Scalar(i*4, i*4, i*4), -1);
+		cv::circle(front_frame, FrontCamPos(balls[i].fieldCoords), 12, colors[BALL], -1);
 
 	}
 	if (isMaster) {

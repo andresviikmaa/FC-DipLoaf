@@ -15,9 +15,10 @@ ManualControl::~ManualControl()
 void ManualControl::Step(double dt) {
 	m_pComModule->Drive(speed, rotation);
 
+	// deaccelerate
 	rotation -= sign0(rotation);
-	speed.x -= sign0(acc.x)*dt;
-	speed.y -= sign0(acc.y)*dt;
+	speed.x -= sign0(speed.x)*dt; 
+	speed.y -= sign0(speed.y)*dt;
 }
 
 void ManualControl::ProcessCommand(const std::string &command) {
@@ -26,35 +27,35 @@ void ManualControl::ProcessCommand(const std::string &command) {
 	ss >> key;
 	switch (key)
 	{
-		case 'r':
+		case 'R':
 			rotation -= 10;
 			break;
-		case 'l':
+		case 'L':
 			rotation += 10;
 			break;
-		case 'a':
+		case 'A':
 			speed.x -= 10;
 			break;
-		case 'd':
+		case 'D':
 			speed.x += 10;
 			break;
-		case 'w':
+		case 'W':
 			speed.y += 10;
 			break;
-		case 's':
+		case 'S':
 			speed.y -= 10;
 			break;
-		case 'q':
+		case 'Q':
 			speed = cv::Point2d(0, 0); 
 			rotation = 0;
 			break;
-		case 'k':
+		case 'K':
 			m_pComModule->Kick(2500);
 			break;
-		case 'z':
+		case 'Z':
 			m_pComModule->ToggleTribbler(100);
 			break;
-		case 'x':
+		case 'X':
 			m_pComModule->ToggleTribbler(0);
 			break;
 		default:

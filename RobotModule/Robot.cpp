@@ -165,13 +165,10 @@ void Robot::Run()
 			
 			SendFieldState();
 			io.poll();
+			// MessageReceived handled 
 
 			m_AutoPilots[curPlayMode]->Step(dt);
-
-			//io.reset();
-			//io.poll_one();
-
-			// MessageReceived handled 
+			Sleep(1);
 			/*
 			subtitles.str("");
 			//subtitles << oss.str();
