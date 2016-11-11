@@ -7,7 +7,7 @@ class MultiModePlay :
 private:
 	bool isMaster;
 public:
-	MultiModePlay(ICommunicationModule *pComModule, bool bMaster);
+	MultiModePlay(ISoccerRobot *pComModule, bool bMaster);
 	~MultiModePlay();
 };
 

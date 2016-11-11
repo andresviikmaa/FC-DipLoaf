@@ -58,7 +58,7 @@ public:
 	DriveMode preCrashState = DRIVEMODE_IDLE;
 private:
 	TDriveModes::const_iterator curDriveMode;
-	ICommunicationModule *m_pComModule;
+	ISoccerRobot *m_pComModule;
 
 	std::atomic_bool drive;
 	boost::mutex mutex;
@@ -72,7 +72,7 @@ private:
 protected:
 	void Step(double dt);
 public:
-	StateMachine(ICommunicationModule *pComModule, const TDriveModes &driveModes);
+	StateMachine(ISoccerRobot *pComModule, const TDriveModes &driveModes);
 	void setTestMode(DriveMode mode);
 	void enableTestMode(bool enable);
 	virtual ~StateMachine();

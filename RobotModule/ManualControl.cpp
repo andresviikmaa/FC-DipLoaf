@@ -3,7 +3,7 @@
 
 #define sign0(x) ((x > 0) - (x < 0))
 
-ManualControl::ManualControl(ICommunicationModule *pComModule) :m_pComModule(pComModule)
+ManualControl::ManualControl(ISoccerRobot *pComModule) :m_pComModule(pComModule)
 {
 }
 

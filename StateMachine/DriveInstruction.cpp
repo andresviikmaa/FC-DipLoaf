@@ -9,7 +9,7 @@ extern FieldState gFieldState;
 DriveInstruction::DriveInstruction(const std::string &name) : name(name) {
 };
 
-void DriveInstruction::Init(ICommunicationModule *pCom) {
+void DriveInstruction::Init(ISoccerRobot *pCom) {
 	m_pCom = pCom;
 };
 void DriveInstruction::onEnter() {

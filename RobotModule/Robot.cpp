@@ -35,9 +35,9 @@ class StopAndDoNothing :
 	public IStateMachine
 {
 protected:
-	ICommunicationModule *m_pComModule;
+	ISoccerRobot *m_pComModule;
 public:
-	StopAndDoNothing(ICommunicationModule *pComModule) :m_pComModule(pComModule) {};
+	StopAndDoNothing(ISoccerRobot *pComModule) :m_pComModule(pComModule) {};
 	~StopAndDoNothing() {};
 	virtual void Step(double dt) {
 		m_pComModule->Drive(0, 0, 0);

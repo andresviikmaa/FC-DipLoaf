@@ -118,3 +118,21 @@ enum RobotColor : uchar {
 	ROBOT_COLOR_BLUE_UP
 };
 
+/*
+<toggle-side>
+<toggle-go>
+<ball:%d>
+<speeds:%d:%d:%d:%d:%d>
+*/
+// Filled by Com Module
+struct RobotState {
+	uint reserved = 1;
+	uint stateSize;
+	RobotPosition self; //Robot distance on field
+	bool ballInTribbler;
+	int tribblerSpeed;
+	RobotColor color;
+	// autopilot state
+};
+
+

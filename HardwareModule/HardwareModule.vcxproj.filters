@@ -18,19 +18,10 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="blockingreader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ComModule.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="refereeCom.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SimpleSerial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WheelController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HardwareInterfaces.h">
@@ -42,9 +33,6 @@
     <ClInclude Include="Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SerialToUdp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ComModule.cpp">
@@ -53,16 +41,10 @@
     <ClCompile Include="refereeCom.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WheelController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CoilBoard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SerialToUdp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

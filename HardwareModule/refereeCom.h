@@ -1,6 +1,5 @@
 #pragma once
 //#include "types.h"
-#include "SimpleSerial.h"
 #include "../CommonModule/ThreadedClass.h"
 #include "../CommonModule/ConfigurableModule.h"
 #include "../CommonModule/Interfaces.h"
@@ -26,19 +25,3 @@ private:
 	void nextTeam();
 	void nextRobot();
 };
-
-class LLAPReceiver : public RefereeCom
-{
-public:
-	LLAPReceiver(ISerial *pSerial, const std::string &name = "Referee");
-	~LLAPReceiver();
-
-	bool isTogglable() { return true; }
-	virtual void DataReceived(const std::string & message);
-	virtual void sendAck(const std::string & message){
-		m_pSerial->WriteString(message);
-	}
-protected:
-	ISerial *m_pSerial;
-};
-

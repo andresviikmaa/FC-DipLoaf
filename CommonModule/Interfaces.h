@@ -69,32 +69,19 @@ public:
 	virtual void ProcessCommand(const std::string &command) {};
 };
 
-class ISerialListener {
-public:
-	virtual void DataReceived(const std::string & message) = 0;
-};
-class ISerial : public ISerialListener {
-public:
-	virtual void SendCommand(int id, const std::string &cmd, int param = INT_MAX) = 0;
-	virtual void WriteString(const std::string &s) = 0;
-	virtual void SetMessageHandler(ISerialListener* callback) {};
-};
 
-
-
-class ICommunicationModule {
+class ISoccerRobot: public RobotState {
 public:
 	virtual void Drive(double fowardSpeed, double direction = 0, double angularSpeed = 0) = 0;
-	// needed for spinAroundDribbler https://github.com/kallaspriit/soccervision/blob/80840c921ad0935ed2e0718ed405613af3e51aa1/src/Robot.cpp#L385
 	virtual void Drive(const Speed &speed) = 0; /* forward, direction, rotation */
 	virtual void Drive(const cv::Point2d &speed, double angularSpeed = 0) = 0;
 	virtual bool BallInTribbler(bool wait = false) = 0;
-	virtual long BallInTribblerTime() = 0;
 	virtual void Kick(int force) = 0;
 	virtual void ToggleTribbler(int speed) = 0;
+	virtual void SetServoPos(int pos) = 0;
 	virtual std::string GetDebugInfo() = 0;
 	virtual void ProcessCommands() = 0;
-	//	virtual void SetRobotColor() = 0;
-	//	virtual void SetGateColor() = 0;
+	virtual void SendMessages() = 0;;
+
 
 };

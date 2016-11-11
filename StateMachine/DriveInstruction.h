@@ -5,7 +5,7 @@
 #define sign0(x) ((x > 0) - (x < 0))
 
 class IFieldState;
-class ICommunicationModule;
+class ISoccerRobot;
 
 typedef int DriveMode;
 const DriveMode DRIVEMODE_CRASH = 0;
@@ -19,14 +19,14 @@ class DriveInstruction
 {
 protected:
 	boost::posix_time::ptime actionStart;
-	ICommunicationModule *m_pCom;
+	ISoccerRobot *m_pCom;
 	Speed speed;
 	static DriveMode prevDriveMode;
 	static DriveMode ACTIVE_DRIVE_TO_BALL_MODE;
 public:
 	const std::string name;
 	DriveInstruction(const std::string &name) ;
-	void Init(ICommunicationModule *pCom);
+	void Init(ISoccerRobot *pCom);
 	virtual void onEnter();
 	virtual DriveMode step1(double dt, DriveMode driveMode);
 	virtual DriveMode step2(double dt, DriveMode driveMode);

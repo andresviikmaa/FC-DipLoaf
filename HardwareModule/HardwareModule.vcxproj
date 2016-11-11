@@ -196,23 +196,17 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="blockingreader.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CoilBoard.h" />
     <ClInclude Include="ComModule.h" />
     <ClInclude Include="HardwareInterfaces.h" />
     <ClInclude Include="refereeCom.h" />
-    <ClInclude Include="SerialToUdp.h" />
-    <ClInclude Include="SimpleSerial.h" />
-    <ClInclude Include="WheelController.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CoilBoard.cpp" />
     <ClCompile Include="ComModule.cpp" />
     <ClCompile Include="refereeCom.cpp" />
-    <ClCompile Include="SerialToUdp.cpp" />
-    <ClCompile Include="WheelController.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

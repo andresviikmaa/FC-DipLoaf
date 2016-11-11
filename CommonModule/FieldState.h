@@ -1,8 +1,8 @@
 #pragma once
 #include "Types.h"
 extern "C" {
-	class FieldState {
-	public:
+	// Filled by Vision Module
+	struct FieldState {
 		uint reserved = 0;
 		uint stateSize;
 
@@ -16,13 +16,11 @@ extern "C" {
 		bool obstacleNearBall;
 		bool gateObstructed;
 		OBJECT targetGate;
-
 		OBJECT homeGate;
 		uchar ballCount; // number or balls visible
 		uchar closestBall; // index to closeset ball by distance
 		uchar closestBallInFront;
 		ObjectPosition partner;
-		RobotPosition self; //Robot distance on field
 		GatePosition gates[2]; //0 - BLUE_GATE, 1 -YELLOW_GATE
 		ObjectPosition opponents[2];
 		cv::Point2d collisionRange; // which directions are blocked
@@ -35,4 +33,6 @@ extern "C" {
 		//GatePosition homeGate;
 		*/
 	};
+
 }
+

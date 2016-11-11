@@ -10,6 +10,7 @@ class UdpServer
 public:
 	UdpServer(boost::asio::io_service &io, unsigned short port, bool master);
 	UdpServer(boost::asio::io_service &io, const std::string &host, unsigned short port);
+	UdpServer(boost::asio::io_service &io, const std::string &host, unsigned short port1, unsigned short port2);
 	~UdpServer();
 protected:
 	void start_receive();

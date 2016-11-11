@@ -379,6 +379,6 @@ std::pair<DriveMode, DriveInstruction*> SingleDriveModes[] = {
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_BORDER_TO_CLOSE, new BorderToClose()),
 };
 
-SingleModePlay::SingleModePlay(ICommunicationModule *pComModule)
+SingleModePlay::SingleModePlay(ISoccerRobot *pComModule)
 		:StateMachine(pComModule, TDriveModes(SingleDriveModes, SingleDriveModes + sizeof(SingleDriveModes) / sizeof(SingleDriveModes[0]))){};
 

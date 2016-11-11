@@ -24,6 +24,15 @@ UdpServer::UdpServer(boost::asio::io_service &io, const std::string &host, unsig
 	start_receive();
 }
 
+UdpServer::UdpServer(boost::asio::io_service &io, const std::string &host, unsigned short port1, unsigned short port2)
+	: recv_socket(io, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port1))
+	, broadcast_socket(io, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port1+1))
+	, recv_endpoint(boost::asio::ip::udp::v4(), port1)
+	, broadcast_endpoint(boost::asio::ip::address::from_string(host), port2)
+{
+	start_receive();
+}
+
 
 UdpServer::~UdpServer()
 {

@@ -526,7 +526,7 @@ std::pair<DriveMode, DriveInstruction*> SlaveDriveModes[] = {
 //	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_CATCH_BALL, new CatchBall()),
 };
 
-MultiModePlay::MultiModePlay(ICommunicationModule *pComModule, bool bMaster) :StateMachine(pComModule,
+MultiModePlay::MultiModePlay(ISoccerRobot *pComModule, bool bMaster) :StateMachine(pComModule,
 	bMaster ? TDriveModes(MasterDriveModes, MasterDriveModes + sizeof(MasterDriveModes) / sizeof(MasterDriveModes[0]))
 	: TDriveModes(SlaveDriveModes, SlaveDriveModes + sizeof(SlaveDriveModes) / sizeof(SlaveDriveModes[0])))
 	, isMaster(bMaster){}

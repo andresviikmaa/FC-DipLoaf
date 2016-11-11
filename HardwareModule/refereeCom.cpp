@@ -86,16 +86,3 @@ void RefereeCom::handleMessage(const std::string & message){
 		}
 	}
 }
-
-/**********************************
-* HARDWARE RECEIVER IMPLEMENTATION
-***********************************/
-LLAPReceiver::LLAPReceiver(ISerial *pSerial, const std::string &name)
-	: RefereeCom(name), m_pSerial(pSerial) {}
-
-LLAPReceiver::~LLAPReceiver()
-{
-}
-void LLAPReceiver::DataReceived(const std::string & message){
-	handleMessage(message);
-};

@@ -2,7 +2,7 @@
 #include <algorithm>
 
 
-StateMachine::StateMachine(ICommunicationModule *pComModule,
+StateMachine::StateMachine(ISoccerRobot *pComModule,
 	const std::map<DriveMode, DriveInstruction*> &driveModes) :driveModes(driveModes)
 {
 	m_pComModule = pComModule;

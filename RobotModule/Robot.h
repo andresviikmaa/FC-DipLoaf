@@ -9,7 +9,7 @@ class Robot: public UdpServer {
 private:
 	IVisionModule *m_pMainVision = NULL;
 	IVisionModule *m_pFrontVision = NULL;
-	ICommunicationModule *m_pComModule = NULL;
+	ISoccerRobot *m_pComModule = NULL;
 	std::map<std::string, IStateMachine *> m_AutoPilots;
 	std::string curPlayMode = "idle";
 	std::string lastPlayMode = "idle";

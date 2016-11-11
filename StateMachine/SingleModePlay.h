@@ -70,5 +70,5 @@ public:
 class SingleModePlay : public StateMachine {
 public:
 
-	SingleModePlay(ICommunicationModule *pComModule);
+	SingleModePlay(ISoccerRobot *pComModule);
 };
