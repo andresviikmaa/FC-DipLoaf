@@ -74,12 +74,12 @@ boost::asio::ip::address brdc_addr = boost::asio::ip::address_v4::broadcast(); /
 
 #endif
 
-Robot::Robot(boost::asio::io_service &io, ICamera *pMainCamera, ICamera *pFrontCamera, ISerial* pSerial, bool master)
-	: io(io), UdpServer(io, 30000, master)
+Robot::Robot(boost::asio::io_service &io, ICamera *pMainCamera, ICamera *pFrontCamera, ISoccerRobot* pSoccerRobot, bool master)
+	: io(io), UdpServer(io, 30000, master), master(master)
 {
 	m_pMainVision = new MainCameraVision(pMainCamera);
 	m_pFrontVision = new FrontCameraVision(pFrontCamera);
-	m_pComModule = new ComModule(pSerial);
+	m_pComModule =pSoccerRobot;
 
 	assert(OBJECT_LABELS.size() == NUMBER_OF_OBJECTS);
 	autoPilotEnabled = false;
@@ -91,11 +91,11 @@ Robot::~Robot()
 }
 
 
-bool Robot::Launch(const std::string &play_mode)
+bool Robot::Launch()
 {
 	m_AutoPilots.insert(std::make_pair("idle", new StopAndDoNothing(m_pComModule)));
 	m_AutoPilots.insert(std::make_pair("1vs1", new SingleModePlay(m_pComModule)));
-	m_AutoPilots.insert(std::make_pair("2vs2", new MultiModePlay(m_pComModule, play_mode == "master")));
+	m_AutoPilots.insert(std::make_pair("2vs2", new MultiModePlay(m_pComModule, master)));
 	m_AutoPilots.insert(std::make_pair("manual", new ManualControl(m_pComModule)));
 
 	Run();

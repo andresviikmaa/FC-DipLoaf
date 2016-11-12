@@ -27,10 +27,10 @@
     <ClInclude Include="HardwareInterfaces.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CoilBoard.h">
+    <ClInclude Include="Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
+    <ClInclude Include="CoilBoard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -41,10 +41,10 @@
     <ClCompile Include="refereeCom.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CoilBoard.cpp">
+    <ClCompile Include="Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
+    <ClCompile Include="CoilBoard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

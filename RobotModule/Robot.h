@@ -13,7 +13,7 @@ private:
 	std::map<std::string, IStateMachine *> m_AutoPilots;
 	std::string curPlayMode = "idle";
 	std::string lastPlayMode = "idle";
-
+	bool master;
 
 	void Run();
     boost::mutex remote_mutex;
@@ -25,8 +25,8 @@ protected:
 //	SimpleSerial *serialPort;
 	boost::asio::io_service &io;
 public:
-    Robot(boost::asio::io_service &io, ICamera *pMainCamera, ICamera *pFrontCamera, ISerial*, bool master);
-	bool Launch(const std::string &play_mode);
+    Robot(boost::asio::io_service &io, ICamera *pMainCamera, ICamera *pFrontCamera, ISoccerRobot*, bool master);
+	bool Launch();
 	~Robot();
 
 	void SendFieldState();

@@ -2,9 +2,10 @@
 #include "../CommonModule/Interfaces.h"
 #include "refereeCom.h"
 #include "../CommonModule/UdpServer.h"
+#include "CoilBoard.h"
 
 class ComModule :
-	public ISoccerRobot, public UdpServer//, ThreadedClass
+	public ISoccerRobot, public UdpServer, public CoilBoard, public RefereeCom
 {
 protected:
 	boost::asio::io_service &io;
@@ -25,20 +26,27 @@ public:
 		SendMessage(ss.str());
 	};
 	virtual void Kick(int kick) {
-		ss.clear();
-		ss << "kick:" << kick;
-		SendMessage(ss.str());
+		if (KickAllowed(kick)) {
+			ss.clear();
+			ss << "kick:" << kick;
+			SendMessage(ss.str());
+		}
 	}
 	virtual void ToggleTribbler(int speed){
 		tribblerSpeed = speed;
 	}
-	std::string GetDebugInfo() {  }
+	virtual bool BallInTribbler(bool wait = false) {
+		return CoilBoard::BallInTribbler(wait);
+	}
+	virtual long BallInTribblerTime() {
+		return CoilBoard::BallInTribblerTime();
+	};
+	std::string GetDebugInfo() { return ""; }
 
 	virtual void ProcessCommands();
 
 	virtual bool MessageReceived(const std::string & message);
 	virtual void SendMessages();
-
 protected:
 
 };

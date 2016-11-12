@@ -7,14 +7,13 @@
 #include <mutex>
 
 const int MAX_ROBOTS = 10;
-class Simulator : public ICamera, public ISerial, public ThreadedClass, public UdpServer/*, public RefereeCom*/
+class Simulator : public ICamera, public ThreadedClass, public UdpServer/*, public RefereeCom*/
 {
 	class FrontCamera : public ICamera {
 	protected:
 		std::string sName = "front";
 		Simulator * pSim;
 		cv::Mat front_frame;
-
 	public:
 		FrontCamera(Simulator* sim) {
 			pSim = sim;
@@ -41,13 +40,29 @@ class Simulator : public ICamera, public ISerial, public ThreadedClass, public U
 		double CamHeight = 345; //cameras height from ground (mm)
 		double CamAngleDev = 26; //deviation from 90* between ground
 	};
-	using UdpServer::SendMessage;
+	class MainBoard : public UdpServer {
+	private:
+		Simulator * pSim;
+	public:
+		MainBoard(boost::asio::io_service & io, Simulator* sim): UdpServer(io, "localhost", 50001, 50002) {
+			pSim = sim;
+		}
+		bool MessageReceived(const std::string & message) {
+			pSim->HandleMainBoardCommand(message);
+			return false;
+		};
+		void SendMessage(const std::string &message) {
+			UdpServer::SendMessage(message);
+		};
+	};
+	//using UdpServer::SendMessage;
 public:
 	Simulator(boost::asio::io_service &io, bool master, const std::string game_mode);
 	virtual ~Simulator();
 	ICamera & GetFrontCamera() {
 		return m_frontCamera;
 	}
+	MainBoard mainboard;
 	std::string sName = "main";
 	const std::string & getName() { return sName; }
 	virtual cv::Mat & Capture(bool bFullFrame = false);
@@ -71,32 +86,15 @@ public:
 		tribblerRunning = start;
 	};
 
-	virtual void DataReceived(const std::string & message);//serial
 	virtual bool MessageReceived(const std::string & message); // UDP
 
 	void giveCommand(GameMode command);
-	void SendCommand(int id, const std::string &cmd, int param = INT_MAX) {
-		std::ostringstream oss;
-
-		oss << id << ":" << cmd;
-		if (param < INT_MAX) oss << param;
-		oss << "\n";
-		WriteString(oss.str());
-	};
-
-	virtual void WriteString(const std::string &s);
-	//virtual void DataReceived(const std::string & message){};
-	virtual void SetMessageHandler(ISerialListener *callback) {
-		messageCallback = callback;
-	};
 	virtual void SendPartnerMessage(const std::string message) {};
 	virtual HSVColorRange GetObjectThresholds(int index, const std::string &name);
 	double getDistanceInverted(const cv::Point2d &pos, const cv::Point2d &orgin) const;
-	virtual void PollData() {
-		;
-	}
+	void HandleMainBoardCommand(const std::string &command);
+
 protected:
-	ISerialListener *messageCallback = NULL;
 	FrontCamera m_frontCamera;
 	double orientation;
 	// main camera

@@ -14,6 +14,7 @@
 #include "../VisionModule/MainCameraVision.h"
 #include "../StateMachine/SingleModePlay.h"
 #include "../StateMachine/MultiModePlay.h"
+#include "../HardwareModule/ComModule.h"
 #include "opencv2/imgproc.hpp"
 
 namespace po = boost::program_options;
@@ -29,7 +30,7 @@ Simulator::Simulator(boost::asio::io_service &io, bool master, const std::string
 	, ThreadedClass("Simulator"), UdpServer(io, 31000, master)
 	, isMaster(master)
 	, ballCount(game_mode == "master" || game_mode == "slave" ? 1 : 11),
-	m_frontCamera(this)
+	m_frontCamera(this), mainboard(io, this)
 {
 	blueGate.fieldCoords = cv::Point(0, 230);	
 	yellowGate.fieldCoords = cv::Point(0, -230);
@@ -76,7 +77,7 @@ Simulator::Simulator(boost::asio::io_service &io, bool master, const std::string
 	};
 	Start();
 }
-void Simulator::WriteString(const std::string &command) {
+void Simulator::HandleMainBoardCommand(const std::string &command) {
 
 	std::vector<std::string> tokens;
 	boost::split(tokens, command, boost::is_any_of("\n"));
@@ -101,11 +102,7 @@ void Simulator::WriteString(const std::string &command) {
 	}
 
 }
-void Simulator::DataReceived(const std::string & message) {//serial
-	if (messageCallback != NULL) {
-		messageCallback->DataReceived(message);
-	}
-}
+
 bool Simulator::MessageReceived(const std::string & message) { //udp
 	std::stringstream ss(message);
 	std::string command, r_id;
@@ -377,10 +374,10 @@ void Simulator::UpdateBallIntTribbler(cv::Mat robotSpeed, double dt) {
 	//---
 
 	if (!was_in_tribbler && ball_in_tribbler) {
-		DataReceived("<5:bl:1>\n");
+		mainboard.SendMessage("<ball:1>");
 	}
 	else if (was_in_tribbler && !ball_in_tribbler) {
-		DataReceived("<5:bl:0>\n");
+		mainboard.SendMessage("<ball:0>");
 	}
 }
 Simulator::~Simulator()
@@ -687,9 +684,10 @@ int main(int argc, char* argv[])
 
 	Simulator Sim(io, simulator_mode == "master", play_mode);
 	boost::asio::io_service io2;
-	Robot robot(io2, &Sim, &Sim.GetFrontCamera(), &Sim, play_mode == "single1");
+	ComModule com(io, "localhost", 50002, 50001);
+	Robot robot(io2, &Sim, &Sim.GetFrontCamera(), &com, play_mode == "single1");
 	
-	robot.Launch(play_mode);
+	robot.Launch();
 	stop_io = true;
 	io2.stop();
     return 0;

@@ -322,7 +322,7 @@ public:
 		auto target = gFieldState.gates[gFieldState.homeGate];
 		//std::cout << target.polarMetricCoords.y << std::endl;
 		if (aimTarget(target, speed, KICKOFF_ANGLE)){
-			m_pCom->Drive(0, 0, sign0(gFieldState.self.heading)*20);
+			m_pCom->Drive(0, 0, sign0(m_pCom->self.heading)*20);
 			std::this_thread::sleep_for(std::chrono::milliseconds(500));
 			m_pCom->Kick(2500);
 			assert(false);//TODO: fix this -> gFieldState.SendPartnerMessage("PAS #");
