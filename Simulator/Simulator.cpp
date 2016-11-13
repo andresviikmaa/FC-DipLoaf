@@ -80,25 +80,16 @@ Simulator::Simulator(boost::asio::io_service &io, bool master, const std::string
 void Simulator::HandleMainBoardCommand(const std::string &command) {
 
 	std::vector<std::string> tokens;
-	boost::split(tokens, command, boost::is_any_of("\n"));
-	for (std::string s : tokens) {
-		if (s.empty()) continue;
-		int id = s[0] - '1'; //string 1...5 -> int 0...4
-		if (id < 4 && s.substr(2, 2) == "sd") {
-			wheelSpeeds.at<double>(id, 0) = atoi(s.substr(4).c_str());
-			//			std::cout << "zzzzzzzzzzzzz" << std::endl;
-			//			std::cout << wheelSpeeds << std::endl;
-			//			std::cout << "xxxxxxxxxxxxx" << std::endl;
-		}
-		else if (id == 4) {
-			if (s[2] == 'k') {
-				Kick(atoi(s.substr(3).c_str()));
-			}
-			else if (s[2] == 'd' && s[3] == 'm') {
-				ToggleTribbler(atoi(s.substr(4).c_str()) > 0);
-			}
-
-		}
+	boost::split(tokens, command, boost::is_any_of(":"));
+	std::string cmd = tokens[1];
+	if (cmd == "speeds" && tokens.size() > 5) {
+		wheelSpeeds.at<double>(0, 0) = atoi(tokens[1].c_str());
+		wheelSpeeds.at<double>(1, 0) = atoi(tokens[2].c_str());
+		wheelSpeeds.at<double>(2, 0) = atoi(tokens[3].c_str());
+		wheelSpeeds.at<double>(3, 0) = atoi(tokens[4].c_str());
+		ToggleTribbler(atoi(tokens[5].c_str()) > 0);
+	} else if (cmd =="kick"){
+		Kick(atoi(tokens[1].c_str()));
 	}
 
 }

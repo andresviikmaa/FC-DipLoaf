@@ -35,7 +35,6 @@ bool angleInRange(cv::Point2d point, cv::Point2d range) {
 }
 
 MainCameraVision::MainCameraVision(ICamera *pCamera, const std::string sName) : ConfigurableModule(sName), ThreadedClass(sName)
-, thresholder(thresholdedImages, objectThresholds)
 {
 	m_pCamera = pCamera;
 
@@ -51,12 +50,16 @@ MainCameraVision::MainCameraVision(ICamera *pCamera, const std::string sName) : 
 	ADD_BOOL_SETTING(useKalmanFilter);
 //	videoRecorder = new VideoRecorder("videos/", 30, m_pCamera->GetFrameSize(true));
 	LoadSettings();
-	Start();
+	if(pCamera != nullptr)
+		Start();
 }
 
 
 MainCameraVision::~MainCameraVision()
 {
+	if (thresholder == nullptr)
+		delete thresholder;
+
 //	if (videoRecorder != NULL) {
 //		videoRecorder->Stop();
 //		delete videoRecorder;
@@ -109,7 +112,7 @@ void MainCameraVision::Run() {
 			ProcessFrame();
 			{
 				boost::mutex::scoped_lock lock(state_mutex); //allow one command at a time
-				memcpy(&localStateCopy, &localState, sizeof(FieldState));
+				//memcpy(&localStateCopy, &localState, sizeof(FieldState));
 				stateUpdated = true;
 			}
 		}
@@ -129,7 +132,7 @@ void MainCameraVision::Run() {
 void MainCameraVision::PublishState() {
 	boost::mutex::scoped_lock lock(state_mutex); //allow one command at a time
 	if (stateUpdated) {
-		memcpy(&gFieldState, &localStateCopy, sizeof(FieldState));
+		//memcpy(&gFieldState, &localStateCopy, sizeof(FieldState));
 		stateUpdated = false;
 	}
 }
@@ -143,7 +146,8 @@ void  MainCameraVision::ProcessFrame() {
 
 }
 void MainCameraVision::ThresholdFrame() {
-	thresholder.Start(frameHSV, { BALL, BLUE_GATE, YELLOW_GATE, FIELD, INNER_BORDER, OUTER_BORDER });
+	if (thresholder == nullptr) thresholder = new TBBImageThresholder(thresholdedImages, objectThresholds);
+	thresholder->Start(frameHSV, { BALL, BLUE_GATE, YELLOW_GATE, FIELD, INNER_BORDER, OUTER_BORDER });
 }
 
 void MainCameraVision::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos) {

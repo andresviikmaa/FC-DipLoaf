@@ -6,7 +6,7 @@
 #include <opencv2/core.hpp>
 
 //maybe use std::vector instead
-typedef std::map<std::string, std::tuple<std::function<std::string()>, std::function<void()>>> SettingsList;
+typedef std::map<std::string, std::tuple<std::function<std::string()>, std::function<void(const std::string&)>>> SettingsList;
 
 class ICamera
 {

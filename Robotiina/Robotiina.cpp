@@ -33,8 +33,9 @@ int main(int argc, char* argv[])
 		Settings settings;
 		settings.LoadFromCommandLine(argc, argv);
 
-		std::cout << "Initializing Cameras... " << std::endl;
-		Camera mainCamera("main", settings.frontCam);
+		std::cout << "Initializing Main Camera... " << std::endl;
+		Camera mainCamera("main", settings.mainCam);
+		std::cout << "Initializing Front Camera... " << std::endl;
 		Camera frontCamera("front", settings.frontCam);
 		std::cout << "Done" << std::endl;
 

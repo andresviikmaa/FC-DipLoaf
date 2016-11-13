@@ -20,7 +20,7 @@ public:
 	FrontCameraVision(ICamera * pCamera);
 	~FrontCameraVision();
 	void ProcessFrame();
-	void ThresholdFrame();
+//	void ThresholdFrame();
 	void FindGate();
 	void FindBall();
 

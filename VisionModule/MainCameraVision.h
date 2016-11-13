@@ -73,7 +73,7 @@ protected:
 	std::vector<cv::Point2i> notBlueGates, notYellowGates;
 
 	ThresholdedImages thresholdedImages;
-	TBBImageThresholder thresholder;
+	TBBImageThresholder *thresholder;
 	void ThresholdFrame();
 	void CheckGateObstruction();
 	void FindGates();
@@ -87,7 +87,7 @@ public:
 	boost::mutex state_mutex;
 	MainCameraVision(ICamera * pCamera, const std::string sName="MainCameraVision");
 	virtual ~MainCameraVision();
-	void ProcessFrame();
+	virtual void ProcessFrame();
 	void PublishState();
 	virtual void Enable(bool enable) {
 		m_bEnabled = enable;

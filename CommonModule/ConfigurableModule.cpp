@@ -14,7 +14,7 @@ ConfigurableModule::~ConfigurableModule()
 {
 }
 
-void ConfigurableModule::AddSetting(const std::string& name, std::function<std::string()> const &get_func, std::function<void()> const &set_func){
+void ConfigurableModule::AddSetting(const std::string& name, std::function<std::string()> const &get_func, std::function<void(const std::string&)> const &set_func){
 	m_settings.insert(std::make_pair(name, std::make_tuple(get_func, set_func)));
 }
 
@@ -25,9 +25,7 @@ void ConfigurableModule::LoadSettings() {
 		read_ini("conf/"+m_sModuleName+".ini", pt);
 		for (auto setting : m_settings) {
 			auto val = pt.get<std::string>(setting.first);
-			while (val != std::get<0>(setting.second)()) { 
-				std::get<1>(setting.second)();
-			}
+			std::get<1>(setting.second)(val);
 		}
 	}
 	catch (...){
@@ -37,6 +35,7 @@ void ConfigurableModule::LoadSettings() {
 }
 
 void ConfigurableModule::SaveSettings() {
+	return;
 	ptree pt;
 	for (auto setting : m_settings) {
 		pt.put(setting.first, std::get<0>(setting.second)());

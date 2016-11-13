@@ -4,10 +4,10 @@ extern FieldState gFieldState;
 
 RefereeCom::RefereeCom(const std::string &name) : ConfigurableModule(name)
 {
-	AddSetting("Field", [this]{return std::string(1,this->FIELD_MARKER);}, [this]{this->nextField();});
-	AddSetting("Team", [this]{return std::string(1,this->TEAM_MARKER);}, [this]{this->nextTeam();});
-	AddSetting("Robot", [this]{return std::string(1,this->ROBOT_MARKER);}, [this]{this->nextRobot();});
-	LoadSettings();
+//	AddSetting("Field", [this]{return std::string(1,this->FIELD_MARKER);}, [this]{this->nextField();});
+//	AddSetting("Team", [this]{return std::string(1,this->TEAM_MARKER);}, [this]{this->nextTeam();});
+//	AddSetting("Robot", [this]{return std::string(1,this->ROBOT_MARKER);}, [this]{this->nextRobot();});
+//	LoadSettings();
 }
 
 void RefereeCom::giveCommand(GameMode command) {

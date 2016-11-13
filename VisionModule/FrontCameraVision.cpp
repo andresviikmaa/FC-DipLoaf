@@ -15,13 +15,15 @@ FrontCameraVision::~FrontCameraVision()
 
 void  FrontCameraVision::ProcessFrame() {
 	ThresholdFrame();
-	FindGate();
-	FindBall();
+	//FindGate();
+	//FindBall();
 
 }
-void FrontCameraVision::ThresholdFrame() {
-	thresholder.Start(frameHSV, { BALL, gFieldState.targetGate });
-}
+//void FrontCameraVision::ThresholdFrame() {
+//	if (thresholder == nullptr)
+//		thresholder = new TBBImageThresholder(thresholdedImages, objectThresholds);
+//	thresholder->Start(frameHSV, { BALL, gFieldState.targetGate });
+//}
 
 void FrontCameraVision::FindGate() {
 }
