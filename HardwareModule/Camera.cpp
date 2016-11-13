@@ -35,7 +35,7 @@ Camera::Camera(const std::string &name, const std::string &device): ThreadedClas
 		//cap->set(CV_CAP_PROP_XI_OFFSET_Y, 0);
 		cap->set(CV_CAP_PROP_XI_OFFSET_Y, 0);
 		cap->set(CV_CAP_PROP_XI_AUTO_WB, 0);
-		cap->set(421 /*CV_CAP_PROP_XI_EXPOSURE*(, 20000);
+		//cap->set(CV_CAP_PROP_XI_EXPOSURE, 20000);
 	}
 	else {
 		cap->set(CV_CAP_PROP_FPS, 60);
