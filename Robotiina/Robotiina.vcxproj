@@ -97,7 +97,9 @@
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="m3api.dll" />
     <None Include="packages.config" />
+    <None Include="xiapi32.dll" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommonModule\CommonModule.vcxproj">

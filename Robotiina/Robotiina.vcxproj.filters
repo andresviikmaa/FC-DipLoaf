@@ -35,5 +35,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="m3api.dll" />
+    <None Include="xiapi32.dll" />
   </ItemGroup>
 </Project>
