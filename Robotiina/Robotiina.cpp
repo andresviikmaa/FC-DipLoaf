@@ -20,7 +20,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/exception/diagnostic_information.hpp> 
 #include <boost/exception_ptr.hpp> 
-
+#include "opencv2/highgui.hpp"
 
 
 boost::asio::io_service io;
@@ -61,6 +61,7 @@ int main(int argc, char* argv[])
 	{
 		std::cout << "ups, did not see that coming." << std::endl;
 	}
+	cv::waitKey();
 	return 0;
 }
 
