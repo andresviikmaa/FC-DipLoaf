@@ -44,7 +44,7 @@ class Simulator : public ICamera, public ThreadedClass, public UdpServer/*, publ
 	private:
 		Simulator * pSim;
 	public:
-		MainBoard(boost::asio::io_service & io, Simulator* sim): UdpServer(io, "localhost", 50001, 50002) {
+		MainBoard(boost::asio::io_service & io, Simulator* sim): UdpServer(io, "127.0.0.1", 50001, 50002) {
 			pSim = sim;
 		}
 		bool MessageReceived(const std::string & message) {

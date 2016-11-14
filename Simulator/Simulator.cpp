@@ -16,6 +16,8 @@
 #include "../StateMachine/MultiModePlay.h"
 #include "../HardwareModule/ComModule.h"
 #include "opencv2/imgproc.hpp"
+#include <boost/exception/diagnostic_information.hpp> 
+#include <boost/exception_ptr.hpp>
 
 namespace po = boost::program_options;
 
@@ -664,6 +666,8 @@ int main(int argc, char* argv[])
 	std::atomic_bool stop_io;
 	stop_io = false;
 	boost::asio::io_service io;
+	boost::asio::io_service io2;
+
 	std::thread io_thread([&]() {
 		while (!stop_io)
 		{
@@ -673,14 +677,34 @@ int main(int argc, char* argv[])
 		std::cout << "io stopting" << std::endl;
 	});
 
-	Simulator Sim(io, simulator_mode == "master", play_mode);
-	boost::asio::io_service io2;
-	ComModule com(io, "localhost", 50002, 50001);
-	Robot robot(io2, &Sim, &Sim.GetFrontCamera(), &com, play_mode == "single1");
+	try {
+		Simulator Sim(io, simulator_mode == "master", play_mode);
+		ComModule com(io, "127.0.0.1", 50022, 50021);
+		Robot robot(io2, &Sim, &Sim.GetFrontCamera(), &com, play_mode == "single1");
 	
-	robot.Launch();
+		robot.Launch();
+	
+	}
+	catch (const boost::exception & e)
+	{
+		std::cout << boost::diagnostic_information(e) << std::endl;
+	}
+	catch (std::exception &e)
+	{
+		std::cout << "ups, " << e.what() << std::endl;
+	}
+	catch (const std::string &e)
+	{
+		std::cout << "ups, " << e << std::endl;
+	}
+	catch (...)
+	{
+		std::cout << "ups, did not see that coming." << std::endl;
+	}
+
 	stop_io = true;
 	io2.stop();
+	io_thread.join();
     return 0;
 }
 
