@@ -1,6 +1,5 @@
 #pragma once
 #include "Types.h"
-extern "C" {
 	// Filled by Vision Module
 	struct FieldState {
 		uint reserved = 0;
@@ -33,6 +32,4 @@ extern "C" {
 		//GatePosition homeGate;
 		*/
 	};
-
-}
 

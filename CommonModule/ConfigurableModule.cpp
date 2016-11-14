@@ -35,7 +35,6 @@ void ConfigurableModule::LoadSettings() {
 }
 
 void ConfigurableModule::SaveSettings() {
-	return;
 	ptree pt;
 	for (auto setting : m_settings) {
 		pt.put(setting.first, std::get<0>(setting.second)());

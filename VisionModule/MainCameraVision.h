@@ -82,6 +82,7 @@ protected:
 	void FindOtherRobots();
 	cv::Point2d cameraOrgin;
 	virtual void UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos);
+	std::vector<OBJECT> thresholdObjects;
 
 public:
 	boost::mutex state_mutex;

@@ -13,9 +13,7 @@ public:
 	void Start(cv::Mat &frameHSV, std::vector<OBJECT> objectList) {
 		this->frameHSV = frameHSV;
 		this->objectList = objectList;
-		for (auto &object : objectList) {
-			thresholdedImages[object] = cv::Mat(frameHSV.rows, frameHSV.cols, CV_8U, cv::Scalar::all(0));
-		}
+
 		cv::parallel_for_(cv::Range(0, diff), *this);
 		/*
 		cv::extractChannel(frameHSV, thresholdedImages[BALL], 0);

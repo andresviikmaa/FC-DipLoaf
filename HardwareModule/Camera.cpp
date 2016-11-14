@@ -7,7 +7,9 @@
 #define DOUBLE_BUFFERING
 
 Camera::Camera(const std::string &name, const std::string &device): ThreadedClass(name), name(name) {
-	if(device == "ximea")
+	if (device.empty())
+		cap = new cv::VideoCapture(0);
+	else if (device == "ximea")
 		cap = new cv::VideoCapture(CV_CAP_XIAPI);
 	else if(device.size() < 2)
 		cap = new cv::VideoCapture(std::stoi(device));

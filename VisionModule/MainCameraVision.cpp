@@ -34,7 +34,8 @@ bool angleInRange(cv::Point2d point, cv::Point2d range) {
 	}
 }
 
-MainCameraVision::MainCameraVision(ICamera *pCamera, const std::string sName) : ConfigurableModule(sName), ThreadedClass(sName)
+MainCameraVision::MainCameraVision(ICamera *pCamera, const std::string sName) : ConfigurableModule(sName), ThreadedClass(sName),
+thresholdObjects({ BALL, BLUE_GATE, YELLOW_GATE, FIELD, INNER_BORDER, OUTER_BORDER })
 {
 	m_pCamera = pCamera;
 
@@ -50,6 +51,7 @@ MainCameraVision::MainCameraVision(ICamera *pCamera, const std::string sName) : 
 	ADD_BOOL_SETTING(useKalmanFilter);
 //	videoRecorder = new VideoRecorder("videos/", 30, m_pCamera->GetFrameSize(true));
 	LoadSettings();
+
 	if(pCamera != nullptr)
 		Start();
 }
@@ -146,8 +148,13 @@ void  MainCameraVision::ProcessFrame() {
 
 }
 void MainCameraVision::ThresholdFrame() {
-	if (thresholder == nullptr) thresholder = new TBBImageThresholder(thresholdedImages, objectThresholds);
-	thresholder->Start(frameHSV, { BALL, BLUE_GATE, YELLOW_GATE, FIELD, INNER_BORDER, OUTER_BORDER });
+	if (thresholder == nullptr) {
+		for (auto &object : thresholdObjects) {
+			thresholdedImages[object] = cv::Mat(frameHSV.rows, frameHSV.cols, CV_8U, cv::Scalar::all(0));
+		}
+		thresholder = new TBBImageThresholder(thresholdedImages, objectThresholds);
+	}
+	thresholder->Start(frameHSV, thresholdObjects);
 }
 
 void MainCameraVision::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos) {
