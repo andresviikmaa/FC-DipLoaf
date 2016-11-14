@@ -1,10 +1,11 @@
 ========================================================================
-    STATIC LIBRARY : RobotModule Project Overview
+    CONSOLE APPLICATION : RobotModule Project Overview
 ========================================================================
 
-AppWizard has created this RobotModule library project for you.
+AppWizard has created this RobotModule application for you.
 
-No source files were created as part of your project.
+This file contains a summary of what you will find in each of the files that
+make up your RobotModule application.
 
 
 RobotModule.vcxproj
@@ -19,6 +20,16 @@ RobotModule.vcxproj.filters
     and the filters. This association is used in the IDE to show grouping of files with
     similar extensions under a specific node (for e.g. ".cpp" files are associated with the
     "Source Files" filter).
+
+RobotModule.cpp
+    This is the main application source file.
+
+/////////////////////////////////////////////////////////////////////////////
+Other standard files:
+
+StdAfx.h, StdAfx.cpp
+    These files are used to build a precompiled header (PCH) file
+    named RobotModule.pch and a precompiled types file named StdAfx.obj.
 
 /////////////////////////////////////////////////////////////////////////////
 Other notes:

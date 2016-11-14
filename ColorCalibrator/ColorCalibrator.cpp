@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "opencv2/highgui.hpp"
+#include <opencv2/highgui.hpp>
 #include <boost/program_options.hpp>
 
 #include "../DisplayModule/dialog.h"

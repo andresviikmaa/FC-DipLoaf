@@ -38,6 +38,5 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="..\conf\Referee.ini" />
   </ItemGroup>
 </Project>

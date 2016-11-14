@@ -32,10 +32,10 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AutoCalibrator.cpp">
+    <ClCompile Include="ColorCalibrator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ColorCalibrator.cpp">
+    <ClCompile Include="AutoCalibrator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

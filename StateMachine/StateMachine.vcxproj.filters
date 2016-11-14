@@ -13,15 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="States">
-      <UniqueIdentifier>{ea5a44a2-712f-4a86-872e-4cbbf545e948}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="StateMachine.cpp">
+    <ClCompile Include="DriveInstruction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MultiModePlay.cpp">
@@ -30,12 +27,12 @@
     <ClCompile Include="SingleModePlay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DriveInstruction.cpp">
+    <ClCompile Include="StateMachine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="StateMachine.h">
+    <ClInclude Include="DriveInstruction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MultiModePlay.h">
@@ -44,7 +41,7 @@
     <ClInclude Include="SingleModePlay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DriveInstruction.h">
+    <ClInclude Include="StateMachine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

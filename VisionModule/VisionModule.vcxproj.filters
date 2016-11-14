@@ -18,10 +18,13 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="BallFinder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DummyVision.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FrontCameraVision.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GateFinder.cpp">
@@ -30,27 +33,27 @@
     <ClCompile Include="ImageThresholder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ObjectFinder.cpp">
+    <ClCompile Include="MainCameraVision.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SimpleImageThresholder.cpp">
+    <ClCompile Include="ObjectFinder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RobotFinder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DummyVision.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MainCameraVision.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FrontCameraVision.cpp">
+    <ClCompile Include="SimpleImageThresholder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BallFinder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DummyVision.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FrontCameraVision.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GateFinder.h">
@@ -59,16 +62,19 @@
     <ClInclude Include="ImageThresholder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MainCameraVision.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="ObjectFinder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ParallelImageThresholder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SimpleImageThresholder.h">
+    <ClInclude Include="RobotFinder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VisionInterfaces.h">
+    <ClInclude Include="SimpleImageThresholder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TBBImageThresholder.h">
@@ -77,17 +83,11 @@
     <ClInclude Include="ThreadedImageThresholder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RobotFinder.h">
+    <ClInclude Include="VisionInterfaces.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DummyVision.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MainCameraVision.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FrontCameraVision.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
