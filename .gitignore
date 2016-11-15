@@ -302,4 +302,6 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
-Release (With UI)
+#Robotiina
+conf/
+Settings.ini

@@ -8,6 +8,7 @@
 #include "../DisplayModule/dialog.h"
 #include "../HardwareModule/Camera.h"
 #include "AutoCalibrator.h"
+#include "../CommonModule/Settings.h"
 
 namespace po = boost::program_options;
 po::options_description desc("Allowed options");
@@ -17,7 +18,6 @@ int main(int argc, char* argv[])
 {
 	desc.add_options()
 		("help", "produce help message")
-		("camera", po::value<std::string>(), "set Camera index or path")
 		("name", po::value<std::string>(), "set Camera config file name");
 
 
@@ -26,14 +26,19 @@ int main(int argc, char* argv[])
 	po::store(po::parse_command_line(argc, argv, desc), config);
 	po::notify(config);
 
-	if (config.count("help")|| !config.count("camera") || !config.count("name")) {
+	if (config.count("help") || !config.count("name")) {
 		std::cout << desc << std::endl;
 		cv::waitKey(0);
 		return -1;
 	}
 
 
-	Camera cam(config["name"].as<std::string>(), config["camera"].as<std::string>());
+	Settings settings;
+	std::string name = config["name"].as<std::string>();
+	std::cout << "Initializing Camera... " << std::endl;
+	Camera cam(name, name == "main"? settings.mainCam :settings.frontCam);
+	std::cout << "Done" << std::endl;
+
 
 	Dialog display("Color Calibrator", cam.GetFrameSize(), cam.GetFrameSize());
 
