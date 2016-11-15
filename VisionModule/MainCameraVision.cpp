@@ -140,10 +140,10 @@ void MainCameraVision::PublishState() {
 }
 void  MainCameraVision::ProcessFrame() {
 	ThresholdFrame();
-	CheckGateObstruction();
-	FindGates();
-	CheckCollisions();
-	FindBalls();
+	//CheckGateObstruction();
+	//FindGates();
+	//CheckCollisions();
+	//FindBalls();
 
 
 }
@@ -158,6 +158,7 @@ void MainCameraVision::ThresholdFrame() {
 }
 
 void MainCameraVision::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos) {
+	return; //TODO: Find crash cause from here
 	object.rawPixelCoords = pos - cameraOrgin;
 	if (pos.x < 0) {
 		object.isValid = false;

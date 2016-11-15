@@ -30,7 +30,7 @@ Camera::Camera(const std::string &name, const std::string &device): ThreadedClas
 	//  [[960 x 960 from (175, 60)]] 
 
  // !
-	if (device == "ximea") {
+	if (device == "ximeax") {
 		cap->set(CV_CAP_PROP_FRAME_WIDTH, 960);
 		cap->set(CV_CAP_PROP_FRAME_HEIGHT, 960);
 		//cap->set(CV_CAP_PROP_XI_OFFSET_X, 160);
