@@ -28,10 +28,10 @@ const double SIMULATOR_SPEED = 0.5;
 const bool INIT_RANDOM = false;
 
 Simulator::Simulator(boost::asio::io_service &io, bool master, const std::string game_mode) :
-	mNumberOfBalls(game_mode == "master" || game_mode == "slave" ? 1 : 11)
+	mNumberOfBalls(game_mode == "master" || game_mode == "slave" ? 1 : 19)
 	, ThreadedClass("Simulator"), UdpServer(io, 31000, master)
 	, isMaster(master)
-	, ballCount(game_mode == "master" || game_mode == "slave" ? 1 : 11),
+	, ballCount(game_mode == "master" || game_mode == "slave" ? 1 : 19),
 	m_frontCamera(this), mainboard(io, this)
 {
 	blueGate.fieldCoords = cv::Point(0, 230);	
@@ -68,7 +68,7 @@ Simulator::Simulator(boost::asio::io_service &io, bool master, const std::string
 		else {
 			for (int i = 0; i < mNumberOfBalls; i++) {
 				balls[i].fieldCoords.x = (int)(((i % 3) - 1) * 100) + (!INIT_RANDOM ? 0 : (rand() % 200) - 100);
-				balls[i].fieldCoords.y = (int)((i / 3 - 1.5) * 110) + (!INIT_RANDOM ? 0 : (rand() % 200) - 100);
+				balls[i].fieldCoords.y = (int)((i / 3 - 2.5) * 40) + (!INIT_RANDOM ? 0 : (rand() % 200) - 100);
 				balls[i].id = i;
 			}
 			robots[9].fieldCoords = cv::Point(rand() % 300 - 150, rand() % 460 - 230);
@@ -246,9 +246,11 @@ void Simulator::UpdateBallPos(double dt) {
 		if (a < 0) a += 360;
 		balls[i].polarMetricCoords.y = a;
 		SYNC_OBJECT(balls[i]);
-		cv::circle(frame, MainCamPos(balls[i].fieldCoords), 12, colors[BALL] , -1);
+		int r1 = 900000./pow(d,2);
+		int r2 = 900000./pow(d,2);
+		cv::circle(frame, MainCamPos(balls[i].fieldCoords), r1, colors[BALL] , -1);
 		// front camera
-		cv::circle(front_frame, FrontCamPos(balls[i].fieldCoords), 12, colors[BALL], -1);
+		cv::circle(front_frame, FrontCamPos(balls[i].fieldCoords), r2, colors[BALL], -1);
 
 	}
 	if (isMaster) {

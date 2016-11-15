@@ -1,5 +1,7 @@
 #pragma once
 #include "Types.h"
+const uchar MAX_BALLS = 15;
+
 	// Filled by Vision Module
 	struct FieldState {
 		uint reserved = 0;
@@ -23,7 +25,7 @@
 		GatePosition gates[2]; //0 - BLUE_GATE, 1 -YELLOW_GATE
 		ObjectPosition opponents[2];
 		cv::Point2d collisionRange; // which directions are blocked
-		BallPosition balls[15];
+		BallPosition balls[MAX_BALLS];
 
 		/*
 		//GatePosition partnerHomeGate;

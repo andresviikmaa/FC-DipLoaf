@@ -140,10 +140,10 @@ void MainCameraVision::PublishState() {
 }
 void  MainCameraVision::ProcessFrame() {
 	ThresholdFrame();
-	//CheckGateObstruction();
-	//FindGates();
-	//CheckCollisions();
-	//FindBalls();
+	CheckGateObstruction();
+	FindGates();
+	CheckCollisions();
+	FindBalls();
 
 
 }
@@ -158,7 +158,6 @@ void MainCameraVision::ThresholdFrame() {
 }
 
 void MainCameraVision::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos) {
-	return; //TODO: Find crash cause from here
 	object.rawPixelCoords = pos - cameraOrgin;
 	if (pos.x < 0) {
 		object.isValid = false;
@@ -329,8 +328,10 @@ void MainCameraVision::FindBalls() {
 	bool ballsFound = ballFinder.Locate(thresholdedImages[BALL], frameHSV, frameBGR, balls);
 	localState.ballCount = 0;
 	for (auto ball : balls) {
+		// this is dangerous as fixed size array is used. TODO: convert balls back to vector perhaps.
 		UpdateObjectPostion(localState.balls[localState.ballCount], ball);
 		localState.ballCount++;
+		if (localState.ballCount >= MAX_BALLS) break;
 	}
 	//if (localState.ballCount > 11) {
 	//	cv::imshow("err", frameBGR);
