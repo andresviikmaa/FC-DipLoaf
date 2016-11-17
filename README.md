@@ -5,9 +5,10 @@ Robotex football contestant
 ##How to bulid (Windows)
 * Install Visual Studio Community 2015
 * clone repro
+* Download Andres' superawesome custom opencv3 from https://github.com/andresviikmaa/FC-DipLoaf/releases and place it in packages folder.
 * Open solution
 * Run/Build
-* Wait for opencv3 and boost libraries to be downloaded/installed
+* Wait for boost libraries to be downloaded/installed
 * have fun
 
 ##linux

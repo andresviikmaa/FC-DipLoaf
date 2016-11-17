@@ -9,9 +9,11 @@ class ComModule :
 {
 protected:
 	boost::asio::io_service &io;
-	RobotState localState;
 	cv::Mat targetSpeedXYW = cv::Mat_<double>(3, 1);
 	std::stringstream ss;
+	bool ballInTribbler;
+	int tribblerSpeed;
+
 public:
 	ComModule(boost::asio::io_service &io, const std::string ip_address, ushort port1, ushort port2=0);
 	virtual ~ComModule();

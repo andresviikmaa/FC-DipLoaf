@@ -2,7 +2,9 @@
 #define ANDRESE_CATCH_BALL
 #include "../CommonModule/Types.h"
 #include "../CommonModule/FieldState.h"
+#include "../CommonModule/RobotState.h"
 extern FieldState gFieldState;
+extern RobotState gRobotState;
 
 enum {
 	DRIVEMODE_DRIVE_TO_BALL_NAIVE = 5000,
@@ -18,7 +20,10 @@ void SingleModeIdle::onEnter() {
 }
 
 DriveMode SingleModeIdle::step(double dt) {
-	if (!gFieldState.isPlaying) {
+	if (!gRobotState.gameMode == GAME_MODE_START_PLAY) {
+		return GAME_MODE_IN_PROGRESS;
+	}
+	if (!gRobotState.gameMode != GAME_MODE_IN_PROGRESS) {
 		return DRIVEMODE_IDLE;
 	}
 	return DRIVEMODE_DRIVE_HOME_AT_START;
@@ -31,7 +36,7 @@ void DriveToBall::onEnter()
 	DriveInstruction::onEnter();	
 	
 	initialBall = gFieldState.balls[gFieldState.closestBall];
-	initialGate = gFieldState.gates[gFieldState.targetGate];
+	initialGate = gFieldState.gates[gRobotState.targetGate];
 
 	if (ACTIVE_DRIVE_TO_BALL_MODE == DRIVEMODE_IDLE)
 		ACTIVE_DRIVE_TO_BALL_MODE = DRIVEMODE_DRIVE_TO_BALL_AIM_GATE;
@@ -118,7 +123,7 @@ public:
 		auto &target = gFieldState.balls[gFieldState.closestBall];
 		//if we are between closest ball and target gate and facing target gate then drive to home
 		//to avoid rotating on any next ball
-		if (fabs(gFieldState.gates[gFieldState.targetGate].heading) < 20
+		if (fabs(gFieldState.gates[gRobotState.targetGate].heading) < 20
 			&& fabs(target.heading) > 120) {
 			return DRIVEMODE_DRIVE_HOME;
 		}
@@ -151,7 +156,7 @@ public:
 		}
 		*/
 		const ObjectPosition &ball = gFieldState.balls[gFieldState.closestBall];
-		const ObjectPosition &gate = gFieldState.gates[gFieldState.targetGate];
+		const ObjectPosition &gate = gFieldState.gates[gRobotState.targetGate];
 		double gateHeading = gate.heading;
 		double ballHeading = ball.heading;
 		double ballDistance = ball.distance;
@@ -190,7 +195,7 @@ class DriveToHome : public DriveInstruction
 public:
 	DriveToHome(const std::string &name = "DRIVE_HOME") : DriveInstruction(name){};
 	virtual DriveMode step(double dt){
-		auto target = gFieldState.gates[gFieldState.homeGate];
+		auto target = gFieldState.gates[gRobotState.homeGate];
 		if (target.distance < 50) return DRIVEMODE_DRIVE_TO_BALL;
 		else m_pCom->Drive(40, target.heading);
 	return DRIVEMODE_DRIVE_HOME;
@@ -202,12 +207,12 @@ class DriveHomeAtStart : public DriveInstruction
 public:
 	DriveHomeAtStart(const std::string &name = "DRIVE_HOME_AT_START") : DriveInstruction(name){};
 	virtual DriveMode step(double dt){
-		auto target = gFieldState.gates[gFieldState.homeGate];
+		auto target = gFieldState.gates[gRobotState.homeGate];
 		if (target.distance < 90) return DRIVEMODE_DRIVE_TO_BALL;
 		//else m_pCom->Drive(90, 0, -sign0(target.heading)*20);
 		else{
-			const ObjectPosition &homeGate = gFieldState.gates[gFieldState.homeGate];
-			const ObjectPosition &gate = gFieldState.gates[gFieldState.targetGate];
+			const ObjectPosition &homeGate = gFieldState.gates[gRobotState.homeGate];
+			const ObjectPosition &gate = gFieldState.gates[gRobotState.targetGate];
 			double gateHeading = gate.heading;
 			double ballHeading = sign0(homeGate.heading)*(fabs(homeGate.heading)-35) ;
 			double ballDistance = homeGate.distance;
@@ -288,7 +293,7 @@ void CatchBall::onExit(){}//DO_NOT_STOP_TRIBBLER
 
 DriveMode AimGate::step(double dt)
 {
-	const GatePosition & target = gFieldState.gates[gFieldState.targetGate];
+	const GatePosition & target = gFieldState.gates[gRobotState.targetGate];
 	if (!m_pCom->BallInTribbler()) return DRIVEMODE_DRIVE_TO_BALL;
 	double errorMargin;
 	if (target.distance > 200) errorMargin = 1;
@@ -326,7 +331,7 @@ public:
 	virtual DriveMode step(double dt){
 		if (m_pCom->BallInTribbler())return DRIVEMODE_AIM_GATE;
 		const ObjectPosition &ball = gFieldState.balls[gFieldState.closestBall];
-		const ObjectPosition &gate = gFieldState.gates[gFieldState.targetGate];
+		const ObjectPosition &gate = gFieldState.gates[gRobotState.targetGate];
 		double gateHeading = gate.heading;
 		double gateAngle = gate.angle;
 		double ballAngle = ball.angle;

@@ -1,5 +1,7 @@
 #include "ComModule.h"
 #include <boost/algorithm/string.hpp>
+#include <thread>
+#include <chrono>
 
 extern cv::Mat wheelAngles;
 

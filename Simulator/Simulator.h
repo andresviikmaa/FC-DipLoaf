@@ -138,7 +138,7 @@ private:
 	bool ball_in_tribbler = false;
 	cv::Mat wheelSpeeds = (cv::Mat_<double>(4, 1) << 0.0, 0.0, 0.0, 0.0);
 
-	BallPosition balls[12];
+	BallPosition balls[20];
 	GatePosition blueGate;
 	GatePosition yellowGate;
 	RobotPosition self; //Robot distance on field
