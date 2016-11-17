@@ -17,14 +17,16 @@ const uchar MAX_BALLS = 15;
 		bool obstacleNearBall;
 		bool gateObstructed;
 		OBJECT targetGate;
+
 		OBJECT homeGate;
 		uchar ballCount; // number or balls visible
 		uchar closestBall; // index to closeset ball by distance
 		uchar closestBallInFront;
+		cv::Point2d collisionRange; // which directions are blocked
+
 		ObjectPosition partner;
 		GatePosition gates[2]; //0 - BLUE_GATE, 1 -YELLOW_GATE
 		ObjectPosition opponents[2];
-		cv::Point2d collisionRange; // which directions are blocked
 		BallPosition balls[MAX_BALLS];
 
 		/*
