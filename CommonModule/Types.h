@@ -70,13 +70,13 @@ const int ID_MAIN_BOARD = 5;
 
 enum OBJECT: uchar
 {
-	BLUE_GATE = 0, YELLOW_GATE, BALL, FIELD, INNER_BORDER, OUTER_BORDER, NUMBER_OF_OBJECTS, SIGHT_MASK
+	BLUE_GATE = 0, YELLOW_GATE, BALL, FIELD, INNER_BORDER, OUTER_BORDER, TEAM1, TEAM2, NUMBER_OF_OBJECTS, SIGHT_MASK
 };
 
 
 enum GameMode : uchar {
 	//		GAME_MODE_STOPED = 0,
-	GAME_MODE_START_SINGLE_PLAY = 0,
+	GAME_MODE_START_PLAY = 0,
 
 	GAME_MODE_PLACED_BALL,
 	GAME_MODE_END_HALF,
@@ -125,7 +125,7 @@ enum RobotColor : uchar {
 <speeds:%d:%d:%d:%d:%d>
 */
 // Filled by Com Module
-struct RobotState {
+struct RobotStateX {
 	uint reserved = 1;
 	uint stateSize;
 	RobotPosition self; //Robot distance on field

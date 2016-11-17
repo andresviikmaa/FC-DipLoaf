@@ -3,8 +3,9 @@
 #include "../CommonModule/Interfaces.h"
 #include "../HardwareModule/HardwareInterfaces.h"
 #include "../CommonModule/FieldState.h"
+#include "../CommonModule/RobotState.h"
 
-extern FieldState gFieldState;
+extern RobotState gRobotState;
 
 DriveInstruction::DriveInstruction(const std::string &name) : name(name) {
 };
@@ -17,7 +18,7 @@ void DriveInstruction::onEnter() {
 };
 DriveMode DriveInstruction::step1(double dt, DriveMode driveMode) {
 	//not executed in test mode
-	if (!gFieldState.isPlaying && driveMode != DRIVEMODE_IDLE) {
+	if (gRobotState.gameMode == GAME_MODE_END_HALF && driveMode != DRIVEMODE_IDLE) {
 		std::cout << "Stoping game (referee stop)" << std::endl;
 		m_pCom->ToggleTribbler(0);
 		return DRIVEMODE_IDLE;

@@ -5,6 +5,7 @@
 #include <functional>     // std::greater
 //#include "VideoRecorder.h"
 #include "../CommonModule/FieldState.h"
+#include "../CommonModule/RobotState.h"
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #ifdef SHOW_UI
@@ -13,6 +14,7 @@
 
 
 extern FieldState gFieldState;
+extern RobotState gRobotState;
 //extern int number_of_balls;
 
 
@@ -114,7 +116,7 @@ void MainCameraVision::Run() {
 			ProcessFrame();
 			{
 				boost::mutex::scoped_lock lock(state_mutex); //allow one command at a time
-				//memcpy(&localStateCopy, &localState, sizeof(FieldState));
+				memcpy(&localStateCopy, &localState, sizeof(FieldState));
 				stateUpdated = true;
 			}
 		}
@@ -134,7 +136,7 @@ void MainCameraVision::Run() {
 void MainCameraVision::PublishState() {
 	boost::mutex::scoped_lock lock(state_mutex); //allow one command at a time
 	if (stateUpdated) {
-		//memcpy(&gFieldState, &localStateCopy, sizeof(FieldState));
+		memcpy(&gFieldState, &localStateCopy, sizeof(FieldState));
 		stateUpdated = false;
 	}
 }
@@ -340,7 +342,8 @@ void MainCameraVision::FindBalls() {
 
 }
 void MainCameraVision::FindOtherRobots() {
-	
+	// TODO: this will need to be changed
+	#pragma warning "Reimplement MainCameraVision::FindOtherRobots"
 	if (detectOtherRobots) {
 
 		std::vector<cv::Point2i> robots;
@@ -353,7 +356,7 @@ void MainCameraVision::FindOtherRobots() {
 				rectangle(frameBGR, robotRectangle.tl(), robotRectangle.br(), cv::Scalar(10, 255, 101), 2, 8, 0);
 			}
 #endif
-		bool ourRobotBlueBottom = (gFieldState.robotColor == ROBOT_COLOR_YELLOW_UP);
+		bool ourRobotBlueBottom = (gRobotState.ourTeam == TEAM1);
 		//std::vector<cv::Point2d> robots;
 		//bool ballsFound = ballFinder.Locate(thresholdedImages[FIELD], frameHSV, frameBGR, robots);
 

@@ -8,17 +8,13 @@ const uchar MAX_BALLS = 15;
 		uint stateSize;
 
 		//group 4  together
-		GameMode gameMode;
-		RobotColor robotColor = ROBOT_COLOR_BLUE_UP;
-		bool isPlaying;
+
 		bool collisionWithBorder;
 
 		bool collisionWithUnknown;
 		bool obstacleNearBall;
 		bool gateObstructed;
-		OBJECT targetGate;
 
-		OBJECT homeGate;
 		uchar ballCount; // number or balls visible
 		uchar closestBall; // index to closeset ball by distance
 		uchar closestBallInFront;
@@ -27,6 +23,7 @@ const uchar MAX_BALLS = 15;
 		ObjectPosition partner;
 		GatePosition gates[2]; //0 - BLUE_GATE, 1 -YELLOW_GATE
 		ObjectPosition opponents[2];
+		ObjectPosition self;
 		BallPosition balls[MAX_BALLS];
 
 		/*
