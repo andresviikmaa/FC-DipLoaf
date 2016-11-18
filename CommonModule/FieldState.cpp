@@ -1,9 +1,6 @@
 #include "FieldState.h"
 #include <map>
 
-FieldState gFieldState;
-FieldState gPartnerState;
-
 //TODO: find better place for this
 std::pair<OBJECT, std::string> objects[] = {
 	std::pair<OBJECT, std::string>(BALL, "Ball"),

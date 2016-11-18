@@ -10,7 +10,6 @@ const uchar MAX_BALLS = 15;
 		//group 4  together
 
 		bool collisionWithBorder;
-
 		bool collisionWithUnknown;
 		bool obstacleNearBall;
 		bool gateObstructed;

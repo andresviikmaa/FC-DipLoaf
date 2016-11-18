@@ -1,4 +1,5 @@
 #include "../CommonModule/Types.h"
+#include "../CommonModule/RobotState.h"
 #include "../CommonModule/Interfaces.h"
 #include <atomic>
 #include <boost/thread/mutex.hpp>
@@ -10,9 +11,9 @@ private:
 	IVisionModule *m_pMainVision = NULL;
 	IVisionModule *m_pFrontVision = NULL;
 	ISoccerRobot *m_pComModule = NULL;
-	std::map<std::string, IStateMachine *> m_AutoPilots;
-	std::string curPlayMode = "idle";
-	std::string lastPlayMode = "idle";
+	std::map<RunMode, IStateMachine *> m_AutoPilots;
+//	RunMode curPlayMode = ROBOT_MODE_IDLE;
+//	RunMode lastPlayMode = ROBOT_MODE_IDLE;
 	bool master;
 
 	void Run();
