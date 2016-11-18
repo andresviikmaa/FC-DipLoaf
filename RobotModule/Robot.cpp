@@ -148,7 +148,7 @@ void Robot::Run()
 {
 	double t1 = (double)cv::getTickCount();
 
-
+	gRobotState.runMode = ROBOT_MODE_1VS1;
 	std::stringstream subtitles;
 	double fps = 0.;
 	size_t counter = 0;

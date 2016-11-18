@@ -20,10 +20,11 @@ void SingleModeIdle::onEnter() {
 }
 
 DriveMode SingleModeIdle::step(double dt) {
-	if (!gRobotState.gameMode == GAME_MODE_START_PLAY) {
-		return GAME_MODE_IN_PROGRESS;
+	if (gRobotState.gameMode == GAME_MODE_START_PLAY) {
+		gRobotState.gameMode = GAME_MODE_IN_PROGRESS;
+		//return DRIVEMODE_DRIVE_HOME_AT_START;
 	}
-	if (!gRobotState.gameMode != GAME_MODE_IN_PROGRESS) {
+	if (gRobotState.gameMode != GAME_MODE_IN_PROGRESS) {
 		return DRIVEMODE_IDLE;
 	}
 	return DRIVEMODE_DRIVE_HOME_AT_START;
