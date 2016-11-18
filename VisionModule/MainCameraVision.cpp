@@ -343,7 +343,7 @@ void MainCameraVision::FindBalls() {
 }
 void MainCameraVision::FindOtherRobots() {
 	// TODO: this will need to be changed
-	#pragma warning "Reimplement MainCameraVision::FindOtherRobots"
+	#pragma message("TODO: Reimplement MainCameraVision::FindOtherRobots")
 	if (detectOtherRobots) {
 
 		std::vector<cv::Point2i> robots;
