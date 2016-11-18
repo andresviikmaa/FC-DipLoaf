@@ -69,20 +69,21 @@ bool ComModule::MessageReceived(const std::string & message) {
 	const auto &command = params[0];
 	if (command == "speeds" /*<speeds:%d:%d:%d:%d:%d>*/) {
 
-	}else if (message == "ref" /*<ref:%s>*/) {
+	}
+	else if (command == "ref" /*<ref:%s>*/) {
 		handleMessage(params[1]);
 	}
-	else if (message == "toggle-side" /*<toggle-side>*/) {
+	else if (command == "toggle-side" /*<toggle-side>*/) {
 
 	}
-	else if (message == "toggle-go" /*<toggle-go>*/) {
+	else if (command == "toggle-go" /*<toggle-go>*/) {
 
 	}
-	else if (message == "ball" /*<ball:%d>*/) {
+	else if (command == "ball" /*<ball:%d>*/) {
 		bool ball = false;
 		SetBallInTribbler(params[1][0]=='1');
 	}
-	else if (message == "<adc:%.1f>") {
+	else if (command == "<adc:%.1f>") {
 
 	}
 	return true;
