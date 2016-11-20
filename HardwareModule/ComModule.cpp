@@ -31,10 +31,13 @@ ComModule::~ComModule()
 
 void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed) {
 	
-	fowardSpeed = 30;
+
+	const int maxSpeed = 30;
+	/*
 	direction = 0;
-	angularSpeed = 0;
-	const int maxSpeed = 190;
+	angularSpeed = 30;
+	fowardSpeed = 0;
+	*/
 	if (fowardSpeed > maxSpeed) fowardSpeed = maxSpeed;
 	if (fowardSpeed < -maxSpeed) fowardSpeed = -maxSpeed;
 
@@ -49,8 +52,8 @@ void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed)
 	}
 
 
-	targetSpeedXYW.at<double>(0) = sin((360-direction)* CV_PI / 180.0)* fowardSpeed;
-	targetSpeedXYW.at<double>(1) = cos((360-direction)* CV_PI / 180.0)* fowardSpeed;
+	targetSpeedXYW.at<double>(0) = sin((direction)* CV_PI / 180.0)* fowardSpeed;
+	targetSpeedXYW.at<double>(1) = cos((direction)* CV_PI / 180.0)* fowardSpeed;
 	targetSpeedXYW.at<double>(2) = angularSpeed;
 
 };
@@ -102,7 +105,7 @@ void ComModule::SendMessages() {
 	ss.clear();
 	ss << "speeds";
 
-	cv::Mat speeds = wheelAngles * targetSpeedXYW *10;
+	cv::Mat speeds = wheelAngles * targetSpeedXYW *5;
 	ss << ":" << -(int)speeds.at<double>(0);
 	ss << ":" << (int)speeds.at<double>(1);
 	ss << ":" << -(int)speeds.at<double>(3);
