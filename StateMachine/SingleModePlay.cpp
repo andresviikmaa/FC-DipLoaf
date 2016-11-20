@@ -40,7 +40,7 @@ void DriveToBall::onEnter()
 	initialGate = gFieldState.gates[gRobotState.targetGate];
 
 	if (ACTIVE_DRIVE_TO_BALL_MODE == DRIVEMODE_IDLE)
-		ACTIVE_DRIVE_TO_BALL_MODE = DRIVEMODE_DRIVE_TO_BALL_AIM_GATE;
+		ACTIVE_DRIVE_TO_BALL_MODE = DRIVEMODE_DRIVE_TO_BALL_NAIVE;
 }
 
 DriveMode DriveToBall::step(double dt){
@@ -90,6 +90,7 @@ public:
 				lastSpeed = speed;
 			}
 		}
+		std::cout << "output" << speed.velocity << speed.heading <<speed.rotation<< std::endl;
 		m_pCom->Drive(speed.velocity, speed.heading, speed.rotation);		
 		return DRIVEMODE_DRIVE_TO_BALL_NAIVE;
 	}
@@ -256,14 +257,14 @@ DriveMode CatchBall::step(double dt)
 	speed.velocity, speed.heading, speed.rotation = 0;
 	if (fabs(target.heading) <= 2.) {
 		if (catchTarget(target, speed)) return DRIVEMODE_AIM_GATE;
-		speed.rotation = - sign0(heading) * std::min(40.0, std::max(fabs(heading),5.0));
+		speed.rotation =  sign0(heading) * std::min(40.0, std::max(fabs(heading),5.0));
 
 	}
 	else {
 		double heading = sign0(target.heading)*10.;
 		//move slightly in order not to get stuck
 		speed.velocity = 50;
-		speed.rotation = -heading;
+		speed.rotation = heading;
 	}
 	m_pCom->Drive(speed.velocity, speed.heading, speed.rotation);
 	return DRIVEMODE_CATCH_BALL;

@@ -141,10 +141,11 @@ void MainCameraVision::PublishState() {
 	}
 }
 void  MainCameraVision::ProcessFrame() {
+
 	ThresholdFrame();
-	CheckGateObstruction();
-	FindGates();
-	CheckCollisions();
+	//CheckGateObstruction();
+	//FindGates();
+	//CheckCollisions();
 	FindBalls();
 
 
@@ -169,8 +170,8 @@ void MainCameraVision::UpdateObjectPostion(ObjectPosition & object, const cv::Po
 
 	double distanceInCm = dist == 0 ? 0.0 : std::max(0.0, 13.13*exp(0.008 * dist));
 
-	//double angle = angleBetween(pos - cameraOrgin, { 0, 1 });
-	double angle = atan((object.rawPixelCoords.y) / (object.rawPixelCoords.x)) * 180 / PI;
+	double angle = angleBetween(pos - cameraOrgin, { 1, 0 });
+	//double angle = atan((object.rawPixelCoords.y) / (object.rawPixelCoords.x)) * 180 / PI;
 	//TODO: hack to fix simulator, as 
 	if (distanceInCm < 14 && fabs(fabs(angle) - 270)<0.01)  angle = 0;
 	// flip angle alony y axis
