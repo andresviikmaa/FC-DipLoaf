@@ -147,8 +147,10 @@ bool Robot::MessageReceived(const std::string & message) {
 void Robot::Run()
 {
 	double t1 = (double)cv::getTickCount();
-
+#ifdef GUSTAV
 	gRobotState.runMode = ROBOT_MODE_1VS1;
+	gRobotState.gameMode = GAME_MODE_START_PLAY;
+#endif
 	std::stringstream subtitles;
 	double fps = 0.;
 	size_t counter = 0;
@@ -176,6 +178,7 @@ void Robot::Run()
 			// MessageReceived handled 
 
 			m_AutoPilots[gRobotState.runMode]->Step(dt);
+			m_pComModule->SendMessages();
 			Sleep(1);
 			/*
 			subtitles.str("");

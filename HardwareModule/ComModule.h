@@ -15,7 +15,8 @@ protected:
 	int tribblerSpeed;
 
 public:
-	ComModule(boost::asio::io_service &io, const std::string ip_address, ushort port1, ushort port2=0);
+	ComModule(boost::asio::io_service &io, const std::string ip_address, ushort port1, ushort port2);
+	ComModule(boost::asio::io_service &io, const std::string ip_address, ushort port1);
 	virtual ~ComModule();
 
 	virtual void Drive(double fowardSpeed, double direction = 0, double angularSpeed = 0);
