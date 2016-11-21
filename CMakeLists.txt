@@ -43,9 +43,8 @@ ADD_LIBRARY( HardwareModule STATIC
    HardwareModule/Camera.cpp
    HardwareModule/CoilBoard.cpp
    HardwareModule/ComModule.cpp
-   HardwareModule/WheelController.cpp
    HardwareModule/refereeCom.cpp
-   HardwareModule/SerialToUdp.cpp
+
 )
 ADD_LIBRARY( RobotModule STATIC
    RobotModule/Robot.cpp

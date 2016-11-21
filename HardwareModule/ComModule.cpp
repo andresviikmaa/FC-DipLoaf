@@ -63,7 +63,8 @@ bool ComModule::MessageReceived(const std::string & message) {
 	if (message.empty()) return false;
 	if (*message.begin() != '<' && *message.rbegin() != '>') return false;
 	std::vector<std::string> params;
-	boost::split(params, message.substr(1, message.size() - 1), boost::is_any_of(":"));
+	std::string tmp = message.substr(1, message.size() - 1);
+	boost::split(params, tmp, boost::is_any_of(":"));
 	const auto &command = params[0];
 	if (command == "speeds" /*<speeds:%d:%d:%d:%d:%d>*/) {
 

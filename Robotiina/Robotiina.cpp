@@ -1,7 +1,8 @@
 // Robotiina.cpp : Defines the entry point for the console application.
 //
-
+#ifdef WIN_32
 #include "stdafx.h"
+#endif
 
 #include "../RobotModule/Robot.h"
 #include <boost/algorithm/string.hpp>

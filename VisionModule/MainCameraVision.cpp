@@ -158,6 +158,7 @@ void MainCameraVision::ThresholdFrame() {
 }
 
 void MainCameraVision::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos) {
+	return;
 	object.rawPixelCoords = pos - cameraOrgin;
 	if (pos.x < 0) {
 		object.isValid = false;

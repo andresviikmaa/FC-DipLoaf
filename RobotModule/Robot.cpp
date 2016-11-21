@@ -168,7 +168,10 @@ void Robot::Run()
 			// MessageReceived handled 
 
 			m_AutoPilots[curPlayMode]->Step(dt);
-			Sleep(1);
+			//Sleep(1);
+		std::chrono::milliseconds dura(1);
+		std::this_thread::sleep_for(dura);
+
 			/*
 			subtitles.str("");
 			//subtitles << oss.str();
