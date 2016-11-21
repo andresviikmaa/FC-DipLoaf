@@ -19,7 +19,7 @@ struct RobotState
 	char ROBOT_MARKER = 'A';
 
 	RunMode runMode = ROBOT_MODE_IDLE;
-	GameMode gameMode = GAME_MODE_END_HALF;
+	uchar gameMode;
 
 };
 

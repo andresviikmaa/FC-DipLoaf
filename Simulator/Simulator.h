@@ -88,7 +88,6 @@ public:
 
 	virtual bool MessageReceived(const std::string & message); // UDP
 
-	void giveCommand(GameMode command);
 	virtual void SendPartnerMessage(const std::string message) {};
 	virtual HSVColorRange GetObjectThresholds(int index, const std::string &name);
 	double getDistanceInverted(const cv::Point2d &pos, const cv::Point2d &orgin) const;
