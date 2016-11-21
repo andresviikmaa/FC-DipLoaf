@@ -105,12 +105,12 @@ void ComModule::SendMessages() {
 	ss.clear();
 	ss << "speeds";
 
-	cv::Mat speeds = wheelAngles * targetSpeedXYW *5;
+	cv::Mat speeds = wheelAngles * targetSpeedXYW *8;
 	ss << ":" << -(int)speeds.at<double>(0);
 	ss << ":" << (int)speeds.at<double>(1);
 	ss << ":" << -(int)speeds.at<double>(3);
 	ss << ":" << (int)speeds.at<double>(2);
-	ss << ":" << tribblerSpeed;
+	ss << ":" << tribblerSpeed*50;
 
 	std::string tmp = ss.str();
 	SendMessage(tmp);
