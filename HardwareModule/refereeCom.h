@@ -12,5 +12,4 @@ protected:
 	void handleMessage2vs2(const std::string & message, bool sendAck = false);
 	virtual void sendAck(const std::string & message){};
 	const char ALL_MARKER = 'X';
-	GameMode2vs2 pendingGameMode = GAME_MODE_END_HALF;
 };

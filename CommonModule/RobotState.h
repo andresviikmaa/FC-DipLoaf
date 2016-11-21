@@ -9,8 +9,8 @@ struct RobotState
 {
 	uint reserved = 1;
 	uint stateSize;
-	OBJECT ourTeam = TEAM1;
-	OBJECT oppoonentTeam = TEAM2;
+	OBJECT ourTeam = TEAM_PINK;
+	OBJECT oppoonentTeam = TEAM_PURPLE;
 	OBJECT targetGate = YELLOW_GATE;
 	OBJECT homeGate = BLUE_GATE;
 
@@ -18,8 +18,9 @@ struct RobotState
 	char TEAM_MARKER = 'A';
 	char ROBOT_MARKER = 'A';
 
-	RunMode runMode = ROBOT_MODE_IDLE;
-	uchar gameMode;
-
+	RunMode runMode = ROBOT_MODE_IDLE; // 1vs1, idle, 2vs2
+	uchar gameMode;  // referee commands
+	uchar pendingGameMode;
+	uchar playState; // statemachine state
 };
 

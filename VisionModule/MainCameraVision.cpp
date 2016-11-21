@@ -357,7 +357,7 @@ void MainCameraVision::FindOtherRobots() {
 				rectangle(frameBGR, robotRectangle.tl(), robotRectangle.br(), cv::Scalar(10, 255, 101), 2, 8, 0);
 			}
 #endif
-		bool ourRobotBlueBottom = (gRobotState.ourTeam == TEAM1);
+		bool ourRobotBlueBottom = (gRobotState.ourTeam == TEAM_PINK);
 		//std::vector<cv::Point2d> robots;
 		//bool ballsFound = ballFinder.Locate(thresholdedImages[FIELD], frameHSV, frameBGR, robots);
 

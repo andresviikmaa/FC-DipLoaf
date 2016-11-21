@@ -58,7 +58,9 @@ enum COMMAND : uchar {
 	COMMAND_FIELD_STATE = 0,
 	COMMAND_ROBOT_STATE = 1,
 	COMMAND_SET_PLAY_MODE = 10,
+	COMMAND_SET_CONF = 11,
 	COMMAND_MANUAL_CONTROL = 20,
+	COMMAND_STATEMACHINE_STATE = 30,
 };
 
 //TODO: convert to commandline options
@@ -137,11 +139,24 @@ bool Robot::MessageReceived(const std::string & message) {
 	if (message.empty()) return false;
 	COMMAND code = (COMMAND)message[0];
 
-	//	if(code == COMMAND_MANUAL_CONTROL) {
-	//		if (curPlayMode == "manual") {
-	//			m_AutoPilots[curPlayMode]->ProcessCommand(message.substr(1));
-	//		}
-	//  }
+	if (code == COMMAND_SET_CONF) {
+		char val = message[1];
+		char val2 = message[2];
+		std::string key = message.substr(3);
+
+		if (key == "field") gRobotState.FIELD_MARKER = val2;
+		if (key == "team") gRobotState.TEAM_MARKER = val2;
+		if (key == "marker") gRobotState.ROBOT_MARKER = val2;
+
+		if (key == "gate") {
+			gRobotState.targetGate = (OBJECT)(val + BLUE_GATE);
+			gRobotState.homeGate = (OBJECT)(!val + BLUE_GATE);
+		}
+		if (key == "robot") {
+			gRobotState.ourTeam = (OBJECT)(val + TEAM_PINK);
+			gRobotState.oppoonentTeam = (OBJECT)(!val + TEAM_PINK);
+		}
+	}
 	return true;
 };
 void Robot::Run()
@@ -179,14 +194,17 @@ void Robot::Run()
 
 			m_AutoPilots[gRobotState.runMode]->Step(dt);
 			m_pComModule->SendMessages();
-			Sleep(1);
-			/*
+
 			subtitles.str("");
 			//subtitles << oss.str();
-			subtitles << "|" << m_pAutoPilot->GetDebugInfo();
-			subtitles << "|" << m_pComModule->GetDebugInfo();
-			*/
-			int key = cv::waitKey(1);
+			//subtitles << "|" << m_pAutoPilot->GetDebugInfo();
+			//subtitles << "|" << 
+			
+			std::string debug = " " + m_AutoPilots[gRobotState.runMode]->GetDebugInfo();
+			debug[0] = COMMAND_STATEMACHINE_STATE;
+			SendData(debug.c_str(), debug.size());
+
+			int key = cv::waitKey(50);
 			if (key == 27) {
 				std::cout << "exiting program" << std::endl;
 				break;

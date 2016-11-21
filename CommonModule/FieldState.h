@@ -24,6 +24,7 @@ const uchar MAX_BALLS = 15;
 		ObjectPosition opponents[2];
 		ObjectPosition self;
 		BallPosition balls[MAX_BALLS];
+		BallPosition ballsFront[MAX_BALLS];
 
 		/*
 		//GatePosition partnerHomeGate;

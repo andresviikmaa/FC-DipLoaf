@@ -42,10 +42,10 @@ void RefereeCom::handleMessage1vs1(const std::string & command, bool sendAck){
 }
 
 void RefereeCom::handleMessage2vs2(const std::string & command, bool sendAck){
-	if (command == "S") gRobotState.gameMode = pendingGameMode;
+	if (command == "S") gRobotState.gameMode = gRobotState.pendingGameMode;
 	else if (command == "H") gRobotState.gameMode = GAME_MODE_END_HALF;
-	else if (command == "B") pendingGameMode = GAME_MODE_PLACED_BALL;
-	else if (command == "E") pendingGameMode = GAME_MODE_END_HALF;
+	else if (command == "B") gRobotState.pendingGameMode = GAME_MODE_PLACED_BALL;
+	else if (command == "E") gRobotState.pendingGameMode = GAME_MODE_END_HALF;
 	else if (command == "A") assert(false); //TODO: send ping back
 	else {
 		bool ourTeamA = gRobotState.TEAM_MARKER == 'A';
@@ -54,11 +54,11 @@ void RefereeCom::handleMessage2vs2(const std::string & command, bool sendAck){
 			c += 32; // convert command to upper case
 			ourTeamA = !ourTeamA; // and pretend that we are team A
 		}
-		if (c == 'K') pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_KICK_OFF : GAME_MODE_START_OPPONENT_KICK_OFF;
-		else if (c == 'I') pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_INDIRECT_FREE_KICK : GAME_MODE_START_OPPONENT_INDIRECT_FREE_KICK;
-		else if (c == 'D') pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_FREE_KICK : GAME_MODE_START_OPPONENT_FREE_KICK;
-		else if (c == 'P') pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_PENALTY : GAME_MODE_START_OPPONENT_PENALTY;
-		else if (c == 'G') pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_GOAL : GAME_MODE_START_OPPONENT_GOAL;
-		else if (c == 'Y') pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_YELLOW_CARD : GAME_MODE_START_OPPONENT_YELLOW_CARD;
+		if (c == 'K') gRobotState.pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_KICK_OFF : GAME_MODE_START_OPPONENT_KICK_OFF;
+		else if (c == 'I') gRobotState.pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_INDIRECT_FREE_KICK : GAME_MODE_START_OPPONENT_INDIRECT_FREE_KICK;
+		else if (c == 'D') gRobotState.pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_FREE_KICK : GAME_MODE_START_OPPONENT_FREE_KICK;
+		else if (c == 'P') gRobotState.pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_PENALTY : GAME_MODE_START_OPPONENT_PENALTY;
+		else if (c == 'G') gRobotState.pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_GOAL : GAME_MODE_START_OPPONENT_GOAL;
+		else if (c == 'Y') gRobotState.pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_YELLOW_CARD : GAME_MODE_START_OPPONENT_YELLOW_CARD;
 	}
 }
