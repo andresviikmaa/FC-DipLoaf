@@ -76,7 +76,7 @@ TARGET_LINK_LIBRARIES( StateMachine CommonModule ${OpenCV_LIBS} ${Boost_LIBRARIE
 set(ROBOTIINA_FILES  Robotiina/Robotiina.cpp)
 
 add_executable(robotiina ${ROBOTIINA_FILES})
-target_link_libraries( robotiina RobotModule CommonModule HardwareModule VisionModule StateMachine ${OpenCV_LIBS} ${Boost_LIBRARIES} )
+target_link_libraries( robotiina RobotModule CommonModule HardwareModule VisionModule StateMachine ${OpenCV_LIBS} ${Boost_LIBRARIES} -lX11 )
 
 #set(WHEELEMULATOR_FILES WheelEmulator.cpp)
 #add_executable(wheelemulator ${WHEELEMULATOR_FILES})

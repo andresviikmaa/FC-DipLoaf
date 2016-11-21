@@ -2,6 +2,8 @@
 //
 #ifdef WIN_32
 #include "stdafx.h"
+#else
+#include <X11/Xlib.h>
 #endif
 
 #include "../RobotModule/Robot.h"
@@ -29,6 +31,9 @@ boost::asio::io_service io2;
 
 int main(int argc, char* argv[])
 {
+#ifndef WIN_32
+	XInitThreads();
+#endif
 	try {
 
 		Settings settings;

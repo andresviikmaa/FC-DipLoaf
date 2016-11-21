@@ -109,7 +109,6 @@ bool Robot::Launch()
 	return true;
 }
 void Robot::SendFieldState() {
-
 	const char * pData = reinterpret_cast<const char*>(&gFieldState);
 	SendData(pData, sizeof(FieldState));
 	const char * pData2 = reinterpret_cast<const char*>(&gRobotState);
@@ -203,12 +202,15 @@ void Robot::Run()
 			std::string debug = " " + m_AutoPilots[gRobotState.runMode]->GetDebugInfo();
 			debug[0] = COMMAND_STATEMACHINE_STATE;
 			SendData(debug.c_str(), debug.size());
+int ms = 50;
+		std::chrono::milliseconds dura(ms);
+		std::this_thread::sleep_for(dura);
 
-			int key = cv::waitKey(50);
-			if (key == 27) {
-				std::cout << "exiting program" << std::endl;
-				break;
-			}
+			//int key = cv::waitKey(50);
+			//if (key == 27) {
+			//	std::cout << "exiting program" << std::endl;
+			//	break;
+			//}
 
 
 		}

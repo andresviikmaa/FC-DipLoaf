@@ -73,7 +73,7 @@ protected:
 	std::vector<cv::Point2i> notBlueGates, notYellowGates;
 
 	ThresholdedImages thresholdedImages;
-	TBBImageThresholder *thresholder;
+	TBBImageThresholder *thresholder = nullptr;
 	void ThresholdFrame();
 	void CheckGateObstruction();
 	void FindGates();
