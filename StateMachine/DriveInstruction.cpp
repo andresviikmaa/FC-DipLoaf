@@ -3,8 +3,9 @@
 #include "../CommonModule/Interfaces.h"
 #include "../HardwareModule/HardwareInterfaces.h"
 #include "../CommonModule/FieldState.h"
+#include "../CommonModule/RobotState.h"
 
-extern FieldState gFieldState;
+extern RobotState gRobotState;
 
 DriveInstruction::DriveInstruction(const std::string &name) : name(name) {
 };
@@ -17,7 +18,7 @@ void DriveInstruction::onEnter() {
 };
 DriveMode DriveInstruction::step1(double dt, DriveMode driveMode) {
 	//not executed in test mode
-	if (!gFieldState.isPlaying && driveMode != DRIVEMODE_IDLE) {
+	if (gRobotState.gameMode == GAME_MODE_END_HALF && driveMode != DRIVEMODE_IDLE) {
 		std::cout << "Stoping game (referee stop)" << std::endl;
 		m_pCom->ToggleTribbler(0);
 		return DRIVEMODE_IDLE;
@@ -65,7 +66,10 @@ DriveMode DriveInstruction::step2(double dt, DriveMode driveMode) {
 bool DriveInstruction::aimTarget(const ObjectPosition &target, Speed &speed, double errorMargin) {
 	double heading = target.heading;
 	if (fabs(heading) > errorMargin) {
-		speed.rotation = -sign0(heading) * std::min(40.0, std::max(fabs(heading), 5.0));
+		speed.rotation = sign0(heading) * std::min(40.0, std::max(fabs(heading), 5.0));
+
+		speed.velocity = 0;
+		speed.heading = 0;
 		return false;
 	}
 	else return fabs(heading) < errorMargin;
@@ -76,6 +80,7 @@ bool DriveInstruction::catchTarget(const ObjectPosition &target, Speed &speed) {
 	double dist = target.distance;
 	speed.velocity = 60;
 	speed.heading = 0;
+	speed.rotation = 0;
 	return false;
 }
 

@@ -32,7 +32,8 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-
+	std::atomic_bool exit;
+	exit = false;
 	Settings settings;
 	std::string name = config["name"].as<std::string>();
 	std::cout << "Initializing Camera... " << std::endl;
@@ -54,12 +55,14 @@ int main(int argc, char* argv[])
 		display.createButton(OBJECT_LABELS[(OBJECT)i], '-', [i, &calibrator] {
 			calibrator.GetObjectThresholds(i, OBJECT_LABELS[(OBJECT)i]);
 		});
-	}
 
-	int key = 0;
-	while (key != 27) {
+	}
+	display.createButton("Exit", 'x', [&exit]{
+		exit = true;
+	});
+	while (!exit) {
 		calibrator.Step();
-		key = cv::waitKey(30);
+		//key = cv::waitKey(30);
 	}
 }
 
