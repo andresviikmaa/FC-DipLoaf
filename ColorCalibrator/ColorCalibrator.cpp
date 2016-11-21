@@ -1,11 +1,12 @@
 // ColorCalibrator.cpp : Defines the entry point for the console application.
 //
-
+#ifdef WIN_32
 #include "stdafx.h"
+#endif
 #include <opencv2/highgui.hpp>
 #include <boost/program_options.hpp>
 
-#include "../DisplayModule/dialog.h"
+#include "../DisplayModule/Dialog.h"
 #include "../HardwareModule/Camera.h"
 #include "AutoCalibrator.h"
 #include "../CommonModule/Settings.h"

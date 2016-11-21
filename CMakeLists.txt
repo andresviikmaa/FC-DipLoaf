@@ -78,6 +78,12 @@ set(ROBOTIINA_FILES  Robotiina/Robotiina.cpp)
 add_executable(robotiina ${ROBOTIINA_FILES})
 target_link_libraries( robotiina RobotModule CommonModule HardwareModule VisionModule StateMachine ${OpenCV_LIBS} ${Boost_LIBRARIES} -lX11 )
 
+set(COLORCALIB_FILES  ColorCalibrator/ColorCalibrator.cpp ColorCalibrator/AutoCalibrator.cpp)
+
+add_executable(colorcalibrator ${COLORCALIB_FILES})
+target_link_libraries( colorcalibrator CommonModule HardwareModule  DisplayModule ${OpenCV_LIBS} ${Boost_LIBRARIES} -lX11 )
+
+
 #set(WHEELEMULATOR_FILES WheelEmulator.cpp)
 #add_executable(wheelemulator ${WHEELEMULATOR_FILES})
 #target_link_libraries( wheelemulator ${OpenCV_LIBS} ${Boost_LIBRARIES} ${WINSOCK_LIB})

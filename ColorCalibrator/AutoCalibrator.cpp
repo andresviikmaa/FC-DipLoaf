@@ -5,7 +5,13 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
+#ifdef WIN_32
 #include <direct.h>
+#else
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
 #include <stdlib.h>
 #include <stdio.h>
 AutoCalibrator::AutoCalibrator(ICamera * pCamera, IDisplay *pDisplay)
@@ -82,8 +88,11 @@ void AutoCalibrator::SaveConf(const std::string &name) {
 	pt.put("sat.high", range.sat.high);
 	pt.put("val.low", range.val.low);
 	pt.put("val.high", range.val.high);
-
+#ifdef WIN_32
 	_mkdir((std::string("conf/") + m_pCamera->getName()).c_str());
+#else
+	mkdir((std::string("conf/") + m_pCamera->getName()).c_str(), S_IRUSR | S_IWUSR | S_IXUSR);
+#endif
 	write_ini(std::string("conf/") + m_pCamera->getName() + "/" + name + ".ini", pt);
 }
 bool AutoCalibrator::OnMouseEvent(int event, float x, float y, int flags, bool bMainArea) {
