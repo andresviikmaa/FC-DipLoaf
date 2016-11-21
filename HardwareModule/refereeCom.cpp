@@ -1,88 +1,64 @@
 #include "refereeCom.h"
-#include "../CommonModule/FieldState.h"
-extern FieldState gFieldState;
+#include "../CommonModule/GameState.h"
+#include "../CommonModule/RobotState.h"
+#include <iostream>
+extern RobotState gRobotState;
 
-RefereeCom::RefereeCom(const std::string &name) : ConfigurableModule(name)
+RefereeCom::RefereeCom(const std::string &name)
 {
-//	AddSetting("Field", [this]{return std::string(1,this->FIELD_MARKER);}, [this]{this->nextField();});
-//	AddSetting("Team", [this]{return std::string(1,this->TEAM_MARKER);}, [this]{this->nextTeam();});
-//	AddSetting("Robot", [this]{return std::string(1,this->ROBOT_MARKER);}, [this]{this->nextRobot();});
-//	LoadSettings();
+
 }
 
-void RefereeCom::giveCommand(GameMode command) {
-	gFieldState.gameMode = command;
-}
 
-void RefereeCom::nextField() {
-	if (FIELD_MARKER == 'A') {
-		FIELD_MARKER = 'B';
-	}
-	else {
-		FIELD_MARKER = 'A';
-	}
-}
-
-void RefereeCom::nextTeam() {
-	if (TEAM_MARKER == 'A') {
-		TEAM_MARKER = 'B';
-	}
-	else {
-		TEAM_MARKER = 'A';
-	}
-}
-
-void RefereeCom::nextRobot() {
-	if (ROBOT_MARKER == 'A') {
-		ROBOT_MARKER = 'B';
-	}
-	else if (ROBOT_MARKER == 'B') {
-		ROBOT_MARKER = 'C';
-	}
-	else if (ROBOT_MARKER == 'C') {
-		ROBOT_MARKER = 'D';
-	}
-	else if (ROBOT_MARKER == 'D') {
-		ROBOT_MARKER = 'A';
-	}
-}
 void RefereeCom::handleMessage(const std::string & message){
-	//TODO: update m_pFieldState->gameMode from here directly, add missing start commands there
 	std::cout << "referee command: " << message << std::endl;
 	std::string command = message.substr(0, 12);
-	if (command.length() == 12 && command.at(0) == 'a' && command.at(1) == FIELD_MARKER && (command.at(2) == ALL_MARKER || command.at(2) == ROBOT_MARKER)) {
-		if (command.at(2) == ROBOT_MARKER) sendAck("a" + std::string(1, FIELD_MARKER) + std::string(1, ROBOT_MARKER) + "ACK------");
+	if (command.length() == 12 && command.at(0) == 'a' && command.at(1) == gRobotState.FIELD_MARKER && (command.at(2) == ALL_MARKER || command.at(2) == gRobotState.ROBOT_MARKER)) {
+//		if (command.at(2) == gRobotState.ROBOT_MARKER) sendAck("a" + std::string(1, gRobotState.FIELD_MARKER) + std::string(1, gRobotState.ROBOT_MARKER) + "ACK------");
+		bool sendAck = command.at(2) == gRobotState.ROBOT_MARKER;
 		command = command.substr(3);
-		if (command == "START----") gFieldState.isPlaying = true;
-		else if (command == "STOP-----") {
-			gFieldState.gameMode = GAME_MODE_END_HALF;
-			gFieldState.isPlaying = false;
+
+
+		if (gRobotState.runMode = ROBOT_MODE_1VS1) return handleMessage1vs1(command, sendAck);
+		else if (gRobotState.runMode = ROBOT_MODE_2VS2) return handleMessage2vs2(command, sendAck);
+		else std::cout << "Ignoring referee message in idle mode" << std::endl;
+	}
+}
+
+void RefereeCom::handleMessage1vs1(const std::string & command, bool sendAck){
+	if (command == "START----") {
+		gRobotState.gameMode = GAME_MODE_START_PLAY;
+	}
+	else if (command == "STOP-----") {
+		gRobotState.gameMode = GAME_MODE_END_HALF;
+	}
+	else if (command == "PING-----") {
+		#pragma message("Fix referee ping")
+	}
+	if (sendAck){
+		this->sendAck("a" + std::string(1, gRobotState.FIELD_MARKER) + std::string(1, gRobotState.ROBOT_MARKER) + "ACK------");
+	}
+
+}
+
+void RefereeCom::handleMessage2vs2(const std::string & command, bool sendAck){
+	if (command == "S") gRobotState.gameMode = gRobotState.pendingGameMode;
+	else if (command == "H") gRobotState.gameMode = GAME_MODE_END_HALF;
+	else if (command == "B") gRobotState.pendingGameMode = GAME_MODE_PLACED_BALL;
+	else if (command == "E") gRobotState.pendingGameMode = GAME_MODE_END_HALF;
+	else if (command == "A") assert(false); //TODO: send ping back
+	else {
+		bool ourTeamA = gRobotState.TEAM_MARKER == 'A';
+		char c = command[1];
+		if (!ourTeamA) { 
+			c += 32; // convert command to upper case
+			ourTeamA = !ourTeamA; // and pretend that we are team A
 		}
-		else if (command == "PLACEDBAL") gFieldState.gameMode = GAME_MODE_PLACED_BALL;
-		else if (command == "ENDHALF--") gFieldState.gameMode = GAME_MODE_END_HALF;
-		else if (command.at(0) == TEAM_MARKER) {
-			command = command.substr(1);
-			if (command == "KICKOFF-") gFieldState.gameMode = GAME_MODE_START_OUR_KICK_OFF;
-			else if (command == "IFREEK--") gFieldState.gameMode = GAME_MODE_START_OUR_INDIRECT_FREE_KICK;
-			else if (command == "DFREEK--") gFieldState.gameMode = GAME_MODE_START_OUR_FREE_KICK;
-			else if (command == "GOALK---") gFieldState.gameMode = GAME_MODE_START_OUR_GOAL_KICK;
-			else if (command == "THROWIN-") gFieldState.gameMode = GAME_MODE_START_OUR_THROWIN;
-			else if (command == "CORNERK-") gFieldState.gameMode = GAME_MODE_START_OUR_CORNER_KICK;
-			else if (command == "PENALTY-") gFieldState.gameMode = GAME_MODE_START_OUR_PENALTY;
-			else if (command == "GOAL----") gFieldState.gameMode = GAME_MODE_START_OUR_GOAL;
-			else if (command == "CARDY---") gFieldState.gameMode = GAME_MODE_START_OUR_YELLOW_CARD;
-		}
-		else {
-			command = command.substr(1);
-			if (command == "KICKOFF-") gFieldState.gameMode = GAME_MODE_START_OPPONENT_KICK_OFF;
-			else if (command == "IFREEK--") gFieldState.gameMode = GAME_MODE_START_OPPONENT_INDIRECT_FREE_KICK;
-			else if (command == "DFREEK--") gFieldState.gameMode = GAME_MODE_START_OPPONENT_FREE_KICK;
-			else if (command == "GOALK---") gFieldState.gameMode = GAME_MODE_START_OPPONENT_GOAL_KICK;
-			else if (command == "THROWIN-") gFieldState.gameMode = GAME_MODE_START_OPPONENT_THROWIN;
-			else if (command == "CORNERK-") gFieldState.gameMode = GAME_MODE_START_OPPONENT_CORNER_KICK;
-			else if (command == "PENALTY-") gFieldState.gameMode = GAME_MODE_START_OPPONENT_PENALTY;
-			else if (command == "GOAL----") gFieldState.gameMode = GAME_MODE_START_OPPONENT_GOAL;
-			else if (command == "CARDY---") gFieldState.gameMode = GAME_MODE_START_OPPONENT_YELLOW_CARD;
-		}
+		if (c == 'K') gRobotState.pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_KICK_OFF : GAME_MODE_START_OPPONENT_KICK_OFF;
+		else if (c == 'I') gRobotState.pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_INDIRECT_FREE_KICK : GAME_MODE_START_OPPONENT_INDIRECT_FREE_KICK;
+		else if (c == 'D') gRobotState.pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_FREE_KICK : GAME_MODE_START_OPPONENT_FREE_KICK;
+		else if (c == 'P') gRobotState.pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_PENALTY : GAME_MODE_START_OPPONENT_PENALTY;
+		else if (c == 'G') gRobotState.pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_GOAL : GAME_MODE_START_OPPONENT_GOAL;
+		else if (c == 'Y') gRobotState.pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_YELLOW_CARD : GAME_MODE_START_OPPONENT_YELLOW_CARD;
 	}
 }

@@ -16,10 +16,13 @@
 #include "../VisionModule/MainCameraVision.h"
 #include "../VisionModule/FrontCameraVision.h"
 #include "../CommonModule/FieldState.h"
+#include "../CommonModule/RobotState.h"
 #include "ManualControl.h"
 
-extern FieldState gFieldState;
-extern FieldState gPartnerState;
+FieldState gFieldState;
+FieldState gPartnerFieldState;
+RobotState gRobotState;
+RobotState gPartnerRobotState;
 
 #define STATE_BUTTON(name, shortcut, new_state) \
 m_pDisplay->createButton(std::string("") + name, shortcut, [&](){ this->SetState(new_state); });
@@ -52,9 +55,12 @@ public:
 };
 
 enum COMMAND : uchar {
-	COMMAND_STATE = 0,
-	COMMAND_SET_PLAY_MODE,
-	COMMAND_MANUAL_CONTROL,
+	COMMAND_FIELD_STATE = 0,
+	COMMAND_ROBOT_STATE = 1,
+	COMMAND_SET_PLAY_MODE = 10,
+	COMMAND_SET_CONF = 11,
+	COMMAND_MANUAL_CONTROL = 20,
+	COMMAND_STATEMACHINE_STATE = 30,
 };
 
 //TODO: convert to commandline options
@@ -84,7 +90,7 @@ Robot::Robot(boost::asio::io_service &io, ICamera *pMainCamera, ICamera *pFrontC
 	assert(OBJECT_LABELS.size() == NUMBER_OF_OBJECTS);
 	autoPilotEnabled = false;
 	gFieldState.stateSize = sizeof(FieldState);
-
+	gRobotState.stateSize = sizeof(RobotState);
 }
 Robot::~Robot()
 {
@@ -93,10 +99,10 @@ Robot::~Robot()
 
 bool Robot::Launch()
 {
-	m_AutoPilots.insert(std::make_pair("idle", new StopAndDoNothing(m_pComModule)));
-	m_AutoPilots.insert(std::make_pair("1vs1", new SingleModePlay(m_pComModule)));
-	m_AutoPilots.insert(std::make_pair("2vs2", new MultiModePlay(m_pComModule, master)));
-	m_AutoPilots.insert(std::make_pair("manual", new ManualControl(m_pComModule)));
+	m_AutoPilots.insert(std::make_pair(ROBOT_MODE_IDLE, new StopAndDoNothing(m_pComModule)));
+	m_AutoPilots.insert(std::make_pair(ROBOT_MODE_1VS1, new SingleModePlay(m_pComModule)));
+	m_AutoPilots.insert(std::make_pair(ROBOT_MODE_2VS2, new MultiModePlay(m_pComModule, master)));
+//	m_AutoPilots.insert(std::make_pair("manual", new ManualControl(m_pComModule)));
 
 	Run();
 
@@ -106,13 +112,24 @@ void Robot::SendFieldState() {
 
 	const char * pData = reinterpret_cast<const char*>(&gFieldState);
 	SendData(pData, sizeof(FieldState));
+	const char * pData2 = reinterpret_cast<const char*>(&gRobotState);
+	SendData(pData2, sizeof(RobotState));
 
 }
 bool Robot::MessageReceived(const boost::array<char, BUF_SIZE>& buffer, size_t size) {
 	COMMAND code = (COMMAND)buffer[0];
-	if (code == COMMAND_STATE && size == sizeof(FieldState)) {
-		memcpy(&gPartnerState, &buffer, size);
+	if (code == COMMAND_FIELD_STATE && size == sizeof(FieldState)) {
+		memcpy(&gPartnerFieldState, &buffer, size);
 		return true;
+	}
+	else if (code == COMMAND_SET_PLAY_MODE) {
+		RunMode newMode = (RunMode)buffer[1];
+		if (m_AutoPilots.find(newMode) != m_AutoPilots.end()) {
+			m_AutoPilots[gRobotState.runMode]->Enable(false);
+			gRobotState.runMode = newMode;
+			m_AutoPilots[newMode]->Enable(true);
+
+		}
 	}
 	return false; 
 };
@@ -121,17 +138,23 @@ bool Robot::MessageReceived(const std::string & message) {
 	std::cout << "MessageReceived: " << message << std::endl;
 	if (message.empty()) return false;
 	COMMAND code = (COMMAND)message[0];
-	std::string newMode = "";
-	if (code == COMMAND_SET_PLAY_MODE) {
-		std::string newMode = message.substr(1);
-		if (m_AutoPilots.find(newMode) != m_AutoPilots.end()) {
-			m_AutoPilots[curPlayMode]->Enable(false);
-			curPlayMode = newMode;
-			m_AutoPilots[curPlayMode]->Enable(true);
+
+	if (code == COMMAND_SET_CONF) {
+		char val = message[1];
+		char val2 = message[2];
+		std::string key = message.substr(3);
+
+		if (key == "field") gRobotState.FIELD_MARKER = val2;
+		if (key == "team") gRobotState.TEAM_MARKER = val2;
+		if (key == "marker") gRobotState.ROBOT_MARKER = val2;
+
+		if (key == "gate") {
+			gRobotState.targetGate = (OBJECT)(val + BLUE_GATE);
+			gRobotState.homeGate = (OBJECT)(!val + BLUE_GATE);
 		}
-	} else if(code == COMMAND_MANUAL_CONTROL) {
-		if (curPlayMode == "manual") {
-			m_AutoPilots[curPlayMode]->ProcessCommand(message.substr(1));
+		if (key == "robot") {
+			gRobotState.ourTeam = (OBJECT)(val + TEAM_PINK);
+			gRobotState.oppoonentTeam = (OBJECT)(!val + TEAM_PINK);
 		}
 	}
 	return true;
@@ -139,8 +162,10 @@ bool Robot::MessageReceived(const std::string & message) {
 void Robot::Run()
 {
 	double t1 = (double)cv::getTickCount();
-
-
+#ifdef GUSTAV
+	gRobotState.runMode = ROBOT_MODE_1VS1;
+	gRobotState.gameMode = GAME_MODE_START_PLAY;
+#endif
 	std::stringstream subtitles;
 	double fps = 0.;
 	size_t counter = 0;
@@ -167,18 +192,19 @@ void Robot::Run()
 			io.poll();
 			// MessageReceived handled 
 
-			m_AutoPilots[curPlayMode]->Step(dt);
-			//Sleep(1);
-		std::chrono::milliseconds dura(1);
-		std::this_thread::sleep_for(dura);
+			m_AutoPilots[gRobotState.runMode]->Step(dt);
+			m_pComModule->SendMessages();
 
-			/*
 			subtitles.str("");
 			//subtitles << oss.str();
-			subtitles << "|" << m_pAutoPilot->GetDebugInfo();
-			subtitles << "|" << m_pComModule->GetDebugInfo();
-			*/
-			int key = cv::waitKey(1);
+			//subtitles << "|" << m_pAutoPilot->GetDebugInfo();
+			//subtitles << "|" << 
+			
+			std::string debug = " " + m_AutoPilots[gRobotState.runMode]->GetDebugInfo();
+			debug[0] = COMMAND_STATEMACHINE_STATE;
+			SendData(debug.c_str(), debug.size());
+
+			int key = cv::waitKey(50);
 			if (key == 27) {
 				std::cout << "exiting program" << std::endl;
 				break;

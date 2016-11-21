@@ -1,2 +1,2 @@
 cd Robotiina
-..\Release\ColorCalibrator.exe --name=front
+..\Release_UI\ColorCalibrator.exe --name=front
