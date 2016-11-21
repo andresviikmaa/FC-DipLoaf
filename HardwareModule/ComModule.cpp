@@ -1,5 +1,7 @@
 #include "ComModule.h"
 #include <boost/algorithm/string.hpp>
+#include <thread>
+#include <chrono>
 
 extern cv::Mat wheelAngles;
 
@@ -10,6 +12,12 @@ ComModule::ComModule(boost::asio::io_service &io, const std::string ip_address, 
 
 }
 
+ComModule::ComModule(boost::asio::io_service &io, const std::string ip_address, ushort port1):
+	io(io), UdpServer(io, ip_address, port1)
+{
+
+
+}
 
 ComModule::~ComModule()
 {
@@ -22,8 +30,14 @@ ComModule::~ComModule()
 
 
 void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed) {
+	
 
-	const int maxSpeed = 190;
+	const int maxSpeed = 30;
+	/*
+	direction = 0;
+	angularSpeed = 30;
+	fowardSpeed = 0;
+	*/
 	if (fowardSpeed > maxSpeed) fowardSpeed = maxSpeed;
 	if (fowardSpeed < -maxSpeed) fowardSpeed = -maxSpeed;
 
@@ -38,8 +52,8 @@ void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed)
 	}
 
 
-	targetSpeedXYW.at<double>(0) = sin(direction* CV_PI / 180.0)* fowardSpeed;
-	targetSpeedXYW.at<double>(1) = cos(direction* CV_PI / 180.0)* fowardSpeed;
+	targetSpeedXYW.at<double>(0) = sin((direction)* CV_PI / 180.0)* fowardSpeed;
+	targetSpeedXYW.at<double>(1) = cos((direction)* CV_PI / 180.0)* fowardSpeed;
 	targetSpeedXYW.at<double>(2) = angularSpeed;
 
 };
@@ -67,32 +81,37 @@ bool ComModule::MessageReceived(const std::string & message) {
 	const auto &command = params[0];
 	if (command == "speeds" /*<speeds:%d:%d:%d:%d:%d>*/) {
 
-	}else if (message == "ref" /*<ref:%s>*/) {
+	}
+	else if (command == "ref" /*<ref:%s>*/) {
 		handleMessage(params[1]);
 	}
-	else if (message == "toggle-side" /*<toggle-side>*/) {
+	else if (command == "toggle-side" /*<toggle-side>*/) {
 
 	}
-	else if (message == "toggle-go" /*<toggle-go>*/) {
+	else if (command == "toggle-go" /*<toggle-go>*/) {
 
 	}
-	else if (message == "ball" /*<ball:%d>*/) {
+	else if (command == "ball" /*<ball:%d>*/) {
 		bool ball = false;
 		SetBallInTribbler(params[1][0]=='1');
 	}
-	else if (message == "<adc:%.1f>") {
+	else if (command == "<adc:%.1f>") {
 
 	}
 	return true;
 }
 void ComModule::SendMessages() {
+	std::stringstream ss;
 	ss.clear();
 	ss << "speeds";
 
-	cv::Mat speeds = wheelAngles * targetSpeedXYW;
-	for (auto i = 0; i < speeds.rows; i++) {
-		ss << ":" << (int)speeds.at<double>(i);
-	}
+	cv::Mat speeds = wheelAngles * targetSpeedXYW *8;
+	ss << ":" << -(int)speeds.at<double>(0);
+	ss << ":" << (int)speeds.at<double>(1);
+	ss << ":" << -(int)speeds.at<double>(3);
+	ss << ":" << (int)speeds.at<double>(2);
+	ss << ":" << tribblerSpeed*50;
 
-	SendMessage(ss.str());
+	std::string tmp = ss.str();
+	SendMessage(tmp);
 }

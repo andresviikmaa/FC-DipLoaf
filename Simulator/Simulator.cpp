@@ -494,13 +494,6 @@ void Simulator::Kick(int force) {
 	//balls[mNumberOfBalls - 1].~BallPosition();
 	//mNumberOfBalls--;
 }
-void Simulator::giveCommand(GameMode command) {
-	if (isMaster) {
-		SendMessage("REF " + std::to_string(command) + " #");
-	}
-	assert(false);
-	//RefereeCom::giveCommand(command);
-}
 
 void Simulator::drawRect(cv::Rect rec, int thickness, const cv::Scalar &color) {
 	drawLine(rec.tl(), rec.tl() + cv::Point(rec.width, 0), thickness, color);

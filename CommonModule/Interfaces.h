@@ -70,7 +70,7 @@ public:
 };
 
 
-class ISoccerRobot: public RobotState {
+class ISoccerRobot {
 public:
 	virtual void Drive(double fowardSpeed, double direction = 0, double angularSpeed = 0) = 0;
 	virtual void Drive(const Speed &speed) = 0; /* forward, direction, rotation */

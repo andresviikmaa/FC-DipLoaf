@@ -1,0 +1,3 @@
+[submodule "ControlCenter"]
+	path = ControlCenter
+	url = https://github.com/andresviikmaa/FC-Diploaf-Control.git

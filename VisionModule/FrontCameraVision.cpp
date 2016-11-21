@@ -16,7 +16,7 @@ FrontCameraVision::~FrontCameraVision()
 void  FrontCameraVision::ProcessFrame() {
 	ThresholdFrame();
 	//FindGate();
-	//FindBall();
+	FindBall();
 
 }
 //void FrontCameraVision::ThresholdFrame() {
@@ -26,8 +26,10 @@ void  FrontCameraVision::ProcessFrame() {
 //}
 
 void FrontCameraVision::FindGate() {
+
 }
 void FrontCameraVision::FindBall() {
+
 }
 
 void FrontCameraVision::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos) {
