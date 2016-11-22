@@ -2,10 +2,12 @@
 #include "../CommonModule/ThreadedClass.h"
 #include "../CommonModule/Interfaces.h"
 #include "../VisionModule/VisionInterfaces.h"
+#include "../DisplayModule/Dialog.h"
+
 //#include "ConfigurableModule.h"
 #include <atomic>
 #include <opencv2/imgproc.hpp>
-class AutoCalibrator: public IUIEventListener{
+class AutoCalibrator: public Dialog, public IUIEventListener{
 	enum {
 		LIVE_FEED = 0,
 		GRAB_FRAME,
@@ -16,8 +18,9 @@ class AutoCalibrator: public IUIEventListener{
 	};
 protected:
 	cv::Mat image;
+	bool isClustered = false;
 public:
-	AutoCalibrator(ICamera * pCamera, IDisplay *pDisplay);
+	AutoCalibrator(ICamera * pCamera);
 	void LoadFrame();
 	void Reset() { 
 		cv::resize(white, image, frame_size);
@@ -34,7 +37,9 @@ public:
 
 	~AutoCalibrator();
 	int frames = 0;
-	void Step();
+	virtual int Draw();
+	virtual void Start() {};
+
 	const cv::Mat & GetFrame() { return m_pCamera->Capture(); }
 	virtual bool OnMouseEvent(int event, float x, float y, int flags, bool bMainArea);
 
@@ -44,9 +49,8 @@ protected:
 	void mouseClicked(int x, int y, int flags);
 
 	ICamera *m_pCamera;
-	IDisplay *m_pDisplay;
 	bool m_bEnableCapture;
-	cv::Mat frameBGR, frameHSV, display;
+	cv::Mat frameBGR, frameHSV, buffer;
 	const cv::Mat white = cv::Mat(480, 640, CV_8UC3, cv::Scalar::all(245)); // blink display
 
 	HSVColorRange range/* =  {{0,179},{0,255},{0,255}}*/;
@@ -56,7 +60,8 @@ private:
 	std::string object_name;
 	cv::Point frame_size;
 	boost::mutex mutex;
-	std::atomic_int screenshot_mode;
+	int screenshot_mode;
+	int last_screenshot_mode = -1;
 	cv::Point thresholdCorner1 = cv::Point(0, 0);
 	cv::Point thresholdCorner2 = cv::Point(0, 0);
 	bool drawRect = false;

@@ -40,13 +40,11 @@ public:
 	virtual int createButton(const std::string& bar_name, char shortcut, std::function<void()> const &) = 0;
 	virtual int Draw() = 0;
 	virtual void clearButtons() = 0;
-	virtual void ShowImage(const cv::Mat &image, bool main = true, bool flip = true) = 0;
+	virtual void ShowImage(const cv::Mat &image, bool flip = true) = 0;
 	virtual void AddEventListener(IUIEventListener *pEventListener) = 0;
 	virtual void RemoveEventListener(IUIEventListener *pEventListener) = 0;
 	virtual void putText(const std::string &text, cv::Point pos, double fontScale, cv::Scalar color) = 0;
 	virtual void putShadowedText(const std::string &text, cv::Point pos, double fontScale, cv::Scalar color) = 0;
-	virtual void SwapDisplays() = 0;
-	virtual void ToggleDisplay() = 0;
 	virtual ~IDisplay() {};
 };
 

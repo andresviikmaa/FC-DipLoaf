@@ -11,7 +11,7 @@
 Dialog::Dialog(const std::string &title, const cv::Size &ptWindowSize, const cv::Size &ptCamSize, int flags/* = CV_WINDOW_AUTOSIZE*/)
 	: windowSize(ptWindowSize), camSize(ptCamSize), ThreadedClass("Dialog")
 {
-	cv::Size windowSizeDefault = cv::Size((int)((double)camSize.width / 0.7), (int)((double)camSize.height / 0.7));
+	cv::Size windowSizeDefault = cv::Size(1024, 768);
 
 	if (windowSize != cv::Size(0, 0)) {
 		double scale = (double)windowSize.width / (double)windowSizeDefault.width;
@@ -22,7 +22,6 @@ Dialog::Dialog(const std::string &title, const cv::Size &ptWindowSize, const cv:
 	}
 	fontScale = (double)windowSize.height / 1024;
     m_title = title;
-	m_bMainCamEnabled = true;
     int baseLine;
 
 	m_buttonHeight = cv::getTextSize("Ajig6", cv::FONT_HERSHEY_DUPLEX, fontScale, 1, &baseLine).height * 2;
@@ -50,21 +49,15 @@ Dialog::Dialog(const std::string &title, const cv::Size &ptWindowSize, const cv:
 
 	display_empty = cv::Mat(windowSize, CV_8UC3, cv::Scalar(0));
 	display = cv::Mat(windowSize, CV_8UC3, cv::Scalar(0));
-	cam1_roi = display(cv::Rect(0, 0, camSize.width, camSize.height)); // region of interest
-	int cam2_width = windowSize.width - camSize.width;
-	cam2_roi = display(cv::Rect(windowSize - cv::Size(cam2_width, cam2_width), cv::Size(cam2_width, cam2_width)));
-	//cam_area = cv::Mat(CAM_HEIGHT, CAM_WIDTH, CV_8UC3);
-	Start();
+	//Start();
 
 };
 Dialog::~Dialog(){
 	stop_thread = true;
 	WaitForStop();
 }
-void Dialog::ShowImage(const cv::Mat &image, bool main, bool flipX) {
-	if (!m_bMainCamEnabled && main) return;
+void Dialog::ShowImage(const cv::Mat &image, bool flipX) {
 	boost::mutex::scoped_lock lock(display_mutex); //allow one command at a time
-	if (main){
 
 #ifdef VIRTUAL_FLIP
 		if(flipX)
@@ -74,10 +67,7 @@ void Dialog::ShowImage(const cv::Mat &image, bool main, bool flipX) {
 #else
 		image.copyTo(cam1_area);
 #endif
-	}
-	else{
-		image.copyTo(cam2_area);
-	}
+
 	//	resize(image, cam_area, cv::Size(CAM_WIDTH, CAM_HEIGHT));//resize image
 	//resize(image, display, cv::Size(WINDOW_WIDTH, WINDOW_HEIGHT));//resize image
 }
@@ -121,14 +111,9 @@ int Dialog::Draw() {
     //int window_height = image.rows;
     //cv::Mat image = cv::Mat::zeros( window_height, window_width, CV_8UC3 );
 	//cam_area.copyTo(display_roi);
-	cv::Mat main_roi = m_bCam1Active ? cam1_roi : cam2_roi;
-	cv::Mat sec_roi = !m_bCam1Active ? cam1_roi : cam2_roi;
-	if (m_bMainCamEnabled && cam1_area.size().height > 0) {
-		resize(cam1_area, main_roi, main_roi.size());//resize image
-	}
-	if (cam2_area.size().height > 0) {
-		resize(cam2_area, sec_roi, sec_roi.size());//resize image
-	}
+
+	resize(cam1_area, display, display.size());//resize image
+
 
     int i = 0;
     for (const auto& button : m_buttons) {
@@ -140,7 +125,6 @@ int Dialog::Draw() {
 		cv::putText(display, std::get<1>(text.second), std::get<0>(text.second), cv::FONT_HERSHEY_DUPLEX, std::get<2>(text.second), std::get<3>(text.second));
 
 	}
-
 	cv::imshow(m_title, display);
 	display_empty.copyTo(display);
 
@@ -169,16 +153,10 @@ void Dialog::mouseClicked(int event, int x, int y, int flag) {
 	cv::Size size;
 	cv::Size target;
 
-	if (bMainArea) {
-		cam1_roi.locateROI(size, offset);
-		size = cam1_roi.size();
-		target = cam1_area.size();
-	}
-	else {
-		cam2_roi.locateROI(size, offset);
-		size = cam2_roi.size();
-		target = cam2_area.size();
-	}
+
+	size = display.size();
+	target = cam1_area.size();
+
 	scaled.x = (int)((double)(x - offset.x) / size.width * target.width);
 	scaled.y = (int)((double)(y - offset.y) / size.height * target.height);
 
