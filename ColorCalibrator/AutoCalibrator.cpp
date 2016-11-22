@@ -5,7 +5,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
-#ifdef WIN_32
+#ifdef WIN32
 #include <direct.h>
 #else
 #include <sys/types.h>
@@ -88,7 +88,7 @@ void AutoCalibrator::SaveConf(const std::string &name) {
 	pt.put("sat.high", range.sat.high);
 	pt.put("val.low", range.val.low);
 	pt.put("val.high", range.val.high);
-#ifdef WIN_32
+#ifdef WIN32
 	_mkdir((std::string("conf/") + m_pCamera->getName()).c_str());
 #else
 	mkdir((std::string("conf/") + m_pCamera->getName()).c_str(), S_IRUSR | S_IWUSR | S_IXUSR);

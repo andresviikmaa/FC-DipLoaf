@@ -1,6 +1,6 @@
 // Robotiina.cpp : Defines the entry point for the console application.
 //
-#ifdef WIN_32
+#ifdef WIN32
 #include "stdafx.h"
 #else
 #include <X11/Xlib.h>
@@ -31,7 +31,7 @@ boost::asio::io_service io2;
 
 int main(int argc, char* argv[])
 {
-#ifndef WIN_32
+#ifndef WIN32
 	XInitThreads();
 #endif
 	try {
