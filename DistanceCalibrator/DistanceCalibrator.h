@@ -35,6 +35,8 @@ protected:
 	ICamera *m_pCamera;
 	std::vector<std::tuple<cv::Point, cv::Point, std::string>> points;
 	std::vector<std::tuple<cv::Point, cv::Point, std::string>>::iterator itPoints;
+	std::vector<cv::Vec3f> objectPoints;
+	std::vector<cv::Vec3f> imagePoints;
 
 	void calculateDistances();
 private:

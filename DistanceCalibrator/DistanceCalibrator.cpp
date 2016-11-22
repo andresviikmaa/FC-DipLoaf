@@ -11,8 +11,9 @@
 #include "DistanceCalibrator.h"
 #include "../CommonModule/Settings.h"
 #include <boost/property_tree/ini_parser.hpp>
+#include "opencv2/calib3d.hpp"
 
-DistanceCalibrator::DistanceCalibrator(ICamera * pCamera) :Dialog("Color Calibrator", pCamera->GetFrameSize(), pCamera->GetFrameSize())
+DistanceCalibrator::DistanceCalibrator(ICamera * pCamera) :Dialog("Distance Calibrator", pCamera->GetFrameSize(), pCamera->GetFrameSize())
 {
 	m_pCamera = pCamera;
 	frame_size = m_pCamera->GetFrameSize();
@@ -27,6 +28,13 @@ DistanceCalibrator::DistanceCalibrator(ICamera * pCamera) :Dialog("Color Calibra
 	points.push_back(std::make_tuple(cv::Point(-150, 255), cv::Point(0, 0), std::string(" bottom left corner")));
 	points.push_back(std::make_tuple(cv::Point(150, 255), cv::Point(0, 0), std::string("bottom right corner")));
 	points.push_back(std::make_tuple(cv::Point(0, 0), cv::Point(0, 0), std::string("robot location on field image")));
+
+	createButton("Start", 'x', [&]{
+		Enable(true);
+	});
+	createButton("Exit", 'x', [&]{
+		stop_thread = true;
+	});
 };
 
 bool DistanceCalibrator::OnMouseEvent(int event, float x, float y, int flags, bool bMainArea) {
@@ -61,45 +69,15 @@ struct less_than_key
 
 
 void DistanceCalibrator::calculateDistances(){
-
-	pt.clear();
+	objectPoints.clear();
+	imagePoints.clear();
 	auto it = points.rbegin();
-	auto robotPosOnField = std::get<1>(*it);
-	std::vector<cv::Point2d> conf;
 	for (it++; it != points.rend(); it++){
-		double dist1 = cv::norm(std::get<1>(*it) - frame_size / 2); // on cam from center
-		double dist2 = cv::norm(std::get<0>(*it) - (robotPosOnField - cv::Point(303, 303))); // on field
-		std::cout << dist2 << "=" << dist1 << std::endl;
-		conf.push_back(cv::Point2d(dist2, dist1));
-	}
-	std::sort(conf.begin(), conf.end(), less_than_key());
-	for (auto dists : conf){
-		pt.put(std::to_string((int)round(dists.x)), std::to_string(dists.y));
-	}
-	boost::property_tree::write_ini("distance_conf.ini", pt);
-	//gDistanceCalculator.loadConf();
-	/*
-	cv::Point2d blue1 = points[0].second;
-	cv::Point2d yellow1 = points[1].second;
-	cv::Point2d self1 = cv::Point2d(frame_size) / 2;
-	cv::Point blue2(0, -250);
-	cv::Point yellow2(0, 250);
-	cv::Point self2 = points[2].second - cv::Point(304,304);
+		objectPoints.push_back(cv::Vec3f(std::get<0>(*it).x, std::get<0>(*it).y));
+		imagePoints.push_back(cv::Vec3f(std::get<1>(*it).x, std::get<1>(*it).y));
 
-	double distanceToBlue1 = cv::norm(blue1 - self1);
-	double distanceToYellow1 = cv::norm(yellow1 - self1);
-	std::cout << "Blue 1: " << distanceToBlue1 << std::endl;
-	std::cout << "Yellow 1: " << distanceToYellow1 << std::endl;
-	double distanceToBlue2 = cv::norm(blue2 - self2);
-	double distanceToYellow2 = cv::norm(yellow2 - self2);
-	std::cout << "Blue 2: " << distanceToBlue2 << std::endl;
-	std::cout << "Yellow 2: " << distanceToYellow2 << std::endl;
-	std::cout << "======begin copy/paste============" << std::endl;
-	std::cout << distanceToBlue2 << "=" << distanceToBlue1 << std::endl;
-	std::cout << distanceToYellow2 << "=" << distanceToYellow1 << std::endl;
-	std::cout << "======end copy/paste============" << std::endl;
-	*/
-
+	}
+	//cv::omnidir::calibrate()
 }
 
 double DistanceCalibrator::calculateDistance(double centreX, double centreY, double x, double y){
@@ -142,6 +120,7 @@ void DistanceCalibrator::Enable(bool enable){
 
 int DistanceCalibrator::Draw(){
 	frameBGR = m_pCamera->Capture();
+	putShadowedText(message, cv::Point(250, 220), 0.5, cv::Scalar(0, 0, 255));
 	ShowImage(frameBGR);
 	return Dialog::Draw();
 }
