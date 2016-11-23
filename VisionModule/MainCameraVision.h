@@ -101,6 +101,10 @@ public:
 	virtual ICamera * GetCamera() {
 		return m_pCamera;
 	};
+protected:
+	cv::Mat K, xi, D, idx;
+	void LoadCalibrationData();
+	void UnDistortImage();
 
 };
 

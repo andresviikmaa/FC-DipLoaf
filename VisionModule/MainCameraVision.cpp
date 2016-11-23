@@ -12,6 +12,7 @@
 #include <opencv2/highgui.hpp>
 #endif // _DEBUG
 
+#include "opencv2/ccalib/omnidir.hpp"
 
 extern FieldState gFieldState;
 extern RobotState gRobotState;
@@ -53,7 +54,7 @@ thresholdObjects({ BALL, BLUE_GATE, YELLOW_GATE, FIELD, INNER_BORDER, OUTER_BORD
 	ADD_BOOL_SETTING(useKalmanFilter);
 //	videoRecorder = new VideoRecorder("videos/", 30, m_pCamera->GetFrameSize(true));
 	LoadSettings();
-
+	LoadCalibrationData();
 	if(pCamera != nullptr)
 		Start();
 }
@@ -69,6 +70,21 @@ MainCameraVision::~MainCameraVision()
 //		delete videoRecorder;
 //		videoRecorder = NULL;
 //	}
+}
+void MainCameraVision::LoadCalibrationData(){
+	cv::FileStorage fs("conf/omni_calib_data.xml", cv::FileStorage::READ);
+	std::vector<cv::Mat> objectPoints, imagePoints;
+	cv::Size imgSize;
+	fs["objectPoints"] >> objectPoints;
+	fs["imagePoints"] >> imagePoints;
+	fs["imageSize"] >> imgSize;
+
+
+	int flags = 0;
+	cv::TermCriteria critia(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 200, 0.0001);
+	std::vector<cv::Mat> rvecs, tvecs;
+	double rms = cv::omnidir::calibrate(objectPoints, imagePoints, imgSize, K, xi, D, rvecs, tvecs, flags, critia, idx);
+
 }
 bool MainCameraVision::captureFrames(){
 //	return videoRecorder->isRecording;
@@ -140,8 +156,13 @@ void MainCameraVision::PublishState() {
 		stateUpdated = false;
 	}
 }
+void  MainCameraVision::UnDistortImage() {
+	int flags = cv::omnidir::RECTIFY_PERSPECTIVE;
+	cv::omnidir::undistortImage(frameBGR, frameBGR, K, D, xi, flags);
+	cv::omnidir::undistortImage(frameHSV, frameHSV, K, D, xi, flags);
+}
 void  MainCameraVision::ProcessFrame() {
-
+	UnDistortImage();
 	ThresholdFrame();
 	//CheckGateObstruction();
 	//FindGates();
