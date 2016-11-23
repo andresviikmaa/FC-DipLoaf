@@ -19,14 +19,14 @@ DistanceCalibrator::DistanceCalibrator(ICamera * pCamera) :Dialog("Distance Cali
 	frame_size = m_pCamera->GetFrameSize();
 	counterValue = "NA";
 	AddEventListener(this);
-	points.push_back(std::make_tuple(cv::Point(-150, -225), cv::Point(0, 0), std::string("top left corner on cam image (blue gate is top)")));
-	points.push_back(std::make_tuple(cv::Point(150, -225), cv::Point(0, 0), std::string("top right corner")));
-	points.push_back(std::make_tuple(cv::Point(-156, 0), cv::Point(0, 0), std::string(" center left border")));
-	points.push_back(std::make_tuple(cv::Point(-36, 0), cv::Point(0, 0), std::string(" center left circle")));
-	points.push_back(std::make_tuple(cv::Point(36, 0), cv::Point(0, 0), std::string("center right circle")));
-	points.push_back(std::make_tuple(cv::Point(150, 0), cv::Point(0, 0), std::string("center right border")));
-	points.push_back(std::make_tuple(cv::Point(-150, 255), cv::Point(0, 0), std::string(" bottom left corner")));
-	points.push_back(std::make_tuple(cv::Point(150, 255), cv::Point(0, 0), std::string("bottom right corner")));
+	points.push_back(std::make_tuple(cv::Point2d(-150, -225), cv::Point(0, 0), std::string("top left corner on cam image (blue gate is top)")));
+	points.push_back(std::make_tuple(cv::Point2d(150, -225), cv::Point(0, 0), std::string("top right corner")));
+	points.push_back(std::make_tuple(cv::Point2d(-156, 0), cv::Point(0, 0), std::string(" center left border")));
+	points.push_back(std::make_tuple(cv::Point2d(-36, 0), cv::Point(0, 0), std::string(" center left circle")));
+	points.push_back(std::make_tuple(cv::Point2d(36, 0), cv::Point(0, 0), std::string("center right circle")));
+	points.push_back(std::make_tuple(cv::Point2d(150, 0), cv::Point(0, 0), std::string("center right border")));
+	points.push_back(std::make_tuple(cv::Point2d(-150, 255), cv::Point(0, 0), std::string(" bottom left corner")));
+	points.push_back(std::make_tuple(cv::Point2d(150, 255), cv::Point(0, 0), std::string("bottom right corner")));
 	//points.push_back(std::make_tuple(cv::Point(0, 0), cv::Point(0, 0), std::string("robot location on field image")));
 
 	createButton("Start", 'x', [&]{
@@ -40,6 +40,9 @@ DistanceCalibrator::DistanceCalibrator(ICamera * pCamera) :Dialog("Distance Cali
 bool DistanceCalibrator::OnMouseEvent(int event, float x, float y, int flags, bool bMainArea) {
 	if (enabled && event == cv::EVENT_LBUTTONUP) {
 		std::get<1>(*itPoints) = cv::Point((int)(x), (int)(y));
+		std::cout << counter << " " << x << " " << y << std::endl;
+		counter++;
+
 		itPoints++;
 		if (itPoints == points.end()){
 			calculateDistances();
@@ -50,11 +53,7 @@ bool DistanceCalibrator::OnMouseEvent(int event, float x, float y, int flags, bo
 			message = std::get<2>(*itPoints);
 		}
 		return true;
-		//if (bMainArea)
-			mouseClicked((int)(x), (int)(y), flags);
-		//else if (!bMainArea)
-		//	mouseClicked2((int)(x), (int)(y), flags);
-		return true;
+
 	}
 	return false;
 
@@ -78,8 +77,14 @@ void DistanceCalibrator::calculateDistances(){
 	cv::Vec3d *ptr = objects.ptr<cv::Vec3d>();
 	cv::Vec2d *ptr2 = pixels.ptr<cv::Vec2d>();
 	for (it++; it != points.rend(); it++){
-		ptr[i] = cv::Vec3d(std::get<0>(*it).x, std::get<0>(*it).y, 0);
-		ptr2[i] = cv::Vec2d(std::get<0>(*it).x, std::get<0>(*it).y);
+		double x1 = std::get<0>(*it).x;
+		double y1 = std::get<0>(*it).y;
+		double x2 = std::get<1>(*it).x;
+		double y2 = std::get<1>(*it).y;
+		std::cout << counter << " [" << x1 << ", " << y1 << "] -> [" << x2 << ", " << y2 << "] " << std::endl;
+
+		ptr[i] = cv::Vec3d(x1, y1, 0);
+		ptr2[i] = cv::Vec2d(x2, y2);
 		i++;
 
 	}
@@ -190,7 +195,7 @@ void DistanceCalibrator::mouseClicked(int x, int y, int flags) {
 	std::string valueString = value.str();
 	pt.put(valueString, distanceString);
 	counterValue = valueString;
-	std::cout << counter << std::endl;
+	std::cout << counter << "" << x << " " << y <<std::endl;
 	if (counter == VIEWING_DISTANCE){
 		enabled = false;
 		boost::property_tree::write_ini("distance_conf.ini", pt);
@@ -211,13 +216,15 @@ void DistanceCalibrator::Enable(bool enable){
 	pt.clear();
 	itPoints = points.begin();
 	message = enable ? std::get<2>(*itPoints) : "";
-
+	if (enable) {
+		frameBGR.copyTo(buffer);
+	}
 }
 
 int DistanceCalibrator::Draw(){
 	frameBGR = m_pCamera->Capture();
 	putShadowedText(message, cv::Point(250, 220), 0.5, cv::Scalar(0, 0, 255));
-	ShowImage(frameBGR);
+	ShowImage(enabled ? buffer : frameBGR);
 	return Dialog::Draw();
 }
 
