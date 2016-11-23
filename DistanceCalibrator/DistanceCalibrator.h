@@ -35,10 +35,12 @@ protected:
 	ICamera *m_pCamera;
 	std::vector<std::tuple<cv::Point, cv::Point, std::string>> points;
 	std::vector<std::tuple<cv::Point, cv::Point, std::string>>::iterator itPoints;
-	std::vector<cv::Vec3f> objectPoints;
-	std::vector<cv::Vec3f> imagePoints;
+
 
 	void calculateDistances();
+	void saveCameraParams(const std::string & filename, int flags, const cv::Mat& cameraMatrix,
+		const cv::Mat& distCoeffs, const double xi, const std::vector<cv::Vec3d>& rvecs, const std::vector<cv::Vec3d>& tvecs,
+		std::vector<std::string> detec_list, const cv::Mat& idx, const double rms, const std::vector<cv::Mat>& imagePoints);
 private:
 	cv::Point frame_size;
 	boost::property_tree::ptree pt;
