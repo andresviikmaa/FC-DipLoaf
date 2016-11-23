@@ -95,8 +95,9 @@ void AutoCalibrator::SaveConf(const std::string &name) {
 #endif
 	write_ini(std::string("conf/") + m_pCamera->getName() + "/" + name + ".ini", pt);
 }
-bool AutoCalibrator::OnMouseEvent(int event, float x, float y, int flags, bool bMainArea) {
-	if (screenshot_mode == CROPPING && bMainArea){
+bool AutoCalibrator::OnMouseEvent(int event, float x, float y, int flags) {
+	std::cout << x << ", " << y << std::endl;
+	if (screenshot_mode == CROPPING){
 		if (event == cv::EVENT_LBUTTONDOWN){
 			thresholdCorner1 = cv::Point((int)(x), (int)(y));
 			thresholdCorner2 = cv::Point((int)(x), (int)(y));
@@ -122,7 +123,7 @@ bool AutoCalibrator::OnMouseEvent(int event, float x, float y, int flags, bool b
 		}
 		return true;
 	}else if (screenshot_mode == GET_THRESHOLD){
-		if (event == cv::EVENT_LBUTTONUP && bMainArea) {
+		if (event == cv::EVENT_LBUTTONUP) {
 			mouseClicked((int)(x), (int)(y), flags);
 		}
 		if (event == cv::EVENT_RBUTTONUP) {

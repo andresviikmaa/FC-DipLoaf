@@ -37,7 +37,7 @@ DistanceCalibrator::DistanceCalibrator(ICamera * pCamera) :Dialog("Distance Cali
 	});
 };
 
-bool DistanceCalibrator::OnMouseEvent(int event, float x, float y, int flags, bool bMainArea) {
+bool DistanceCalibrator::OnMouseEvent(int event, float x, float y, int flags) {
 	if (enabled && event == cv::EVENT_LBUTTONUP) {
 		std::get<1>(*itPoints) = cv::Point((int)(x), (int)(y));
 		itPoints++;
@@ -49,11 +49,6 @@ bool DistanceCalibrator::OnMouseEvent(int event, float x, float y, int flags, bo
 		else {
 			message = std::get<2>(*itPoints);
 		}
-		return true;
-		if (bMainArea)
-			mouseClicked((int)(x), (int)(y), flags);
-		else if (!bMainArea)
-			mouseClicked2((int)(x), (int)(y), flags);
 		return true;
 	}
 	return false;

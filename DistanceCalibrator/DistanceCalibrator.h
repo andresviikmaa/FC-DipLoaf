@@ -14,7 +14,7 @@ public:
 	DistanceCalibrator(ICamera * pCamera);
 
 	~DistanceCalibrator();
-	virtual bool OnMouseEvent(int event, float x, float y, int flags, bool bMainArea);
+	virtual bool OnMouseEvent(int event, float x, float y, int flags);
 	static double calculateDistance(double centreX, double centreY, double x, double y);
 	void start();
 	void removeListener();
