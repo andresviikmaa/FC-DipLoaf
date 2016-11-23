@@ -256,7 +256,7 @@ int AutoCalibrator::Draw() {
 				DetectThresholds(128);
 				clearButtons();
 				for (int i = 0; i < NUMBER_OF_OBJECTS; i++) {
-					createButton(OBJECT_LABELS[(OBJECT)i], '-', [&] {
+					createButton(OBJECT_LABELS[(OBJECT)i], '-', [&, i] {
 						GetObjectThresholds(i, OBJECT_LABELS[(OBJECT)i]);
 					});
 
