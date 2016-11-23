@@ -105,6 +105,18 @@ public:
 	{
 		auto &target = gFieldState.balls[gFieldState.closestBall];
 
+		bool useFront = false;
+		if (useFront){
+			auto &frontTarget = gFieldState.ballsFront[gFieldState.closestBall];
+
+			if (m_pCom->BallInTribbler()) return DRIVEMODE_AIM_GATE;
+			if (driveToTargetWithAngle(target, speed, 25, 5)){
+				if (preciseAim(frontTarget, speed)) return DRIVEMODE_CATCH_BALL;
+			}
+			m_pCom->Drive(speed.velocity, speed.heading, speed.rotation);
+			return DRIVEMODE_DRIVE_TO_BALL_ANGLED;
+		}
+
 		if (m_pCom->BallInTribbler()) return DRIVEMODE_AIM_GATE;
 		if (driveToTargetWithAngle(target, speed, 25, 5)){return DRIVEMODE_CATCH_BALL;}
 		else {

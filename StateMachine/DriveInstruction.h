@@ -38,4 +38,5 @@ public:
 	bool catchTarget(const ObjectPosition &target, Speed &speed);
 	bool driveToTarget(const ObjectPosition &target, Speed &speed, double maxDistance = 50);
 	bool driveToTargetWithAngle(const ObjectPosition &target, Speed &speed, double maxDistance = 50, double errorMargin = 10);
+	bool preciseAim(const ObjectPosition &target, Speed &speed, double errorMargin = 5);
 };

@@ -126,5 +126,10 @@ bool DriveInstruction::driveToTargetWithAngle(const ObjectPosition &target, Spee
 	return onPoint;
 }
 
+bool DriveInstruction::preciseAim(const ObjectPosition &target, Speed &speed, double errorMargin) {
+	if (target.heading > errorMargin) speed.rotation = target.heading;
+	return target.heading <= errorMargin;
+}
+
 
 
