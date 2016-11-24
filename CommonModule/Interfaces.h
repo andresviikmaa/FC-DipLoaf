@@ -54,7 +54,7 @@ public:
 class IVisionModule {
 public:
 	virtual const cv::Mat & GetFrame() = 0;
-	virtual void PublishState() = 0;
+	virtual bool PublishState() = 0;
 	virtual ICamera * GetCamera() = 0;
 	virtual void Enable(bool enable) = 0;
 	virtual ~IVisionModule() {};

@@ -1,0 +1,111 @@
+#include "RobotTracker.h"
+#include <opencv2/imgproc.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include "../CommonModule/Interfaces.h"
+#include "../CommonModule/FieldState.h"
+#include "../CommonModule/RobotState.h"
+
+#ifdef SHOW_UI
+extern IDisplay * display;
+#endif // SHOW_UI
+
+extern FieldState gFieldState;
+extern FieldState gPartnerFieldState;
+extern RobotState gRobotState;
+extern RobotState gPartnerRobotState;
+
+RobotTracker::RobotTracker()
+{
+#ifdef SHOW_UI
+	green = cv::imread("field.png", 1);   // Read the file
+	field = cv::Mat(green.size(), CV_8UC3, cv::Scalar::all(245));
+	c = cv::Point2d(green.size()) / 2;
+#endif
+	uchar id = 0;
+	for (auto & ball : lastFieldState.balls){
+		ball.id = ++id;
+	}
+}
+
+
+RobotTracker::~RobotTracker()
+{
+}
+
+void RobotTracker::Predict(double dt, bool mainCamUpdated, bool frontCamUpdated) {
+	uchar closest = MAX_BALLS, closest2 = MAX_BALLS, closest3 = MAX_BALLS;
+	double dist1 = INT_MAX, dist2 = INT_MAX, dist3 = INT_MAX;
+	for (int i = 0; i < MAX_BALLS; i++){
+		auto &ball = gFieldState.balls[i];
+		auto &ballFront = gFieldState.ballsFront[i];
+		if (ball.isValid && ball.distance < dist1){
+			closest = i;
+			dist1 = ball.distance;
+		}
+		if (ball.isValid && ball.distance < dist2 && abs(ball.angle) < 130){
+			closest2 = i;
+			dist2 = ball.distance;
+		}
+		if (ballFront.isValid && ballFront.distance < dist2){
+			closest3 = i;
+			dist2 = ballFront.distance;
+		}
+		//for (auto ball : lastFieldState.balls){
+		//
+		//}
+	};
+	gFieldState.closestBall = closest;
+	gFieldState.closestBallInFront = closest2;
+	gFieldState.closestBallTribbler = closest3;
+}
+
+#ifdef SHOW_UI
+void RobotTracker::Draw(){
+	green.copyTo(field);
+	//cv::circle(field, gFieldState.self.rawFieldCoords + c, 24, cv::Scalar(0, 33, 255), 4);
+	cv::circle(field, gFieldState.self.fieldCoords + c, 14, cv::Scalar(133, 33, 55), 4);
+	cv::line(field, gFieldState.self.fieldCoords + c,
+		cv::Point2d((40.0*sin(gFieldState.self.angle / 360 * TAU)), (-40 * cos(gFieldState.self.angle / 360 * TAU)))
+		+ gFieldState.self.fieldCoords + c
+		, cv::Scalar(133, 33, 55), 3);
+
+	cv::circle(field, gFieldState.balls[gFieldState.closestBall].fieldCoords + c, 12, cv::Scalar(48, 154, 236), 2);
+	for (size_t i = 0, ilen = MAX_BALLS; i < ilen; i++) {
+		BallPosition &_ball = gFieldState.balls[i];
+		cv::circle(field, _ball.fieldCoords + c, 7, cv::Scalar(48, 154, 236), -1);
+		/*{
+		message << "BAL " <<(int)balls[i].fieldCoords.x << " " << (int)balls[i].fieldCoords.y << " ";
+		//SendMessage(message.str());
+		}*/
+	}
+
+
+	if (!std::isnan(gFieldState.gates[BLUE_GATE].distance)) {
+		cv::circle(field, gFieldState.gates[BLUE_GATE].fieldCoords + c, 14, cv::Scalar(236, 137, 48), 7);
+		int r = (int)(gFieldState.gates[BLUE_GATE].polarMetricCoords.x);
+		if (r < 0) r = 0;
+		cv::circle(field, gFieldState.gates[BLUE_GATE].fieldCoords + c, r, cv::Scalar(236, 137, 48), 2);
+
+		cv::line(field, gFieldState.self.fieldCoords + c,
+			cv::Point2d((gFieldState.gates[BLUE_GATE].polarMetricCoords.x*sin((gFieldState.gates[BLUE_GATE].polarMetricCoords.y + gFieldState.self.angle) / 180 * CV_PI)),
+			(-gFieldState.gates[BLUE_GATE].polarMetricCoords.x*cos((gFieldState.gates[BLUE_GATE].polarMetricCoords.y + gFieldState.self.angle) / 180 * CV_PI))
+			) + gFieldState.self.fieldCoords + c
+			, cv::Scalar(236, 137, 48), 3);
+	}
+
+	if (!std::isnan(gFieldState.gates[YELLOW_GATE].distance)) {
+		cv::circle(field, gFieldState.gates[YELLOW_GATE].fieldCoords + c, 14, cv::Scalar(61, 255, 244), 7);
+		int r = (int)(gFieldState.gates[YELLOW_GATE].polarMetricCoords.x);
+		if (r < 0) r = 0;
+		cv::circle(field, gFieldState.gates[YELLOW_GATE].fieldCoords + c, r, cv::Scalar(61, 255, 244), 2);
+
+		cv::line(field, gFieldState.self.fieldCoords + c,
+			cv::Point2d((gFieldState.gates[YELLOW_GATE].polarMetricCoords.x*sin((gFieldState.gates[YELLOW_GATE].polarMetricCoords.y + gFieldState.self.angle) / 360 * TAU)),
+			(-gFieldState.gates[YELLOW_GATE].polarMetricCoords.x*cos((gFieldState.gates[YELLOW_GATE].polarMetricCoords.y + gFieldState.self.angle) / 360 * TAU))
+			) + gFieldState.self.fieldCoords + c
+			, cv::Scalar(61, 255, 244), 3);
+	}
+
+	display->ShowImage("Field", field, false);
+}
+#endif

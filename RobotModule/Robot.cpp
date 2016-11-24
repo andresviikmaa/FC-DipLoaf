@@ -18,6 +18,7 @@
 #include "../CommonModule/FieldState.h"
 #include "../CommonModule/RobotState.h"
 #include "ManualControl.h"
+#include "../PredictionModule/RobotTracker.h";
 
 FieldState gFieldState;
 FieldState gPartnerFieldState;
@@ -175,6 +176,9 @@ void Robot::Run()
 	try {
 		m_pMainVision->Enable(true);
 		m_pFrontVision->Enable(true);
+		RobotTracker robotTracker;
+		bool frontUpdated = false;
+		bool mainUpdated = false;
 		while (!exitRobot)
 		{
 			double t2 = (double)cv::getTickCount();
@@ -186,17 +190,19 @@ void Robot::Run()
 			}
 			counter++;
 
-			m_pMainVision->PublishState();
-			m_pFrontVision->PublishState();
+			frontUpdated = m_pMainVision->PublishState();
+			mainUpdated = m_pFrontVision->PublishState();
 			m_pComModule->ProcessCommands();
-			
+			robotTracker.Predict(dt, mainUpdated, frontUpdated);
 			SendFieldState();
 			io.poll();
 			// MessageReceived handled 
 
 			m_AutoPilots[gRobotState.runMode]->Step(dt);
 			m_pComModule->SendMessages();
-
+#ifdef SHOW_UI
+			robotTracker.Draw();
+#endif
 			subtitles.str("");
 			//subtitles << oss.str();
 			//subtitles << "|" << m_pAutoPilot->GetDebugInfo();

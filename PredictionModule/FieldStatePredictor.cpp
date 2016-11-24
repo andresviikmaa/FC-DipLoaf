@@ -11,5 +11,6 @@ FieldStatePredictor::~FieldStatePredictor()
 }
 
 void FieldStatePredictor::Predict(){
-
+#ifdef SHOW_UI
+#endif;
 };

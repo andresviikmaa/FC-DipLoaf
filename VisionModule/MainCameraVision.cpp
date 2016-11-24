@@ -136,12 +136,14 @@ void MainCameraVision::Run() {
 
 	}
 }
-void MainCameraVision::PublishState() {
+bool MainCameraVision::PublishState() {
 	boost::mutex::scoped_lock lock(state_mutex); //allow one command at a time
 	if (stateUpdated) {
 		memcpy(&gFieldState, &localStateCopy, sizeof(FieldState));
 		stateUpdated = false;
+		return true;
 	}
+	return false;
 }
 void  MainCameraVision::ProcessFrame() {
 

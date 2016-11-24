@@ -62,7 +62,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SHOW_UI;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>../packages/opencv-3.1.0/include/</AdditionalIncludeDirectories>
     </ClCompile>
@@ -121,6 +121,7 @@
     <ClCompile Include="kdNode2D.cpp" />
     <ClCompile Include="ObjectPosition.cpp" />
     <ClCompile Include="RobotPosition.cpp" />
+    <ClCompile Include="RobotTracker.cpp" />
     <ClCompile Include="TargetPosition.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -132,6 +133,7 @@
     <ClInclude Include="kdNode2D.h" />
     <ClInclude Include="ObjectPosition.h" />
     <ClInclude Include="RobotPosition.h" />
+    <ClInclude Include="RobotTracker.h" />
     <ClInclude Include="TargetPosition.h" />
   </ItemGroup>
   <ItemGroup>

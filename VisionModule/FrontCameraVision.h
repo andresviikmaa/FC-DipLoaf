@@ -26,7 +26,7 @@ public:
 
 	void UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos);
 	void LoadSettings();
-	void PublishState();
+	bool PublishState();
 
 };
 

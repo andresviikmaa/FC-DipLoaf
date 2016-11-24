@@ -35,10 +35,10 @@ IDisplay * display(&dialog);
 #endif
 
 Simulator::Simulator(boost::asio::io_service &io, bool master, const std::string game_mode) :
-	mNumberOfBalls(game_mode == "master" || game_mode == "slave" ? 1 : 19)
+	mNumberOfBalls(game_mode == "master" || game_mode == "slave" ? 1 : 11)
 	, ThreadedClass("Simulator"), UdpServer(io, 31000, master)
 	, isMaster(master)
-	, ballCount(game_mode == "master" || game_mode == "slave" ? 1 : 19),
+	, ballCount(game_mode == "master" || game_mode == "slave" ? 1 : 11),
 	m_frontCamera(this), mainboard(io, this)
 {
 	blueGate.fieldCoords = cv::Point(0, 230);	

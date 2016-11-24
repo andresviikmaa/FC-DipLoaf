@@ -89,7 +89,7 @@ public:
 	MainCameraVision(ICamera * pCamera, const std::string sName="MainCameraVision");
 	virtual ~MainCameraVision();
 	virtual void ProcessFrame();
-	void PublishState();
+	bool PublishState();
 	virtual void Enable(bool enable) {
 		m_bEnabled = enable;
 	}

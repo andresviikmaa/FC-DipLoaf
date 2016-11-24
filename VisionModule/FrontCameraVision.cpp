@@ -65,11 +65,12 @@ void FrontCameraVision::LoadSettings() {
 	MainCameraVision::LoadSettings();
 }
 
-void FrontCameraVision::PublishState() {
+bool FrontCameraVision::PublishState() {
 	boost::mutex::scoped_lock lock(state_mutex); //allow one command at a time
 	if (stateUpdated) {
 		memcpy(&gFieldState.ballsFront, &localStateCopy.balls, MAX_BALLS * sizeof(BallPosition));
 		stateUpdated = false;
+		return true;
 	}
-	
+	return false;
 };
