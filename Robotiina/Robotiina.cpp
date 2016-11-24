@@ -23,7 +23,7 @@
 #include <boost/exception_ptr.hpp> 
 #include "opencv2/highgui.hpp"
 #ifdef SHOW_UI
-#include "../DisplayModule/Dialog.h";
+#include "../DisplayModule/Dialog.h"
 #endif
 
 boost::asio::io_service io;
@@ -71,7 +71,7 @@ BOOL CtrlHandler(DWORD fdwCtrlType)
 }
 #endif
 #ifdef SHOW_UI
-Dialog dialog("Robotiina", cv::Size(800, 600));
+Dialog dialog("Robotiina", cv::Size(960, 896));
 IDisplay * display(&dialog);
 #endif
 

@@ -147,6 +147,12 @@ bool MainCameraVision::PublishState() {
 }
 void  MainCameraVision::ProcessFrame() {
 
+#ifdef SHOW_UI
+	cv::line(frameBGR, (frameBGR.size() / 2) + cv::Size(0, -30), (frameBGR.size() / 2) + cv::Size(0, 30), cv::Scalar(0, 0, 255), 3, 8, 0);
+
+	cv::line(frameBGR, (frameBGR.size() / 2) + cv::Size(-30, 0), (frameBGR.size() / 2) + cv::Size(30, 0), cv::Scalar(0, 0, 255), 3, 8, 0);
+#endif
+
 	ThresholdFrame();
 	//CheckGateObstruction();
 	FindGates();

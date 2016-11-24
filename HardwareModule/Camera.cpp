@@ -31,12 +31,12 @@ Camera::Camera(const std::string &name, const std::string &device): ThreadedClas
 
  // !
 	if (device == "ximea") {
-#define frameX (25*32)
-#define frameY (6*128)
+#define frameX (30*32)
+#define frameY (7*128)
 		cap->set(CV_CAP_PROP_FRAME_WIDTH, frameX);
 		cap->set(CV_CAP_PROP_FRAME_HEIGHT, frameY);
 		cap->set(CV_CAP_PROP_XI_OFFSET_X, (int)((1280 - frameX)/2));
-		cap->set(CV_CAP_PROP_XI_OFFSET_Y, 128);
+		cap->set(CV_CAP_PROP_XI_OFFSET_Y, (int)((1024 - frameY) / 2));
 		cap->set(CV_CAP_PROP_XI_AUTO_WB, 0);
 		cap->set(CV_CAP_PROP_XI_EXPOSURE, 20000);
 	}

@@ -18,7 +18,7 @@
 #include "../CommonModule/FieldState.h"
 #include "../CommonModule/RobotState.h"
 #include "ManualControl.h"
-#include "../PredictionModule/RobotTracker.h";
+#include "../PredictionModule/RobotTracker.h"
 
 FieldState gFieldState;
 FieldState gPartnerFieldState;
