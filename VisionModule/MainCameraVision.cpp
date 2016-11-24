@@ -9,12 +9,14 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #ifdef SHOW_UI
-#include <opencv2/highgui.hpp>
-#endif // _DEBUG
+extern IDisplay * display;
+#endif // SHOW_UI
 
 
 extern FieldState gFieldState;
 extern RobotState gRobotState;
+extern std::map<OBJECT, std::string> OBJECT_LABELS;
+
 //extern int number_of_balls;
 
 
@@ -127,8 +129,8 @@ void MainCameraVision::Run() {
 #ifdef SHOW_UI
 		//cv::line(frameBGR, (frameBGR.size / 2) + cv::Size(0, -30), (frameSize / 2) + cv::Size(0, 30), cv::Scalar(0, 0, 255), 3, 8, 0);
 		//cv::line(frameBGR, (frameBGR.size / 2) + cv::Size(-30, 0), (frameSize / 2) + cv::Size(30, 0), cv::Scalar(0, 0, 255), 3, 8, 0);
-		cv::imshow(ThreadedClass::name, frameBGR);
-		cv::waitKey(1);
+		display->ShowImage(ThreadedClass::name, frameBGR);
+		
 #endif // DEBUG
 
 	}
@@ -158,6 +160,11 @@ void MainCameraVision::ThresholdFrame() {
 		thresholder = new TBBImageThresholder(thresholdedImages, objectThresholds);
 	}
 	thresholder->Start(frameHSV, thresholdObjects);
+#ifdef SHOW_UI
+	for (auto &object : thresholdObjects) {
+		display->ShowImage(ThreadedClass::name + "::" + OBJECT_LABELS[object], thresholdedImages[object]);
+	}
+#endif
 }
 
 void MainCameraVision::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos) {

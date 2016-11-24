@@ -41,6 +41,7 @@ public:
 	virtual int Draw() = 0;
 	virtual void clearButtons() = 0;
 	virtual void ShowImage(const cv::Mat &image, bool flip = true) = 0;
+	virtual void ShowImage(const std::string &window, const cv::Mat &image, bool flip = true) = 0;
 	virtual void AddEventListener(IUIEventListener *pEventListener) = 0;
 	virtual void RemoveEventListener(IUIEventListener *pEventListener) = 0;
 	virtual void putText(const std::string &text, cv::Point pos, double fontScale, cv::Scalar color) = 0;

@@ -115,6 +115,7 @@
   <ItemGroup>
     <ClCompile Include="BallLocations.cpp" />
     <ClCompile Include="BallPosition.cpp" />
+    <ClCompile Include="FieldStatePredictor.cpp" />
     <ClCompile Include="GatePosition.cpp" />
     <ClCompile Include="KalmanFilter.cpp" />
     <ClCompile Include="kdNode2D.cpp" />
@@ -125,6 +126,7 @@
   <ItemGroup>
     <ClInclude Include="BallLocations.h" />
     <ClInclude Include="BallPosition.h" />
+    <ClInclude Include="FieldStatePredictor.h" />
     <ClInclude Include="GatePosition.h" />
     <ClInclude Include="KalmanFilter.h" />
     <ClInclude Include="kdNode2D.h" />

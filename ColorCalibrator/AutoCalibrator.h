@@ -38,7 +38,9 @@ public:
 	~AutoCalibrator();
 	int frames = 0;
 	virtual int Draw();
-	virtual void Start() {};
+	virtual void Start() {
+		assert(false);
+	};
 
 	const cv::Mat & GetFrame() { return m_pCamera->Capture(); }
 	virtual bool OnMouseEvent(int event, float x, float y, int flags);

@@ -107,7 +107,7 @@ public:
 
 		bool useFront = false;
 		if (useFront){
-			auto &frontTarget = gFieldState.ballsFront[gFieldState.closestBall];
+			auto &frontTarget = gFieldState.ballsFront[gFieldState.closestBallInFront];
 
 			if (m_pCom->BallInTribbler()) return DRIVEMODE_AIM_GATE;
 			if (driveToTargetWithAngle(target, speed, 25, 5)){

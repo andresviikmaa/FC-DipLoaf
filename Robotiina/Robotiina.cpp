@@ -2,8 +2,6 @@
 //
 #ifdef WIN32
 #include "stdafx.h"
-#else
-#include <X11/Xlib.h>
 #endif
 
 #include "../RobotModule/Robot.h"
@@ -24,7 +22,9 @@
 #include <boost/exception/diagnostic_information.hpp> 
 #include <boost/exception_ptr.hpp> 
 #include "opencv2/highgui.hpp"
-
+#ifdef SHOW_UI
+#include "../DisplayModule/Dialog.h";
+#endif
 
 boost::asio::io_service io;
 boost::asio::io_service io2;
@@ -70,6 +70,11 @@ BOOL CtrlHandler(DWORD fdwCtrlType)
 	}
 }
 #endif
+#ifdef SHOW_UI
+Dialog dialog("Robotiina", cv::Size(800, 600));
+IDisplay * display(&dialog);
+#endif
+
 int main(int argc, char* argv[])
 {
 #ifdef WIN32
@@ -77,11 +82,13 @@ int main(int argc, char* argv[])
 	//  printf("\nERROR: Could not set control handler");
 	//  return 1;
 	//};
-#else
-	XInitThreads();
 #endif
 	try {
-
+#ifdef SHOW_UI
+		display->createButton("Exit", 'q', []{
+			exitRobot = true;
+		});
+#endif
 		Settings settings;
 		settings.LoadFromCommandLine(argc, argv);
 

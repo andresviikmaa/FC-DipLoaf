@@ -29,6 +29,11 @@ const bool INIT_RANDOM = false;
 
 std::atomic_bool exitRobot;
 
+#ifdef SHOW_UI
+Dialog dialog("Robotiina", cv::Size(800, 600));
+IDisplay * display(&dialog);
+#endif
+
 Simulator::Simulator(boost::asio::io_service &io, bool master, const std::string game_mode) :
 	mNumberOfBalls(game_mode == "master" || game_mode == "slave" ? 1 : 19)
 	, ThreadedClass("Simulator"), UdpServer(io, 31000, master)

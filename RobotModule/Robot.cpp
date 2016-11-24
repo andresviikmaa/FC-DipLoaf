@@ -24,6 +24,7 @@ FieldState gPartnerFieldState;
 RobotState gRobotState;
 RobotState gPartnerRobotState;
 extern std::atomic_bool exitRobot;
+extern std::map<OBJECT, std::string> OBJECT_LABELS;
 
 #define STATE_BUTTON(name, shortcut, new_state) \
 m_pDisplay->createButton(std::string("") + name, shortcut, [&](){ this->SetState(new_state); });

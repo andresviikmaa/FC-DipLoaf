@@ -8,7 +8,7 @@ class ThreadedClass
 {
 public:
 	ThreadedClass(const std::string &name = ""); 
-	void Start();
+	virtual void Start();
 	void WaitForStop();
 	bool HasError() { return stop_thread; };
 
@@ -30,6 +30,7 @@ public:
 protected:
 	boost::thread_group threads;
 	std::atomic_bool stop_thread;
+	virtual void Run2();
 	virtual void Run() = 0;
 
 };

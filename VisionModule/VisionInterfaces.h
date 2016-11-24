@@ -3,7 +3,6 @@
 #include "../CommonModule/Types.h"
 #include <map>
 
-extern std::map<OBJECT, std::string> OBJECT_LABELS;
 typedef std::map<OBJECT, HSVColorRange> HSVColorRangeMap;
 typedef std::map<OBJECT, cv::Mat> ThresholdedImages;
 

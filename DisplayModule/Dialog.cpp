@@ -49,13 +49,33 @@ Dialog::Dialog(const std::string &title, const cv::Size &ptWindowSize, const cv:
 
 	display_empty = cv::Mat(windowSize, CV_8UC3, cv::Scalar(0));
 	display = cv::Mat(windowSize, CV_8UC3, cv::Scalar(0));
-	//Start();
+	Start();
 
 };
 Dialog::~Dialog(){
 	stop_thread = true;
 	WaitForStop();
 }
+void Dialog::ShowImage(const std::string &window, const cv::Mat &image, bool flip){
+	boost::mutex::scoped_lock lock(display_mutex); //allow one command at a time
+	if (windows.size() == 0){
+		activeWindow = window;
+	}
+	if (windows.find(window) == windows.end()) {
+		std::string name(window);
+		createButton(name, '-', [&, name]{
+			activeWindow = name;
+		});
+		windows.insert(name);
+	}
+	if (window == activeWindow){
+		//image.copyTo(display);
+		camSize = image.size();
+		resize(image, display, display.size());
+	}
+
+}
+
 void Dialog::ShowImage(const cv::Mat &image, bool flipX) {
 	boost::mutex::scoped_lock lock(display_mutex); //allow one command at a time
 
@@ -65,7 +85,11 @@ void Dialog::ShowImage(const cv::Mat &image, bool flipX) {
 		else
 			image.copyTo(cam1_area);
 #else
-		image.copyTo(cam1_area);
+	camSize = image.size();
+	//image.copyTo(display);
+	resize(image, display, display.size());
+
+
 #endif
 
 	//	resize(image, cam_area, cv::Size(CAM_WIDTH, CAM_HEIGHT));//resize image
@@ -104,29 +128,27 @@ void Dialog::putShadowedText(const std::string &text, cv::Point pos, double font
 
 
 int Dialog::Draw() {
-	boost::mutex::scoped_lock lock(click_mutex); //allow one command at a time
-	//cv::Mat image
-	//background.copyTo(image);
-    //int window_width = image.cols;
-    //int window_height = image.rows;
-    //cv::Mat image = cv::Mat::zeros( window_height, window_width, CV_8UC3 );
-	//cam_area.copyTo(display_roi);
-
-	resize(cam1_area, display, display.size());//resize image
-
-
-    int i = 0;
-    for (const auto& button : m_buttons) {
-		++i;
-		cv::putText(display, std::get<0>(button), cv::Point(31, (i)*m_buttonHeight), cv::FONT_HERSHEY_DUPLEX, fontScale, cv::Scalar(0, 0, 0));
-		cv::putText(display, std::get<0>(button), cv::Point(30, (i)*m_buttonHeight), cv::FONT_HERSHEY_DUPLEX, fontScale, cv::Scalar(255, 255, 255));
-    }
-	for (const auto& text : m_texts) {
-		cv::putText(display, std::get<1>(text.second), std::get<0>(text.second), cv::FONT_HERSHEY_DUPLEX, std::get<2>(text.second), std::get<3>(text.second));
-
+	{
+		boost::mutex::scoped_lock lock(display_mutex); //allow one command at a time
+		display.copyTo(display_empty);
 	}
-	cv::imshow(m_title, display);
-	display_empty.copyTo(display);
+
+	{
+		boost::mutex::scoped_lock lock(click_mutex); //allow one command at a time
+
+		int i = 0;
+		for (const auto& button : m_buttons) {
+			++i;
+			cv::putText(display_empty, std::get<0>(button), cv::Point(31, (i)*m_buttonHeight), cv::FONT_HERSHEY_DUPLEX, fontScale, cv::Scalar(0, 0, 0));
+			cv::putText(display_empty, std::get<0>(button), cv::Point(30, (i)*m_buttonHeight), cv::FONT_HERSHEY_DUPLEX, fontScale, cv::Scalar(255, 255, 255));
+		}
+		for (const auto& text : m_texts) {
+			cv::putText(display_empty, std::get<1>(text.second), std::get<0>(text.second), cv::FONT_HERSHEY_DUPLEX, std::get<2>(text.second), std::get<3>(text.second));
+
+		}
+		cv::imshow(m_title, display_empty);
+	}
+	//display_empty.copyTo(display);
 
 	return 0;
 };
@@ -147,21 +169,20 @@ void Dialog::mouseClicked(int event, int x, int y, int flag) {
 
 	mouseX = x;
 	mouseY = y;
-	cv::Point scaled;
-	cv::Point offset;
+	cv::Point2d scaled;
 	cv::Size size;
 	cv::Size target;
 
 
 	size = display.size();
-	target = cam1_area.size();
+	target = camSize;
 
-	scaled.x = (int)((double)(x - offset.x) / size.width * target.width);
-	scaled.y = (int)((double)(y - offset.y) / size.height * target.height);
+	scaled.x = (float)x / size.width * target.width;
+	scaled.y = (float)y / size.height * target.height;
 
 	for (auto pListener : m_EventListeners){
 
-		if (pListener->OnMouseEvent(event, (float)(scaled.x), (float)(scaled.y), flag)) {
+		if (pListener->OnMouseEvent(event, scaled.x, scaled.y, flag)) {
 			return; // event was handled
 		}
 	}
@@ -189,6 +210,7 @@ void Dialog::Run(){
 		try {
 			Draw();
 			int key = cv::waitKey(10);
+			if (key == 27) stop_thread = true;
 			KeyPressed(key);
 		}
 		catch (std::exception &e) {

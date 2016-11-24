@@ -45,25 +45,9 @@ int main(int argc, char* argv[])
 	//Dialog display("Color Calibrator", cam.GetFrameSize(), cam.GetFrameSize());
 
 	AutoCalibrator calibrator(&cam);
-	calibrator.Run();
-	//display.createButton("Reset", 'r', [&calibrator] {
-	//	calibrator.Reset();
-	//});
-	//display.createButton("Take screenshot", 'c', [&calibrator] {
-	//	calibrator.LoadFrame();
-	//});
-	//for (int i = 0; i < NUMBER_OF_OBJECTS; i++) {
-	//	display.createButton(OBJECT_LABELS[(OBJECT)i], '-', [i, &calibrator] {
-	//		calibrator.GetObjectThresholds(i, OBJECT_LABELS[(OBJECT)i]);
-	//	});
-	//
-	//}
-	//display.createButton("Exit", 'x', [&exit]{
-	//	exit = true;
-	//});
-	//while (!exit) {
-	//	calibrator.Step();
-	//	//key = cv::waitKey(30);
-	//}
+	//calibrator.Run();
+	while (calibrator.running) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(300));
+	}
 }
 

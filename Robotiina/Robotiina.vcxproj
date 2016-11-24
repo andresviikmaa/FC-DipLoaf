@@ -70,7 +70,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SHOW_UI;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>../packages/opencv-3.1.0/include/</AdditionalIncludeDirectories>
     </ClCompile>
@@ -116,7 +116,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SHOW_UI;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>../packages/opencv-3.1.0/include/</AdditionalIncludeDirectories>
     </ClCompile>
@@ -149,6 +149,9 @@
   <ItemGroup>
     <ProjectReference Include="..\CommonModule\CommonModule.vcxproj">
       <Project>{6414a1c2-fc75-43c2-8fde-cc6904727eec}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\DisplayModule\DisplayModule.vcxproj">
+      <Project>{d22ef42e-37c4-4e10-a582-cf2d4c3333ac}</Project>
     </ProjectReference>
     <ProjectReference Include="..\HardwareModule\HardwareModule.vcxproj">
       <Project>{484c4364-4749-480c-9dcd-9aa919be5ade}</Project>

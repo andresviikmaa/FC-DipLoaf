@@ -14,6 +14,8 @@
 #endif
 #include <stdlib.h>
 #include <stdio.h>
+extern std::map<OBJECT, std::string> OBJECT_LABELS;
+
 AutoCalibrator::AutoCalibrator(ICamera * pCamera) :Dialog("Color Calibrator", pCamera->GetFrameSize(), pCamera->GetFrameSize())
 {
     range = {{0,179},{0,255},{0,255}};
@@ -22,7 +24,7 @@ AutoCalibrator::AutoCalibrator(ICamera * pCamera) :Dialog("Color Calibrator", pC
 	AddEventListener(this);
 	screenshot_mode = LIVE_FEED;
 //	reset();
-	Start();
+//	Start();
 };
 void AutoCalibrator::LoadFrame()
 {
@@ -96,7 +98,6 @@ void AutoCalibrator::SaveConf(const std::string &name) {
 	write_ini(std::string("conf/") + m_pCamera->getName() + "/" + name + ".ini", pt);
 }
 bool AutoCalibrator::OnMouseEvent(int event, float x, float y, int flags) {
-	std::cout << x << ", " << y << std::endl;
 	if (screenshot_mode == CROPPING){
 		if (event == cv::EVENT_LBUTTONDOWN){
 			thresholdCorner1 = cv::Point((int)(x), (int)(y));
