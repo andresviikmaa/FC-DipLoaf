@@ -23,6 +23,7 @@ FieldState gFieldState;
 FieldState gPartnerFieldState;
 RobotState gRobotState;
 RobotState gPartnerRobotState;
+extern std::atomic_bool exitRobot;
 
 #define STATE_BUTTON(name, shortcut, new_state) \
 m_pDisplay->createButton(std::string("") + name, shortcut, [&](){ this->SetState(new_state); });
@@ -160,6 +161,7 @@ bool Robot::MessageReceived(const std::string & message) {
 };
 void Robot::Run()
 {
+	exitRobot = false;
 	double t1 = (double)cv::getTickCount();
 #ifdef GUSTAV
 	gRobotState.runMode = ROBOT_MODE_1VS1;
@@ -172,7 +174,7 @@ void Robot::Run()
 	try {
 		m_pMainVision->Enable(true);
 		m_pFrontVision->Enable(true);
-		while (true)
+		while (!exitRobot)
 		{
 			double t2 = (double)cv::getTickCount();
 			double dt = (t2 - t1) / cv::getTickFrequency();

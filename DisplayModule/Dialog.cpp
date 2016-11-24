@@ -147,7 +147,6 @@ void Dialog::mouseClicked(int event, int x, int y, int flag) {
 
 	mouseX = x;
 	mouseY = y;
-	bool bMainArea = x < camSize.width && y < camSize.height;
 	cv::Point scaled;
 	cv::Point offset;
 	cv::Size size;
@@ -162,7 +161,7 @@ void Dialog::mouseClicked(int event, int x, int y, int flag) {
 
 	for (auto pListener : m_EventListeners){
 
-		if (pListener->OnMouseEvent(event, (float)(scaled.x), (float)(scaled.y), flag, bMainArea)) {
+		if (pListener->OnMouseEvent(event, (float)(scaled.x), (float)(scaled.y), flag)) {
 			return; // event was handled
 		}
 	}

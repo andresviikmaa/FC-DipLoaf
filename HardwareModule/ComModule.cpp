@@ -15,12 +15,13 @@ ComModule::ComModule(boost::asio::io_service &io, const std::string ip_address, 
 ComModule::ComModule(boost::asio::io_service &io, const std::string ip_address, ushort port1):
 	io(io), UdpServer(io, ip_address, port1)
 {
-
-
+	SendMessage("fs:0");
+	SendMessage("charge");
 }
 
 ComModule::~ComModule()
 {
+	SendMessage("fs:1");
 	for (int i = 0; i< 50; i++) {
 		SendMessage("discharge");
 	}

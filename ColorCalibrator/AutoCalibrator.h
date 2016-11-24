@@ -41,7 +41,7 @@ public:
 	virtual void Start() {};
 
 	const cv::Mat & GetFrame() { return m_pCamera->Capture(); }
-	virtual bool OnMouseEvent(int event, float x, float y, int flags, bool bMainArea);
+	virtual bool OnMouseEvent(int event, float x, float y, int flags);
 
 protected:
 	cv::Mat bestLabels, clustered, centers;

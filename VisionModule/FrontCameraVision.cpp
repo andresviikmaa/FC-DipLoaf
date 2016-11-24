@@ -15,7 +15,7 @@ FrontCameraVision::~FrontCameraVision()
 
 void  FrontCameraVision::ProcessFrame() {
 	ThresholdFrame();
-	//FindGate();
+	FindGate();
 	FindBall();
 
 }
@@ -26,10 +26,10 @@ void  FrontCameraVision::ProcessFrame() {
 //}
 
 void FrontCameraVision::FindGate() {
-
+	MainCameraVision::FindGates();
 }
 void FrontCameraVision::FindBall() {
-
+	MainCameraVision::FindBalls();
 }
 
 void FrontCameraVision::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos) {
@@ -66,5 +66,10 @@ void FrontCameraVision::LoadSettings() {
 }
 
 void FrontCameraVision::PublishState() {
-	//gFieldState.ballInFront;
+	boost::mutex::scoped_lock lock(state_mutex); //allow one command at a time
+	if (stateUpdated) {
+		memcpy(&gFieldState.ballsFront, &localStateCopy.balls, MAX_BALLS * sizeof(BallPosition));
+		stateUpdated = false;
+	}
+	
 };

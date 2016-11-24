@@ -27,6 +27,8 @@ double angleBetween(const cv::Point2d &a, const cv::Point2d &b);
 const double SIMULATOR_SPEED = 0.5;
 const bool INIT_RANDOM = false;
 
+std::atomic_bool exitRobot;
+
 Simulator::Simulator(boost::asio::io_service &io, bool master, const std::string game_mode) :
 	mNumberOfBalls(game_mode == "master" || game_mode == "slave" ? 1 : 19)
 	, ThreadedClass("Simulator"), UdpServer(io, 31000, master)
