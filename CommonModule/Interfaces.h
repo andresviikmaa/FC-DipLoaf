@@ -57,6 +57,7 @@ public:
 	virtual void PublishState() = 0;
 	virtual ICamera * GetCamera() = 0;
 	virtual void Enable(bool enable) = 0;
+	virtual ~IVisionModule() {};
 };
 
 class IStateMachine {

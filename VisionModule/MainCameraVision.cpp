@@ -63,6 +63,7 @@ thresholdObjects({ BALL, BLUE_GATE, YELLOW_GATE, FIELD, INNER_BORDER, OUTER_BORD
 
 MainCameraVision::~MainCameraVision()
 {
+	WaitForStop();
 	if (thresholder == nullptr)
 		delete thresholder;
 

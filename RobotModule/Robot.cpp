@@ -226,8 +226,6 @@ int ms = 50;
 	for(auto pilot: m_AutoPilots)
 		delete pilot.second;
 
-	if (m_pComModule != NULL)
-		delete m_pComModule;
 	if (m_pMainVision != NULL)
 		delete m_pMainVision;
 	if (m_pFrontVision != NULL)

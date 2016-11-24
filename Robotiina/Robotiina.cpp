@@ -120,7 +120,7 @@ int main(int argc, char* argv[])
 	{
 		std::cout << "ups, did not see that coming." << std::endl;
 	}
-	cv::waitKey();
+	//cv::waitKey();
 	return 0;
 }
 
