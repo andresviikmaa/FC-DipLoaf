@@ -147,7 +147,7 @@ void  MainCameraVision::ProcessFrame() {
 
 	ThresholdFrame();
 	//CheckGateObstruction();
-	//FindGates();
+	FindGates();
 	//CheckCollisions();
 	FindBalls();
 
