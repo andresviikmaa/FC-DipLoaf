@@ -36,8 +36,8 @@ void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed)
 	const int maxSpeed = 30;
 	/*
 	direction = 0;
-	angularSpeed = 30;
-	fowardSpeed = 0;
+	angularSpeed = 0;
+	fowardSpeed = 30;
 	*/
 	if (fowardSpeed > maxSpeed) fowardSpeed = maxSpeed;
 	if (fowardSpeed < -maxSpeed) fowardSpeed = -maxSpeed;
@@ -110,7 +110,7 @@ void ComModule::SendMessages() {
 	cv::Mat speeds = wheelAngles * targetSpeedXYW *8;
 	ss << ":" << -(int)speeds.at<double>(0);
 	ss << ":" << (int)speeds.at<double>(1);
-	ss << ":" << -(int)speeds.at<double>(3);
+	ss << ":" << (int)speeds.at<double>(3);
 	ss << ":" << (int)speeds.at<double>(2);
 	ss << ":" << tribblerSpeed*50;
 

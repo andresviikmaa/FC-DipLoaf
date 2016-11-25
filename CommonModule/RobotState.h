@@ -19,8 +19,8 @@ struct RobotState
 	char ROBOT_MARKER = 'A';
 
 	RunMode runMode = ROBOT_MODE_IDLE; // 1vs1, idle, 2vs2
-	uchar gameMode;  // referee commands
-	uchar pendingGameMode;
-	uchar playState; // statemachine state
+	uchar gameMode = GAME_MODE_STOPED;  // referee commands
+	uchar pendingGameMode = GAME_MODE_STOPED;
+	uchar driveState = 0; // statemachine state
 };
 

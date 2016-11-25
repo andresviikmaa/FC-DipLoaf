@@ -40,7 +40,7 @@ void DriveToBall::onEnter()
 	initialGate = gFieldState.gates[gRobotState.targetGate];
 
 	if (ACTIVE_DRIVE_TO_BALL_MODE == DRIVEMODE_IDLE)
-		ACTIVE_DRIVE_TO_BALL_MODE = DRIVEMODE_DRIVE_TO_BALL_ANGLED;
+		ACTIVE_DRIVE_TO_BALL_MODE = DRIVEMODE_DRIVE_TO_BALL_NAIVE;
 }
 
 DriveMode DriveToBall::step(double dt){
