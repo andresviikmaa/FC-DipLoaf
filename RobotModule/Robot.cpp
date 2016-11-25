@@ -51,7 +51,7 @@ public:
 	};
 	virtual void enableTestMode(bool enable) {}
 	virtual std::string GetDebugInfo() {
-		return "";
+		return "Not Running";
 	}
 	virtual void Enable(bool enable) {};
 
@@ -67,7 +67,7 @@ enum COMMAND : uchar {
 };
 
 //TODO: convert to commandline options
-#define USE_ROBOTIINA_WIFI
+//#define USE_ROBOTIINA_WIFI
 #ifdef USE_ROBOTIINA_WIFI 
 // robotiina wifi
 boost::asio::ip::address bind_addr = boost::asio::ip::address::from_string("0.0.0.0"); // this computer ip

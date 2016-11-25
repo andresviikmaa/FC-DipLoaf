@@ -404,7 +404,10 @@ cv::Mat & Simulator::Capture(bool bFullFrame) {
 	{
 		std::lock_guard<std::mutex> lock(mutex);
 		front_frame.copyTo(front_frame_copy);
+		cv::flip(front_frame_copy, front_frame_copy, 1);
 	}
+	cv::transpose(frame, frame);
+	cv::flip(frame, frame, 0);
 	return frame;
 
 }
