@@ -49,10 +49,7 @@ void StateMachine::Step(double dt) {
 }
 
 std::string StateMachine::GetDebugInfo(){
-	std::ostringstream oss;
-	//boost::mutex::scoped_lock lock(mutex);
-	oss << "[StateMachine] State: " << curDriveMode->second->name;
-	return oss.str();
+	return curDriveMode->second->name;
 }
 
 

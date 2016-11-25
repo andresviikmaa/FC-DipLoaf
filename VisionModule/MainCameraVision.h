@@ -47,6 +47,7 @@ protected:
 
 	VideoRecorder *videoRecorder  = NULL;
 	double time = 0;
+	cv::Point2d frameCenter;
 
 	//bool _collisionWithBorder;
 	//bool _collisionWithUnknown;
@@ -79,8 +80,8 @@ protected:
 	void FindGates();
 	void CheckCollisions();
 	void FindBalls();
+	void FindClosestBalls();
 	void FindOtherRobots();
-	cv::Point2d cameraOrgin;
 	virtual void UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos);
 	std::vector<OBJECT> thresholdObjects;
 

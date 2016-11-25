@@ -33,27 +33,6 @@ RobotTracker::~RobotTracker()
 }
 
 void RobotTracker::Predict(double dt, bool mainCamUpdated, bool frontCamUpdated) {
-	uchar closest = MAX_BALLS, closest2 = MAX_BALLS, closest3 = MAX_BALLS;
-	double dist1 = INT_MAX, dist2 = INT_MAX, dist3 = INT_MAX;
-	for (int i = 0; i < MAX_BALLS; i++){
-		auto &ball = gFieldState.balls[i];
-		auto &ballFront = gFieldState.ballsFront[i];
-		if (mainCamUpdated && ball.isValid && ball.distance < dist1){
-			gFieldState.closestBall = i;
-			dist1 = ball.distance;
-		}
-		if (mainCamUpdated && ball.isValid && ball.distance < dist2 && abs(ball.angle) < 130){
-			gFieldState.closestBallInFront = i;
-			dist2 = ball.distance;
-		}
-		if (frontCamUpdated && ballFront.isValid && ballFront.distance < dist2){
-			closest3 = i;
-			gFieldState.closestBallTribbler = ballFront.distance;
-		}
-		//for (auto ball : lastFieldState.balls){
-		//
-		//}
-	};
 	DetectRobotLocation();
 }
 void RobotTracker::DetectRobotLocation(){
