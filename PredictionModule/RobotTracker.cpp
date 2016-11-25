@@ -38,27 +38,33 @@ void RobotTracker::Predict(double dt, bool mainCamUpdated, bool frontCamUpdated)
 	for (int i = 0; i < MAX_BALLS; i++){
 		auto &ball = gFieldState.balls[i];
 		auto &ballFront = gFieldState.ballsFront[i];
-		if (ball.isValid && ball.distance < dist1){
-			closest = i;
+		if (mainCamUpdated && ball.isValid && ball.distance < dist1){
+			gFieldState.closestBall = i;
 			dist1 = ball.distance;
 		}
-		if (ball.isValid && ball.distance < dist2 && abs(ball.angle) < 130){
-			closest2 = i;
+		if (mainCamUpdated && ball.isValid && ball.distance < dist2 && abs(ball.angle) < 130){
+			gFieldState.closestBallInFront = i;
 			dist2 = ball.distance;
 		}
-		if (ballFront.isValid && ballFront.distance < dist2){
+		if (frontCamUpdated && ballFront.isValid && ballFront.distance < dist2){
 			closest3 = i;
-			dist2 = ballFront.distance;
+			gFieldState.closestBallTribbler = ballFront.distance;
 		}
 		//for (auto ball : lastFieldState.balls){
 		//
 		//}
 	};
-	gFieldState.closestBall = closest;
-	gFieldState.closestBallInFront = closest2;
-	gFieldState.closestBallTribbler = closest3;
+	DetectRobotLocation();
 }
+void RobotTracker::DetectRobotLocation(){
+	auto &Y = gFieldState.gates[YELLOW_GATE];
+	auto &B = gFieldState.gates[BLUE_GATE];
 
+	if (Y.isValid && B.isValid){
+		;
+	}
+
+}
 #ifdef SHOW_UI
 void RobotTracker::Draw(){
 	green.copyTo(field);

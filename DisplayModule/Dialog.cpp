@@ -69,9 +69,9 @@ void Dialog::ShowImage(const std::string &window, const cv::Mat &image, bool fli
 		windows.insert(name);
 	}
 	if (window == activeWindow){
-		//image.copyTo(display);
+		image.copyTo(display);
 		camSize = image.size();
-		resize(image, display, display.size());
+		//resize(image, display, display.size());
 	}
 
 }

@@ -67,11 +67,11 @@ enum COMMAND : uchar {
 };
 
 //TODO: convert to commandline options
-//#define USE_ROBOTIINA_WIFI
+#define USE_ROBOTIINA_WIFI
 #ifdef USE_ROBOTIINA_WIFI 
 // robotiina wifi
-boost::asio::ip::address bind_addr = boost::asio::ip::address::from_string("10.0.0.6"); // this computer ip
-boost::asio::ip::address brdc_addr = boost::asio::ip::address::from_string("10.0.0.15"); // netmask 255.255.255.240
+boost::asio::ip::address bind_addr = boost::asio::ip::address::from_string("0.0.0.0"); // this computer ip
+boost::asio::ip::address brdc_addr = boost::asio::ip::address::from_string("192.168.42.255"); // netmask 255.255.255.240
 #else
 // any local network
 boost::asio::ip::address bind_addr = boost::asio::ip::address::from_string("0.0.0.0"); // all interfaces
@@ -183,18 +183,19 @@ void Robot::Run()
 		{
 			double t2 = (double)cv::getTickCount();
 			double dt = (t2 - t1) / cv::getTickFrequency();
+
+
+			mainUpdated = m_pMainVision->PublishState();
+			frontUpdated = m_pFrontVision->PublishState();
+			m_pComModule->ProcessCommands();
+			robotTracker.Predict(dt, mainUpdated, frontUpdated);
 			if (counter > 10) {
 				fps = (double)counter / dt;
 				t1 = t2;
 				counter = 0;
+				SendFieldState();
 			}
 			counter++;
-
-			frontUpdated = m_pMainVision->PublishState();
-			mainUpdated = m_pFrontVision->PublishState();
-			m_pComModule->ProcessCommands();
-			robotTracker.Predict(dt, mainUpdated, frontUpdated);
-			SendFieldState();
 			io.poll();
 			// MessageReceived handled 
 
