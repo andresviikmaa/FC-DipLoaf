@@ -30,7 +30,7 @@ void FrontCameraVision::FindGate() {
 }
 void FrontCameraVision::FindBall() {
 	std::vector<cv::Point2d> balls;
-	bool ballsFound = ballFinder.Locate(thresholdedImages[BALL], frameHSV, frameBGR, balls);
+	bool ballsFound = ballFinder.Locate(thresholdedImages[BALL], frameHSV, frameBGR, balls, 500);
 	localState.ballCount = 0;
 	for (auto ball : balls) {
 		// this is dangerous as fixed size array is used. TODO: convert balls back to vector perhaps.
@@ -40,6 +40,7 @@ void FrontCameraVision::FindBall() {
 		//}
 		if (localState.ballCount >= MAX_BALLS) break;
 	}
+	//localState.closestBallTribbler = localState.balls[0].isValid ? 0 : 15;
 }
 
 void FrontCameraVision::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos) {
@@ -62,10 +63,10 @@ void FrontCameraVision::UpdateObjectPostion(ObjectPosition & object, const cv::P
 	}
 	Hor_angle = abs(Hor_angle);
 	*/
-	object.polarMetricCoords = { distance, Hor_angle };
+	object.polarMetricCoords = { distance, 360-Hor_angle };
 	SYNC_OBJECT(object);
 //	return{ distance, HorizontalDev, Hor_angle };
-
+	object.isValid = true;
 }
 
 void FrontCameraVision::LoadSettings() {
@@ -81,6 +82,7 @@ bool FrontCameraVision::PublishState() {
 		memcpy(&gFieldState.ballsFront, &localStateCopy.balls, MAX_BALLS * sizeof(BallPosition));
 		gFieldState.closestBallTribbler = gFieldState.ballsFront[0].isValid ? 0 : 15;
 		stateUpdated = false;
+
 		return true;
 	}
 	return false;

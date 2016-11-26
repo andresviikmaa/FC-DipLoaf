@@ -64,7 +64,6 @@ enum COMMAND : uchar {
 	COMMAND_SET_CONF = 11,
 	COMMAND_MANUAL_CONTROL = 20,
 	COMMAND_STATEMACHINE_STATE = 30,
-	COMMAND_WHEELS_STATE = 31,
 	COMMAND_DEBUG = 100,
 	COMMAND_DEBUG_STEP = 101
 };
@@ -123,9 +122,11 @@ bool Robot::MessageReceived(const boost::array<char, BUF_SIZE>& buffer, size_t s
 	}
 	else if (code == COMMAND_DEBUG) {
 		debug = !debug;
+		return true;
 	}
 	else if (code == COMMAND_DEBUG_STEP) {
 		debug_step = true;
+		return true;
 	}
 	else if (code == COMMAND_FIELD_STATE && size == sizeof(FieldState)) {
 		return false;
@@ -176,6 +177,7 @@ void Robot::Run()
 		RobotTracker robotTracker;
 		bool frontUpdated = false;
 		bool mainUpdated = false;
+		debug = true;
 		while (!exitRobot)
 		{
 			double t2 = (double)cv::getTickCount();
@@ -206,8 +208,9 @@ void Robot::Run()
 			robotTracker.Draw();
 #endif
 			if (debug_step) {
-				std::cout << "debug step" << std::endl;
-				std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+				std::cout << "debug step: " << gFieldState.self.distance << " " << gFieldState.self.heading << " " << gFieldState.self.angle << std::endl;
+				std::this_thread::sleep_for(std::chrono::milliseconds(200));
+				m_pComModule->Drive(0, 0, 0);
 				debug_step = false;
 			}
 			subtitles.str("");
@@ -219,9 +222,9 @@ void Robot::Run()
 			debug[0] = COMMAND_STATEMACHINE_STATE;
 			SendData(debug.c_str(), debug.size());
 
-			std::string debug2 = " " + m_pComModule->GetDebugInfo();
-			debug2[0] = COMMAND_WHEELS_STATE;
-			SendData(debug2.c_str(), debug2.size());
+//			std::string debug2 = " " + m_pComModule->GetDebugInfo();
+//			debug2[0] = COMMAND_WHEELS_STATE;
+//			SendData(debug2.c_str(), debug2.size());
 int ms = 50;
 		std::chrono::milliseconds dura(ms);
 		std::this_thread::sleep_for(dura);

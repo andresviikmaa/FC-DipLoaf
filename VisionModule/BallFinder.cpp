@@ -13,12 +13,12 @@ BallFinder::~BallFinder()
 
 
 
-bool BallFinder::Locate(cv::Mat &imgThresholded, cv::Mat &frameHSV, cv::Mat &frameBGR, std::vector<cv::Point2d> &objectCoords) {
+bool BallFinder::Locate(cv::Mat &imgThresholded, cv::Mat &frameHSV, cv::Mat &frameBGR, std::vector<cv::Point2d> &objectCoords, int minBallSize) {
 
 	try{
 		cv::Point2d notValidPosition = cv::Point2d(-1.0, -1.0);
 	
-		int smallestBallArea = 4;
+		int smallestBallArea = minBallSize;
 		cv::Point2d center(-1, -1);
 
 		if (imgThresholded.rows == 0){

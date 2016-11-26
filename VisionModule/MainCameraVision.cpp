@@ -120,6 +120,20 @@ void MainCameraVision::Run() {
 			{
 				boost::mutex::scoped_lock lock(state_mutex); //allow one command at a time
 				memcpy(&localStateCopy, &localState, sizeof(FieldState));
+				// reset all
+				for (size_t i = 0, ilen = MAX_BALLS; i < ilen; i++) {
+					localState.balls[i].isValid = false;
+					localState.balls[i].distance = 10000;
+					localState.balls[i].heading = 0;
+					localState.balls[i].angle = 0;
+
+				}
+				localState.gates[BLUE_GATE].isValid = false;
+				localState.gates[BLUE_GATE].distance = 10000;
+
+				localState.gates[YELLOW_GATE].isValid = false;
+				localState.gates[YELLOW_GATE].distance = 10000;
+
 				stateUpdated = true;
 			}
 		}
@@ -142,7 +156,7 @@ bool MainCameraVision::PublishState() {
 		//memcpy(&gFieldState, &localStateCopy, sizeof(FieldState));
 		memcpy(&gFieldState.balls, &localStateCopy.balls, MAX_BALLS * sizeof(BallPosition));
 		memcpy(&gFieldState.gates, &localStateCopy.gates, 2 * sizeof(GatePosition));
-		memcpy(&gFieldState.self, &localStateCopy.self, sizeof(ObjectPosition));
+		//memcpy(&gFieldState.self, &localStateCopy.self, sizeof(ObjectPosition));
 		memcpy(&gFieldState.partner, &localStateCopy.self, sizeof(ObjectPosition));
 		memcpy(&gFieldState.opponents, &localStateCopy.gates, 2 * sizeof(ObjectPosition));
 

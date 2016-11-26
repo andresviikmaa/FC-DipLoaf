@@ -2,8 +2,10 @@
 #include <boost/algorithm/string.hpp>
 #include <thread>
 #include <chrono>
+#include "../CommonModule/FieldState.h"
 
 extern cv::Mat wheelAngles;
+extern FieldState gFieldState;
 
 ComModule::ComModule(boost::asio::io_service &io, const std::string ip_address, ushort port1, ushort port2):
 	io(io), UdpServer(io, ip_address, port1, port2)
@@ -33,9 +35,10 @@ ComModule::~ComModule()
 
 void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed) {
 	
-	lastSpeed.velocity = fowardSpeed;
-	lastSpeed.heading = direction;
-	lastSpeed.rotation = angularSpeed;
+	gFieldState.self.distance = fowardSpeed;
+	gFieldState.self.heading = direction;
+	gFieldState.self.angle = angularSpeed;
+
 	const int maxSpeed = 30;
 	/*
 	direction = 0;
@@ -115,7 +118,7 @@ void ComModule::SendMessages() {
 	ss << ":" << (int)speeds.at<double>(1);
 	ss << ":" << (int)speeds.at<double>(3);
 	ss << ":" << (int)speeds.at<double>(2);
-	ss << ":" << tribblerSpeed*50;
+	ss << ":" << -tribblerSpeed*50;
 
 	std::string tmp = ss.str();
 	SendMessage(tmp);
