@@ -64,25 +64,12 @@ enum COMMAND : uchar {
 	COMMAND_SET_CONF = 11,
 	COMMAND_MANUAL_CONTROL = 20,
 	COMMAND_STATEMACHINE_STATE = 30,
-	COMMAND_WHEELS_STATE = 31
+	COMMAND_WHEELS_STATE = 31,
+	COMMAND_DEBUG = 100,
+	COMMAND_DEBUG_STEP = 101
 };
 
-//TODO: convert to commandline options
-#define USE_ROBOTIINA_WIFI
-#ifdef USE_ROBOTIINA_WIFI 
-// robotiina wifi
-boost::asio::ip::address bind_addr = boost::asio::ip::address::from_string("0.0.0.0"); // this computer ip
-boost::asio::ip::address brdc_addr = boost::asio::ip::address::from_string("192.168.42.255"); // netmask 255.255.255.240
-#else
-// any local network
-boost::asio::ip::address bind_addr = boost::asio::ip::address::from_string("0.0.0.0"); // all interfaces
-#ifdef WIN32
-boost::asio::ip::address brdc_addr = boost::asio::ip::address::from_string("127.255.255.255"); // netmask 255.255.255.240
-#else
-boost::asio::ip::address brdc_addr = boost::asio::ip::address_v4::broadcast(); // local network
-#endif
 
-#endif
 
 Robot::Robot(boost::asio::io_service &io, ICamera *pMainCamera, ICamera *pFrontCamera, ISoccerRobot* pSoccerRobot, bool master)
 	: io(io), UdpServer(io, 30000, master), master(master)
@@ -134,7 +121,15 @@ bool Robot::MessageReceived(const boost::array<char, BUF_SIZE>& buffer, size_t s
 
 		}
 	}
-	return false; 
+	else if (code == COMMAND_DEBUG) {
+		debug = !debug;
+	}
+	else if (code == COMMAND_DEBUG_STEP) {
+		debug_step = true;
+	}
+	else if (code == COMMAND_FIELD_STATE && size == sizeof(FieldState)) {
+		return false;
+	}
 };
 
 bool Robot::MessageReceived(const std::string & message) {
@@ -200,12 +195,21 @@ void Robot::Run()
 			counter++;
 			io.poll();
 			// MessageReceived handled 
-
-			m_AutoPilots[gRobotState.runMode]->Step(dt);
+			if (debug_step) {
+				dt = 1;
+			}
+			if (!debug || debug_step) {
+				m_AutoPilots[gRobotState.runMode]->Step(dt);
+			}
 			m_pComModule->SendMessages();
 #ifdef SHOW_UI
 			robotTracker.Draw();
 #endif
+			if (debug_step) {
+				std::cout << "debug step" << std::endl;
+				std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+				debug_step = false;
+			}
 			subtitles.str("");
 			//subtitles << oss.str();
 			//subtitles << "|" << m_pAutoPilot->GetDebugInfo();

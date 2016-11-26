@@ -34,6 +34,11 @@ Dialog dialog("Robotiina", cv::Size(800, 600));
 IDisplay * display(&dialog);
 #endif
 
+//TODO: convert to commandline options
+
+boost::asio::ip::address bind_addr = boost::asio::ip::address::from_string("0.0.0.0"); // all interfaces
+boost::asio::ip::address brdc_addr = boost::asio::ip::address::from_string("127.255.255.255"); // netmask 255.255.255.240
+
 Simulator::Simulator(boost::asio::io_service &io, bool master, const std::string game_mode) :
 	mNumberOfBalls(game_mode == "master" || game_mode == "slave" ? 1 : 11)
 	, ThreadedClass("Simulator"), UdpServer(io, 31000, master)
