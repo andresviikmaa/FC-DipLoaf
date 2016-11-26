@@ -29,7 +29,17 @@ void FrontCameraVision::FindGate() {
 	MainCameraVision::FindGates();
 }
 void FrontCameraVision::FindBall() {
-	MainCameraVision::FindBalls();
+	std::vector<cv::Point2d> balls;
+	bool ballsFound = ballFinder.Locate(thresholdedImages[BALL], frameHSV, frameBGR, balls);
+	localState.ballCount = 0;
+	for (auto ball : balls) {
+		// this is dangerous as fixed size array is used. TODO: convert balls back to vector perhaps.
+		//if (ballFinder.validateBall(thresholdedImages, ball, frameHSV, frameBGR)) {
+			UpdateObjectPostion(localState.balls[localState.ballCount], ball);
+			localState.ballCount++;
+		//}
+		if (localState.ballCount >= MAX_BALLS) break;
+	}
 }
 
 void FrontCameraVision::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos) {

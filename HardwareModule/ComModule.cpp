@@ -32,7 +32,9 @@ ComModule::~ComModule()
 
 void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed) {
 	
-
+	lastSpeed.velocity = fowardSpeed;
+	lastSpeed.heading = direction;
+	lastSpeed.rotation = angularSpeed;
 	const int maxSpeed = 30;
 	/*
 	direction = 0;

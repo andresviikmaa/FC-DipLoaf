@@ -12,7 +12,7 @@ class FrontCameraVision :
 protected:
 	double Hfov = 35.21;
 	double Vfov = 21.65; //half of cameras vertical field of view (degrees)
-	double CamHeight = 345; //cameras height from ground (mm)
+	double CamHeight = 100; //cameras height from ground (mm)
 	double CamAngleDev = 26; //deviation from 90* between ground
 	ObjectPosition ball;
 	ObjectPosition ball_copy;
