@@ -16,7 +16,8 @@ const uchar MAX_BALLS = 15;
 
 		uchar ballCount; // number or balls visible
 		uchar closestBall; // index to closeset ball by distance
-		uchar closestBallInFront;
+		uchar closestBallInFront; // index to closeset ball by distance with heading -130 .. 130
+		uchar closestBallTribbler; // front cam balls
 		cv::Point2d collisionRange; // which directions are blocked
 
 		ObjectPosition partner;
@@ -24,6 +25,7 @@ const uchar MAX_BALLS = 15;
 		ObjectPosition opponents[2];
 		ObjectPosition self;
 		BallPosition balls[MAX_BALLS];
+		BallPosition ballsFront[MAX_BALLS];
 
 		/*
 		//GatePosition partnerHomeGate;

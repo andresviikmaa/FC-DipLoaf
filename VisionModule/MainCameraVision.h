@@ -47,6 +47,7 @@ protected:
 
 	VideoRecorder *videoRecorder  = NULL;
 	double time = 0;
+	cv::Point2d frameCenter;
 
 	//bool _collisionWithBorder;
 	//bool _collisionWithUnknown;
@@ -73,14 +74,14 @@ protected:
 	std::vector<cv::Point2i> notBlueGates, notYellowGates;
 
 	ThresholdedImages thresholdedImages;
-	TBBImageThresholder *thresholder;
+	TBBImageThresholder *thresholder = nullptr;
 	void ThresholdFrame();
 	void CheckGateObstruction();
 	void FindGates();
 	void CheckCollisions();
 	void FindBalls();
+	void FindClosestBalls();
 	void FindOtherRobots();
-	cv::Point2d cameraOrgin;
 	virtual void UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos);
 	std::vector<OBJECT> thresholdObjects;
 
@@ -89,7 +90,7 @@ public:
 	MainCameraVision(ICamera * pCamera, const std::string sName="MainCameraVision");
 	virtual ~MainCameraVision();
 	virtual void ProcessFrame();
-	void PublishState();
+	bool PublishState();
 	virtual void Enable(bool enable) {
 		m_bEnabled = enable;
 	}

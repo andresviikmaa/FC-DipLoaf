@@ -13,7 +13,7 @@ void ThreadedClass::Start()
 	//assert(!name.empty());
 	stop_thread = false;
 	running = true;
-	threads.create_thread(boost::bind(&ThreadedClass::Run, this));
+	threads.create_thread(boost::bind(&ThreadedClass::Run2, this));
 };
 void ThreadedClass::WaitForStop()
 {
@@ -30,4 +30,9 @@ ThreadedClass::~ThreadedClass()
 		WaitForStop();
 	}
 	std::cout << "Exiting thread " << name << std::endl;
+}
+
+void ThreadedClass::Run2(){
+	Run();
+	running = false;
 }

@@ -15,12 +15,13 @@ ComModule::ComModule(boost::asio::io_service &io, const std::string ip_address, 
 ComModule::ComModule(boost::asio::io_service &io, const std::string ip_address, ushort port1):
 	io(io), UdpServer(io, ip_address, port1)
 {
-
-
+	SendMessage("fs:0");
+	SendMessage("charge");
 }
 
 ComModule::~ComModule()
 {
+	SendMessage("fs:1");
 	for (int i = 0; i< 50; i++) {
 		SendMessage("discharge");
 	}
@@ -35,8 +36,8 @@ void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed)
 	const int maxSpeed = 30;
 	/*
 	direction = 0;
-	angularSpeed = 30;
-	fowardSpeed = 0;
+	angularSpeed = 0;
+	fowardSpeed = 30;
 	*/
 	if (fowardSpeed > maxSpeed) fowardSpeed = maxSpeed;
 	if (fowardSpeed < -maxSpeed) fowardSpeed = -maxSpeed;
@@ -77,7 +78,8 @@ bool ComModule::MessageReceived(const std::string & message) {
 	if (message.empty()) return false;
 	if (*message.begin() != '<' && *message.rbegin() != '>') return false;
 	std::vector<std::string> params;
-	boost::split(params, message.substr(1, message.size() - 1), boost::is_any_of(":"));
+	std::string tmp = message.substr(1, message.size() - 1);
+	boost::split(params, tmp, boost::is_any_of(":"));
 	const auto &command = params[0];
 	if (command == "speeds" /*<speeds:%d:%d:%d:%d:%d>*/) {
 
@@ -105,12 +107,12 @@ void ComModule::SendMessages() {
 	ss.clear();
 	ss << "speeds";
 
-	cv::Mat speeds = wheelAngles * targetSpeedXYW *5;
+	cv::Mat speeds = wheelAngles * targetSpeedXYW *8;
 	ss << ":" << -(int)speeds.at<double>(0);
 	ss << ":" << (int)speeds.at<double>(1);
-	ss << ":" << -(int)speeds.at<double>(3);
+	ss << ":" << (int)speeds.at<double>(3);
 	ss << ":" << (int)speeds.at<double>(2);
-	ss << ":" << tribblerSpeed;
+	ss << ":" << tribblerSpeed*50;
 
 	std::string tmp = ss.str();
 	SendMessage(tmp);

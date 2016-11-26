@@ -1,11 +1,12 @@
 // ColorCalibrator.cpp : Defines the entry point for the console application.
 //
-
+#ifdef WIN_32
 #include "stdafx.h"
+#endif
 #include <opencv2/highgui.hpp>
 #include <boost/program_options.hpp>
 
-#include "../DisplayModule/dialog.h"
+#include "../DisplayModule/Dialog.h"
 #include "../HardwareModule/Camera.h"
 #include "AutoCalibrator.h"
 #include "../CommonModule/Settings.h"
@@ -41,28 +42,12 @@ int main(int argc, char* argv[])
 	std::cout << "Done" << std::endl;
 
 
-	Dialog display("Color Calibrator", cam.GetFrameSize(), cam.GetFrameSize());
+	//Dialog display("Color Calibrator", cam.GetFrameSize(), cam.GetFrameSize());
 
-	AutoCalibrator calibrator(&cam, &display);
-
-	display.createButton("Reset", 'r', [&calibrator] {
-		calibrator.Reset();
-	});
-	display.createButton("Take screenshot", 'c', [&calibrator] {
-		calibrator.LoadFrame();
-	});
-	for (int i = 0; i < NUMBER_OF_OBJECTS; i++) {
-		display.createButton(OBJECT_LABELS[(OBJECT)i], '-', [i, &calibrator] {
-			calibrator.GetObjectThresholds(i, OBJECT_LABELS[(OBJECT)i]);
-		});
-
-	}
-	display.createButton("Exit", 'x', [&exit]{
-		exit = true;
-	});
-	while (!exit) {
-		calibrator.Step();
-		//key = cv::waitKey(30);
+	AutoCalibrator calibrator(&cam);
+	//calibrator.Run();
+	while (calibrator.running) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(300));
 	}
 }
 

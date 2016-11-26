@@ -1,7 +1,6 @@
 #include "StateMachine.h"
 #include <algorithm>
 
-
 StateMachine::StateMachine(ISoccerRobot *pComModule,
 	const std::map<DriveMode, DriveInstruction*> &driveModes) :driveModes(driveModes)
 {
@@ -20,9 +19,16 @@ void StateMachine::enableTestMode(bool enable)
 	if (!testMode) m_pComModule->Drive(0, 0, 0);
 }
 
+
 void StateMachine::Step(double dt) {
 	DriveMode newMode = curDriveMode->first;
-	newMode = testMode ? curDriveMode->second->step2(double(dt), newMode) : curDriveMode->second->step1(double(dt), newMode);
+	if (reset) {
+		newMode = DRIVEMODE_IDLE;
+		reset = false;
+	}
+	else {
+		newMode = testMode ? curDriveMode->second->step2(double(dt), newMode) : curDriveMode->second->step1(double(dt), newMode);
+	}
 	auto old = curDriveMode;
 	if (testMode) {
 		if (testDriveMode != DRIVEMODE_IDLE && newMode == DRIVEMODE_IDLE) newMode = testDriveMode;
@@ -45,16 +51,12 @@ void StateMachine::Step(double dt) {
 		std::cout << " -> " << curDriveMode->second->name << std::endl;
 
 		curDriveMode->second->onEnter();
-		std::this_thread::sleep_for(std::chrono::milliseconds(50)); // this seems to be neccecary
 	}
 
 }
 
 std::string StateMachine::GetDebugInfo(){
-	std::ostringstream oss;
-	boost::mutex::scoped_lock lock(mutex);
-	oss << "[StateMachine] State: " << curDriveMode->second->name;
-	return oss.str();
+	return curDriveMode->second->name;
 }
 
 

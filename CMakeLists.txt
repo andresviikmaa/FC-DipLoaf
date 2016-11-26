@@ -43,9 +43,8 @@ ADD_LIBRARY( HardwareModule STATIC
    HardwareModule/Camera.cpp
    HardwareModule/CoilBoard.cpp
    HardwareModule/ComModule.cpp
-   HardwareModule/WheelController.cpp
    HardwareModule/refereeCom.cpp
-   HardwareModule/SerialToUdp.cpp
+
 )
 ADD_LIBRARY( RobotModule STATIC
    RobotModule/Robot.cpp
@@ -77,7 +76,13 @@ TARGET_LINK_LIBRARIES( StateMachine CommonModule ${OpenCV_LIBS} ${Boost_LIBRARIE
 set(ROBOTIINA_FILES  Robotiina/Robotiina.cpp)
 
 add_executable(robotiina ${ROBOTIINA_FILES})
-target_link_libraries( robotiina RobotModule CommonModule HardwareModule VisionModule StateMachine ${OpenCV_LIBS} ${Boost_LIBRARIES} )
+target_link_libraries( robotiina RobotModule CommonModule HardwareModule VisionModule StateMachine ${OpenCV_LIBS} ${Boost_LIBRARIES} -lX11 )
+
+set(COLORCALIB_FILES  ColorCalibrator/ColorCalibrator.cpp ColorCalibrator/AutoCalibrator.cpp)
+
+add_executable(colorcalibrator ${COLORCALIB_FILES})
+target_link_libraries( colorcalibrator CommonModule HardwareModule  DisplayModule ${OpenCV_LIBS} ${Boost_LIBRARIES} -lX11 )
+
 
 #set(WHEELEMULATOR_FILES WheelEmulator.cpp)
 #add_executable(wheelemulator ${WHEELEMULATOR_FILES})

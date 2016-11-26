@@ -5,6 +5,7 @@
 #include <atomic>
 #include "../CommonModule/ThreadedClass.h"
 #include "opencv2/highgui.hpp"
+#include <set>
 /*
 * No time to add QT support to OpenCV, have to make our own buttons (and dialogs)
 * */
@@ -15,7 +16,8 @@ public:
 	int createButton(const std::string& bar_name, char shortcut, std::function<void()> const &);
 	int Draw();
 	void clearButtons();
-	virtual void ShowImage(const cv::Mat &image, bool main = true, bool flip = true);
+	virtual void ShowImage(const cv::Mat &image, bool flip = true);
+	virtual void ShowImage(const std::string &window, const cv::Mat &image, bool flip = true);
 	void ClearDisplay();
 	virtual void AddEventListener(IUIEventListener *pEventListener){
 		auto tc = dynamic_cast<ThreadedClass*>(pEventListener);
@@ -52,12 +54,6 @@ public:
 	virtual void putShadowedText(const std::string &text, cv::Point pos, double fontScale, cv::Scalar color);
 	void Run();
 	virtual ~Dialog();
-	virtual void SwapDisplays(){
-		m_bCam1Active = !m_bCam1Active;
-	};
-	virtual void ToggleDisplay(){
-		m_bMainCamEnabled = !m_bMainCamEnabled;
-	};
 
 protected:
 	void mouseClicked(int event, int x, int y, int flag);
@@ -66,11 +62,9 @@ protected:
 
 	cv::Mat display_empty;// (frameBGR.rows + 160, frameBGR.cols + 200, frameBGR.type(), cv::Scalar(0));
 	cv::Mat display;// (frameBGR.rows + 160, frameBGR.cols + 200, frameBGR.type(), cv::Scalar(0));
-	cv::Mat cam1_roi, cam2_roi;// = display(cv::Rect(0, 0, frameBGR.cols, frameBGR.rows)); // region of interest
-	cv::Mat cam1_area, cam2_area;
+//	cv::Mat cam1_roi, cam2_roi;// = display(cv::Rect(0, 0, frameBGR.cols, frameBGR.rows)); // region of interest
+	//cv::Mat cam1_area, cam2_area;
 	void KeyPressed(int key);
-	bool m_bCam1Active = true;
-	std::atomic_bool m_bMainCamEnabled;
 	cv::Size windowSize, camSize;
 private:
     bool m_close = false;
@@ -80,5 +74,7 @@ private:
     int m_buttonHeight = 60; /* calculated automatically*/
 	boost::mutex click_mutex;
 	boost::mutex display_mutex;
-	double fontScale;
+	double fontScale; 
+	std::string activeWindow = "main";
+	std::set<std::string> windows;
 };

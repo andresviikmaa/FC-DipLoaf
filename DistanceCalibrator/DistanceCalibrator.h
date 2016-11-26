@@ -3,17 +3,18 @@
 #include "../CommonModule/Interfaces.h"
 #include "../VisionModule/VisionInterfaces.h"
 //#include "ConfigurableModule.h"
-#include "ColorCalibrator.h"
 #include <boost/property_tree/ptree.hpp>
 #include <atomic>
+#include "../DisplayModule/Dialog.h"
 
-class DistanceCalibrator : public IUIEventListener {
+
+class DistanceCalibrator : public Dialog, public IUIEventListener {
 
 public:
-	DistanceCalibrator(ICamera * pCamera, IDisplay *pDisplay);
+	DistanceCalibrator(ICamera * pCamera);
 
 	~DistanceCalibrator();
-	virtual bool OnMouseEvent(int event, float x, float y, int flags, bool bMainArea);
+	virtual bool OnMouseEvent(int event, float x, float y, int flags);
 	static double calculateDistance(double centreX, double centreY, double x, double y);
 	void start();
 	void removeListener();
@@ -23,6 +24,8 @@ public:
 	std::string counterValue;
 	void Enable(bool enable);
 	std::string message = "";
+	virtual int Draw();
+	virtual void Start() {};
 
 protected:
 	bool enabled = false;
@@ -30,13 +33,16 @@ protected:
 	void mouseClicked(int x, int y, int flags);
 	void mouseClicked2(int x, int y, int flags);
 	ICamera *m_pCamera;
-	IDisplay *m_pDisplay;
 	std::vector<std::tuple<cv::Point, cv::Point, std::string>> points;
 	std::vector<std::tuple<cv::Point, cv::Point, std::string>>::iterator itPoints;
+	std::vector<cv::Vec3f> objectPoints;
+	std::vector<cv::Vec3f> imagePoints;
 
 	void calculateDistances();
 private:
 	cv::Point frame_size;
 	boost::property_tree::ptree pt;
 	int counter;
+	cv::Mat frameBGR, frameHSV, buffer;
+
 };

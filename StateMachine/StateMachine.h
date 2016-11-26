@@ -55,13 +55,14 @@ public:
 	typedef std::map<DriveMode, DriveInstruction*> TDriveModes;
 	const TDriveModes driveModes;
 	std::atomic_bool testMode;
+	bool enabled = false;
+	bool reset = false;
 	DriveMode preCrashState = DRIVEMODE_IDLE;
 private:
 	TDriveModes::const_iterator curDriveMode;
 	ISoccerRobot *m_pComModule;
 
 	std::atomic_bool drive;
-	boost::mutex mutex;
 
 	boost::posix_time::ptime time = boost::posix_time::microsec_clock::local_time();
 	//boost::posix_time::ptime lastUpdate = time - boost::posix_time::seconds(60);
@@ -77,7 +78,11 @@ public:
 	void enableTestMode(bool enable);
 	virtual ~StateMachine();
 	std::string GetDebugInfo();
-	virtual void Enable(bool enable) {};
+	virtual void Enable(bool enable) { 
+		reset = (enabled != enable);
+		enabled = enable; 
+		Step(0);
+	}
 	virtual void ProcessCommand(const std::string &command) {};
 };
 

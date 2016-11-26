@@ -27,11 +27,18 @@ double angleBetween(const cv::Point2d &a, const cv::Point2d &b);
 const double SIMULATOR_SPEED = 0.5;
 const bool INIT_RANDOM = false;
 
+std::atomic_bool exitRobot;
+
+#ifdef SHOW_UI
+Dialog dialog("Robotiina", cv::Size(800, 600));
+IDisplay * display(&dialog);
+#endif
+
 Simulator::Simulator(boost::asio::io_service &io, bool master, const std::string game_mode) :
-	mNumberOfBalls(game_mode == "master" || game_mode == "slave" ? 1 : 19)
+	mNumberOfBalls(game_mode == "master" || game_mode == "slave" ? 1 : 11)
 	, ThreadedClass("Simulator"), UdpServer(io, 31000, master)
 	, isMaster(master)
-	, ballCount(game_mode == "master" || game_mode == "slave" ? 1 : 19),
+	, ballCount(game_mode == "master" || game_mode == "slave" ? 1 : 11),
 	m_frontCamera(this), mainboard(io, this)
 {
 	blueGate.fieldCoords = cv::Point(0, 230);	
@@ -493,13 +500,6 @@ void Simulator::Kick(int force) {
 	//balls[minDistIndex] = balls[mNumberOfBalls - 1];
 	//balls[mNumberOfBalls - 1].~BallPosition();
 	//mNumberOfBalls--;
-}
-void Simulator::giveCommand(GameMode command) {
-	if (isMaster) {
-		SendMessage("REF " + std::to_string(command) + " #");
-	}
-	assert(false);
-	//RefereeCom::giveCommand(command);
 }
 
 void Simulator::drawRect(cv::Rect rec, int thickness, const cv::Scalar &color) {

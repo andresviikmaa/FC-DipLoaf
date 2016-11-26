@@ -5,18 +5,26 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
+#ifdef WIN32
 #include <direct.h>
+#else
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
 #include <stdlib.h>
 #include <stdio.h>
-AutoCalibrator::AutoCalibrator(ICamera * pCamera, IDisplay *pDisplay)
+extern std::map<OBJECT, std::string> OBJECT_LABELS;
+
+AutoCalibrator::AutoCalibrator(ICamera * pCamera) :Dialog("Color Calibrator", pCamera->GetFrameSize(), pCamera->GetFrameSize())
 {
     range = {{0,179},{0,255},{0,255}};
 	m_pCamera = pCamera;
-	m_pDisplay = pDisplay;
 	frame_size = m_pCamera->GetFrameSize();
-	pDisplay->AddEventListener(this);
+	AddEventListener(this);
 	screenshot_mode = LIVE_FEED;
 //	reset();
+//	Start();
 };
 void AutoCalibrator::LoadFrame()
 {
@@ -27,7 +35,7 @@ void AutoCalibrator::LoadFrame()
 
 HSVColorRange AutoCalibrator::GetObjectThresholds (int index, const std::string &name)
 {
-	clustered.copyTo(display);
+	clustered.copyTo(buffer);
 
 	//try {
 	//	m_pCamera->GetObjectThresholds(index, name);
@@ -82,12 +90,15 @@ void AutoCalibrator::SaveConf(const std::string &name) {
 	pt.put("sat.high", range.sat.high);
 	pt.put("val.low", range.val.low);
 	pt.put("val.high", range.val.high);
-
+#ifdef WIN32
 	_mkdir((std::string("conf/") + m_pCamera->getName()).c_str());
+#else
+	mkdir((std::string("conf/") + m_pCamera->getName()).c_str(), S_IRUSR | S_IWUSR | S_IXUSR);
+#endif
 	write_ini(std::string("conf/") + m_pCamera->getName() + "/" + name + ".ini", pt);
 }
-bool AutoCalibrator::OnMouseEvent(int event, float x, float y, int flags, bool bMainArea) {
-	if (screenshot_mode == CROPPING && bMainArea){
+bool AutoCalibrator::OnMouseEvent(int event, float x, float y, int flags) {
+	if (screenshot_mode == CROPPING){
 		if (event == cv::EVENT_LBUTTONDOWN){
 			thresholdCorner1 = cv::Point((int)(x), (int)(y));
 			thresholdCorner2 = cv::Point((int)(x), (int)(y));
@@ -100,7 +111,8 @@ bool AutoCalibrator::OnMouseEvent(int event, float x, float y, int flags, bool b
 			if (cv::norm(thresholdCorner1 - thresholdCorner2) > 100){
 				cv::Rect myROI(thresholdCorner1, thresholdCorner2);
 				image = image(myROI);
-				m_pDisplay->ShowImage(image, true, false);
+				ShowImage(image, false);
+				last_screenshot_mode = screenshot_mode;
 				screenshot_mode = CALIBRATION;
 				drawRect = false;
 			}
@@ -112,11 +124,12 @@ bool AutoCalibrator::OnMouseEvent(int event, float x, float y, int flags, bool b
 		}
 		return true;
 	}else if (screenshot_mode == GET_THRESHOLD){
-		if (event == cv::EVENT_LBUTTONUP && bMainArea) {
+		if (event == cv::EVENT_LBUTTONUP) {
 			mouseClicked((int)(x), (int)(y), flags);
 		}
 		if (event == cv::EVENT_RBUTTONUP) {
 			SaveConf(this->object_name);
+			last_screenshot_mode = screenshot_mode;
 			screenshot_mode = THRESHOLDING;
 		}
 		return true;
@@ -172,7 +185,7 @@ void AutoCalibrator::mouseClicked(int x, int y, int flags) {
 	cv::Mat selected(imgThresholded.rows, imgThresholded.cols, CV_8U, cv::Scalar::all(0));
 
 	clustered.copyTo(selected, 255 - imgThresholded);
-	selected.copyTo(display);
+	selected.copyTo(buffer);
 
 	//cv::imshow("auto thresholded", image); //show the thresholded image
     //cv::imshow("auto thresholded 2", imgThresholded); //show the thresholded image
@@ -183,64 +196,98 @@ void AutoCalibrator::mouseClicked(int x, int y, int flags) {
 
 }
 AutoCalibrator::~AutoCalibrator(){
-	m_pDisplay->RemoveEventListener(this);
+	RemoveEventListener(this);
 
 }
 
 
-void AutoCalibrator::Step() {
-
+int AutoCalibrator::Draw() {
 		if (screenshot_mode == LIVE_FEED){
+			if (last_screenshot_mode != LIVE_FEED){
+				clearButtons();
+				createButton("Take screenshot", 'c', [&] {
+					LoadFrame();
+				});
+				createButton("Exit", 'x', [&]{
+					stop_thread = true;
+				});
+			}
 			frameBGR = m_pCamera->Capture();
-			frameBGR.copyTo(display);
-			m_pDisplay->ShowImage(frameBGR);
+			frameBGR.copyTo(buffer);
+			ShowImage(frameBGR);
 		}
 		else if (screenshot_mode == CROPPING){
-			image.copyTo(display);
+			if (last_screenshot_mode != CROPPING){
+				clearButtons();
+			}
+			image.copyTo(buffer);
 			if (drawRect && cv::norm(thresholdCorner1 - thresholdCorner2) > 100){
-				line(display, thresholdCorner1, cv::Point(thresholdCorner2.x, thresholdCorner1.y), cv::Scalar(0, 0, 0), 1, 8, 0);
-				line(display, thresholdCorner2, cv::Point(thresholdCorner2.x, thresholdCorner1.y), cv::Scalar(0, 0, 0), 1, 8, 0);
+				line(buffer, thresholdCorner1, cv::Point(thresholdCorner2.x, thresholdCorner1.y), cv::Scalar(0, 0, 0), 1, 8, 0);
+				line(buffer, thresholdCorner2, cv::Point(thresholdCorner2.x, thresholdCorner1.y), cv::Scalar(0, 0, 0), 1, 8, 0);
 
-				line(display, thresholdCorner1, cv::Point(thresholdCorner1.x, thresholdCorner2.y), cv::Scalar(0, 0, 0), 1, 8, 0);
-				line(display, thresholdCorner2, cv::Point(thresholdCorner1.x, thresholdCorner2.y), cv::Scalar(0, 0, 0), 1, 8, 0);
+				line(buffer, thresholdCorner1, cv::Point(thresholdCorner1.x, thresholdCorner2.y), cv::Scalar(0, 0, 0), 1, 8, 0);
+				line(buffer, thresholdCorner2, cv::Point(thresholdCorner1.x, thresholdCorner2.y), cv::Scalar(0, 0, 0), 1, 8, 0);
 			}
 			else{
-				cv::putText(display, "Select area for thresholding", cv::Point(200, 220), cv::FONT_HERSHEY_DUPLEX, 0.9, cv::Scalar(23, 40, 245));
+				cv::putText(buffer, "Select area for thresholding", cv::Point(200, 220), cv::FONT_HERSHEY_DUPLEX, 0.9, cv::Scalar(23, 40, 245));
 			}
-			m_pDisplay->ShowImage(display, true, false);
+			ShowImage(buffer, false);
 
 		}
 		else if (screenshot_mode == GRAB_FRAME){
-			m_pDisplay->ShowImage(white);
+			ShowImage(white);
 			std::this_thread::sleep_for(std::chrono::milliseconds(150));
-			frameBGR.copyTo(display);
-			m_pDisplay->ShowImage(display);
+			frameBGR.copyTo(buffer);
+			ShowImage(buffer);
 			std::this_thread::sleep_for(std::chrono::milliseconds(1600));
+			last_screenshot_mode = screenshot_mode;
 			screenshot_mode = CROPPING;
 		}
 		else if (screenshot_mode == CALIBRATION){
-			image.copyTo(display);
-			cv::putText(display, "Please wait, clustering", cv::Point(200, 220), cv::FONT_HERSHEY_DUPLEX, 0.9, cv::Scalar(23, 40, 245));
-			m_pDisplay->ShowImage(display, true, false);
-
-			DetectThresholds(128);
+			isClustered = false;
+			image.copyTo(buffer);
+			cv::putText(buffer, "Please wait, clustering", cv::Point(200, 220), cv::FONT_HERSHEY_DUPLEX, 0.9, cv::Scalar(23, 40, 245));
+			ShowImage(buffer, false);
+			last_screenshot_mode = screenshot_mode;
 			screenshot_mode = THRESHOLDING;
-			//clustered.copyTo(display);
-			m_pDisplay->ShowImage(display);
+			//clustered.copyTo(buffer);
+			//ShowImage(buffer);
 		}
 		else if (screenshot_mode == THRESHOLDING){
-			image.copyTo(display);
-			m_pDisplay->ShowImage(display);
+			if (last_screenshot_mode != THRESHOLDING){
+				DetectThresholds(128);
+				clearButtons();
+				for (int i = 0; i < NUMBER_OF_OBJECTS; i++) {
+					createButton(OBJECT_LABELS[(OBJECT)i], '-', [&, i] {
+						GetObjectThresholds(i, OBJECT_LABELS[(OBJECT)i]);
+					});
+
+				}
+				createButton("Back", 'r', [&] {
+					Reset();
+				});
+			}
+
+			last_screenshot_mode = screenshot_mode;
+			image.copyTo(buffer);
+			ShowImage(buffer);
 		}
 		else if (screenshot_mode == GET_THRESHOLD) {
-			cv::putText(display, object_name, cv::Point((int)(image.cols * 0.3), (int)(image.rows*0.3)), cv::FONT_HERSHEY_DUPLEX , 1, cv::Scalar(23, 67, 245));
-			cv::putText(display, "(ctrl +) click to select pixels, right click back", cv::Point((int)(image.cols * 0.2), (int)(image.rows*0.5)), cv::FONT_HERSHEY_DUPLEX, 0.3, cv::Scalar(23, 67, 245));
-			m_pDisplay->ShowImage(display, true, false);
+			if (last_screenshot_mode != GET_THRESHOLD){
+				clearButtons();
+			}
+			cv::putText(buffer, object_name, cv::Point((int)(image.cols * 0.3), (int)(image.rows*0.3)), cv::FONT_HERSHEY_DUPLEX , 1, cv::Scalar(23, 67, 245));
+			cv::putText(buffer, "(ctrl +) click to select pixels, right click back", cv::Point((int)(image.cols * 0.2), (int)(image.rows*0.5)), cv::FONT_HERSHEY_DUPLEX, 0.3, cv::Scalar(23, 67, 245));
+			ShowImage(buffer, false);
+			last_screenshot_mode = screenshot_mode;
 
 		}
+		return Dialog::Draw();
 }
 
 void AutoCalibrator::DetectThresholds(int number_of_objects){
+	if (isClustered) return;
+	isClustered = true;
     cv::Mat img;
     //cvtColor(img,image,CV_BGR2HSV);
     image.copyTo(img);

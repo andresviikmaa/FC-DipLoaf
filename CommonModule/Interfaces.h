@@ -30,7 +30,7 @@ public:
 class IUIEventListener {
 public:
 	// xy coordinates are from 0...1.0...
-	virtual bool OnMouseEvent(int event, float x, float y, int flags, bool bMainArea) { return false; };
+	virtual bool OnMouseEvent(int event, float x, float y, int flags) { return false; };
 	virtual void OnKeyPress(char key) {};
 };
 
@@ -40,13 +40,12 @@ public:
 	virtual int createButton(const std::string& bar_name, char shortcut, std::function<void()> const &) = 0;
 	virtual int Draw() = 0;
 	virtual void clearButtons() = 0;
-	virtual void ShowImage(const cv::Mat &image, bool main = true, bool flip = true) = 0;
+	virtual void ShowImage(const cv::Mat &image, bool flip = true) = 0;
+	virtual void ShowImage(const std::string &window, const cv::Mat &image, bool flip = true) = 0;
 	virtual void AddEventListener(IUIEventListener *pEventListener) = 0;
 	virtual void RemoveEventListener(IUIEventListener *pEventListener) = 0;
 	virtual void putText(const std::string &text, cv::Point pos, double fontScale, cv::Scalar color) = 0;
 	virtual void putShadowedText(const std::string &text, cv::Point pos, double fontScale, cv::Scalar color) = 0;
-	virtual void SwapDisplays() = 0;
-	virtual void ToggleDisplay() = 0;
 	virtual ~IDisplay() {};
 };
 
@@ -55,9 +54,10 @@ public:
 class IVisionModule {
 public:
 	virtual const cv::Mat & GetFrame() = 0;
-	virtual void PublishState() = 0;
+	virtual bool PublishState() = 0;
 	virtual ICamera * GetCamera() = 0;
 	virtual void Enable(bool enable) = 0;
+	virtual ~IVisionModule() {};
 };
 
 class IStateMachine {
@@ -82,7 +82,7 @@ public:
 	virtual void SetServoPos(int pos) = 0;
 	virtual std::string GetDebugInfo() = 0;
 	virtual void ProcessCommands() = 0;
-	virtual void SendMessages() = 0;;
+	virtual void SendMessages() = 0;
 
 
 };

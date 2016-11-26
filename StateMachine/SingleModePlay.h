@@ -71,4 +71,5 @@ class SingleModePlay : public StateMachine {
 public:
 
 	SingleModePlay(ISoccerRobot *pComModule);
+
 };

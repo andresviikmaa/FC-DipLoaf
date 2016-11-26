@@ -107,10 +107,10 @@ bool DriveInstruction::driveToTargetWithAngle(const ObjectPosition &target, Spee
 		if (dist > maxDistance) {
 			velocity = std::max(30.0, dist); //max speed is limited to 190 in wheelController.cpp 
 			direction = heading; //drive towards target
-			angularSpeed = sign0(heading) * 20; //meanwhile rotate slowly to face the target
+			angularSpeed = -sign0(heading) * 20; //meanwhile rotate slowly to face the target
 		}
 		else { //at location but facing wrong way
-			angularSpeed = sign0(heading) * std::max(fabs(heading) * 0.5, 10.0); //rotate
+			angularSpeed = -sign0(heading) * std::max(fabs(heading) * 0.5, 10.0); //rotate
 		}
 	}
 	else {
@@ -124,6 +124,11 @@ bool DriveInstruction::driveToTargetWithAngle(const ObjectPosition &target, Spee
 	speed.heading = direction;
 	speed.rotation = -angularSpeed;
 	return onPoint;
+}
+
+bool DriveInstruction::preciseAim(const ObjectPosition &target, Speed &speed, double errorMargin) {
+	if (target.heading > errorMargin) speed.rotation = target.heading;
+	return target.heading <= errorMargin;
 }
 
 

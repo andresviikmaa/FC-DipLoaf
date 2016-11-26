@@ -9,12 +9,14 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #ifdef SHOW_UI
-#include <opencv2/highgui.hpp>
-#endif // _DEBUG
+extern IDisplay * display;
+#endif // SHOW_UI
 
 
 extern FieldState gFieldState;
 extern RobotState gRobotState;
+extern std::map<OBJECT, std::string> OBJECT_LABELS;
+
 //extern int number_of_balls;
 
 
@@ -61,6 +63,7 @@ thresholdObjects({ BALL, BLUE_GATE, YELLOW_GATE, FIELD, INNER_BORDER, OUTER_BORD
 
 MainCameraVision::~MainCameraVision()
 {
+	WaitForStop();
 	if (thresholder == nullptr)
 		delete thresholder;
 
@@ -84,7 +87,7 @@ void MainCameraVision::captureFrames(bool start){
 //	}
 }
 void MainCameraVision::Run() {
-	cameraOrgin = cv::Point2d(m_pCamera->GetFrameSize() / 2);
+	frameCenter = cv::Point2d(m_pCamera->GetFrameSize()) / 2;
 	double t1 = (double)cv::getTickCount();
 	size_t counter = 0;
 	double fps = 0.;
@@ -127,26 +130,41 @@ void MainCameraVision::Run() {
 #ifdef SHOW_UI
 		//cv::line(frameBGR, (frameBGR.size / 2) + cv::Size(0, -30), (frameSize / 2) + cv::Size(0, 30), cv::Scalar(0, 0, 255), 3, 8, 0);
 		//cv::line(frameBGR, (frameBGR.size / 2) + cv::Size(-30, 0), (frameSize / 2) + cv::Size(30, 0), cv::Scalar(0, 0, 255), 3, 8, 0);
-		cv::imshow(ThreadedClass::name, frameBGR);
-		cv::waitKey(1);
+		display->ShowImage(ThreadedClass::name, frameBGR);
+		
 #endif // DEBUG
 
 	}
 }
-void MainCameraVision::PublishState() {
+bool MainCameraVision::PublishState() {
 	boost::mutex::scoped_lock lock(state_mutex); //allow one command at a time
 	if (stateUpdated) {
-		memcpy(&gFieldState, &localStateCopy, sizeof(FieldState));
+		//memcpy(&gFieldState, &localStateCopy, sizeof(FieldState));
+		memcpy(&gFieldState.balls, &localStateCopy.balls, MAX_BALLS * sizeof(BallPosition));
+		memcpy(&gFieldState.gates, &localStateCopy.gates, 2 * sizeof(GatePosition));
+		memcpy(&gFieldState.self, &localStateCopy.self, sizeof(ObjectPosition));
+		memcpy(&gFieldState.partner, &localStateCopy.self, sizeof(ObjectPosition));
+		memcpy(&gFieldState.opponents, &localStateCopy.gates, 2 * sizeof(ObjectPosition));
+
 		stateUpdated = false;
+		return true;
 	}
+	return false;
 }
 void  MainCameraVision::ProcessFrame() {
 
+#ifdef SHOW_UI
+	cv::line(frameBGR, (frameBGR.size() / 2) + cv::Size(0, -30), (frameBGR.size() / 2) + cv::Size(0, 30), cv::Scalar(0, 0, 255), 3, 8, 0);
+
+	cv::line(frameBGR, (frameBGR.size() / 2) + cv::Size(-30, 0), (frameBGR.size() / 2) + cv::Size(30, 0), cv::Scalar(0, 0, 255), 3, 8, 0);
+#endif
+
 	ThresholdFrame();
 	//CheckGateObstruction();
-	//FindGates();
+	FindGates();
 	//CheckCollisions();
 	FindBalls();
+	FindClosestBalls();
 
 
 }
@@ -158,10 +176,15 @@ void MainCameraVision::ThresholdFrame() {
 		thresholder = new TBBImageThresholder(thresholdedImages, objectThresholds);
 	}
 	thresholder->Start(frameHSV, thresholdObjects);
+#ifdef SHOW_UI
+	for (auto &object : thresholdObjects) {
+		display->ShowImage(ThreadedClass::name + "::" + OBJECT_LABELS[object], thresholdedImages[object]);
+	}
+#endif
 }
 
 void MainCameraVision::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos) {
-	object.rawPixelCoords = pos - cameraOrgin;
+	object.rawPixelCoords = pos - frameCenter;
 	if (pos.x < 0) {
 		object.isValid = false;
 		return;
@@ -170,7 +193,7 @@ void MainCameraVision::UpdateObjectPostion(ObjectPosition & object, const cv::Po
 
 	double distanceInCm = dist == 0 ? 0.0 : std::max(0.0, 13.13*exp(0.008 * dist));
 
-	double angle = angleBetween(pos - cameraOrgin, { 1, 0 });
+	double angle = angleBetween(pos - frameCenter, { 1, 0 });
 	//double angle = atan((object.rawPixelCoords.y) / (object.rawPixelCoords.x)) * 180 / PI;
 	//TODO: hack to fix simulator, as 
 	if (distanceInCm < 14 && fabs(fabs(angle) - 270)<0.01)  angle = 0;
@@ -332,8 +355,10 @@ void MainCameraVision::FindBalls() {
 	localState.ballCount = 0;
 	for (auto ball : balls) {
 		// this is dangerous as fixed size array is used. TODO: convert balls back to vector perhaps.
-		UpdateObjectPostion(localState.balls[localState.ballCount], ball);
-		localState.ballCount++;
+		if (ballFinder.validateBall(thresholdedImages, ball, frameHSV, frameBGR)) {
+			UpdateObjectPostion(localState.balls[localState.ballCount], ball);
+			localState.ballCount++;
+		}
 		if (localState.ballCount >= MAX_BALLS) break;
 	}
 	//if (localState.ballCount > 11) {
@@ -341,6 +366,34 @@ void MainCameraVision::FindBalls() {
 	//	cv::waitKey(0);
 	//}
 
+}
+
+void MainCameraVision::FindClosestBalls(){
+	uchar closest = MAX_BALLS, closest2 = MAX_BALLS, closest3 = MAX_BALLS;
+	double dist1 = INT_MAX, dist2 = INT_MAX, dist3 = INT_MAX;
+	for (int i = 0; i < localState.ballCount; i++){
+		auto &ball = gFieldState.balls[i];
+		auto &ballFront = gFieldState.ballsFront[i];
+		if (ball.distance < dist1){
+			gFieldState.closestBall = i;
+			dist1 = ball.distance;
+		}
+		if (ball.distance < dist2 && abs(ball.angle) < 130){
+			gFieldState.closestBallInFront = i;
+			dist2 = ball.distance;
+		}
+	};
+#ifdef SHOW_UI
+	cv::Scalar redColor(255, 0, 255);
+	cv::Scalar greenColor(255, 255, 0);
+
+	cv::Rect privateZone(-19, -19, 38, 38);
+	cv::Point p1 = gFieldState.balls[gFieldState.closestBall].rawPixelCoords + frameCenter;
+	cv::Point p2 = gFieldState.balls[gFieldState.closestBallInFront].rawPixelCoords + frameCenter;
+
+	rectangle(frameBGR, privateZone.tl() + p1, privateZone.br() + p1, greenColor, 3, 8, 0);
+	rectangle(frameBGR, privateZone.tl() + p2, privateZone.br() + p2, redColor, 3, 8, 0);
+#endif
 }
 void MainCameraVision::FindOtherRobots() {
 	// TODO: this will need to be changed
@@ -357,17 +410,16 @@ void MainCameraVision::FindOtherRobots() {
 				rectangle(frameBGR, robotRectangle.tl(), robotRectangle.br(), cv::Scalar(10, 255, 101), 2, 8, 0);
 			}
 #endif
-		bool ourRobotBlueBottom = (gRobotState.ourTeam == TEAM1);
+		bool ourRobotBlueBottom = (gRobotState.ourTeam == TEAM_PINK);
 		//std::vector<cv::Point2d> robots;
 		//bool ballsFound = ballFinder.Locate(thresholdedImages[FIELD], frameHSV, frameBGR, robots);
 
 		std::vector<std::pair<cv::Point2i, double>> positionsToDistances; //One of the colors position and according distances
 		for (size_t blueIndex = 0; blueIndex < notBlueGates.size(); blueIndex++) {
 			for (size_t yellowIndex = 0; yellowIndex < notYellowGates.size(); yellowIndex++) {
-				cv::Point2i bluePos = notBlueGates[blueIndex];
-				cv::Point2i yellowPos = notYellowGates[yellowIndex];
+				cv::Point2d bluePos = notBlueGates[blueIndex];
+				cv::Point2d yellowPos = notYellowGates[yellowIndex];
 				double distBetweenYellowBlue = cv::norm(bluePos - yellowPos);
-				cv::Point2i frameCenter = cv::Point2i(frameBGR.cols / 2, frameBGR.rows / 2); //our robot is in center
 				double distBetweenBlueAndRobot = cv::norm(bluePos - frameCenter);
 				double distBetweenYellowAndRobot = cv::norm(yellowPos - frameCenter);
 
