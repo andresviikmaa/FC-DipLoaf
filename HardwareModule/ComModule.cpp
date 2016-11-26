@@ -22,8 +22,9 @@ ComModule::ComModule(boost::asio::io_service &io, const std::string ip_address, 
 ComModule::~ComModule()
 {
 	SendMessage("fs:1");
-	for (int i = 0; i< 50; i++) {
+	for (int i = 0; i< 10; i++) {
 		SendMessage("discharge");
+		std::this_thread::sleep_for(std::chrono::milliseconds(300));
 	}
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }

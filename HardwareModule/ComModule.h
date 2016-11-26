@@ -13,7 +13,7 @@ protected:
 	std::stringstream ss;
 	bool ballInTribbler;
 	int tribblerSpeed;
-
+	Speed lastSpeed;
 public:
 	ComModule(boost::asio::io_service &io, const std::string ip_address, ushort port1, ushort port2);
 	ComModule(boost::asio::io_service &io, const std::string ip_address, ushort port1);
