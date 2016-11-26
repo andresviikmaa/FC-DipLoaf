@@ -121,18 +121,18 @@ void MainCameraVision::Run() {
 				boost::mutex::scoped_lock lock(state_mutex); //allow one command at a time
 				memcpy(&localStateCopy, &localState, sizeof(FieldState));
 				// reset all
-				for (size_t i = 0, ilen = MAX_BALLS; i < ilen; i++) {
+				for (size_t i = 0; i < MAX_BALLS; i++) {
 					localState.balls[i].isValid = false;
-					localState.balls[i].distance = 10000;
+					localState.balls[i].distance = 10001;
 					localState.balls[i].heading = 0;
 					localState.balls[i].angle = 0;
 
 				}
 				localState.gates[BLUE_GATE].isValid = false;
-				localState.gates[BLUE_GATE].distance = 10000;
+				localState.gates[BLUE_GATE].distance = 10001;
 
 				localState.gates[YELLOW_GATE].isValid = false;
-				localState.gates[YELLOW_GATE].distance = 10000;
+				localState.gates[YELLOW_GATE].distance = 10001;
 
 				stateUpdated = true;
 			}
@@ -383,7 +383,7 @@ void MainCameraVision::FindBalls() {
 }
 
 void MainCameraVision::FindClosestBalls(){
-	uchar closest = MAX_BALLS, closest2 = MAX_BALLS, closest3 = MAX_BALLS;
+	uchar closest = MAX_BALLS, closest2 = MAX_BALLS, closest3 = MAX_BALLS-1;
 	double dist1 = INT_MAX, dist2 = INT_MAX, dist3 = INT_MAX;
 	for (int i = 0; i < localState.ballCount; i++){
 		auto &ball = gFieldState.balls[i];

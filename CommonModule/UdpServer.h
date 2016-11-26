@@ -17,6 +17,10 @@ protected:
 
 	void handle_receive(const boost::system::error_code& error,
 		std::size_t /*bytes_transferred*/);
+	void start_receive2();
+
+	void handle_receive2(const boost::system::error_code& error,
+		std::size_t /*bytes_transferred*/);
 
 	void handle_send(boost::shared_ptr<std::string> /*message*/,
 		const boost::system::error_code& /*error*/,

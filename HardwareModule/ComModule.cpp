@@ -34,7 +34,7 @@ ComModule::~ComModule()
 
 
 void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed) {
-	
+	angularSpeed /= 5.;
 	gFieldState.self.distance = fowardSpeed;
 	gFieldState.self.heading = direction;
 	gFieldState.self.angle = angularSpeed;
@@ -88,7 +88,7 @@ bool ComModule::MessageReceived(const std::string & message) {
 	boost::split(params, tmp, boost::is_any_of(":"));
 	const auto &command = params[0];
 	if (command == "speeds" /*<speeds:%d:%d:%d:%d:%d>*/) {
-
+		std::cout << "cmd: " << tmp << std::endl;
 	}
 	else if (command == "ref" /*<ref:%s>*/) {
 		handleMessage(params[1]);
@@ -100,6 +100,7 @@ bool ComModule::MessageReceived(const std::string & message) {
 
 	}
 	else if (command == "ball" /*<ball:%d>*/) {
+		std::cout << "cmd: " << tmp << std::endl;
 		bool ball = false;
 		SetBallInTribbler(params[1][0]=='1');
 	}
@@ -118,7 +119,7 @@ void ComModule::SendMessages() {
 	ss << ":" << (int)speeds.at<double>(1);
 	ss << ":" << (int)speeds.at<double>(3);
 	ss << ":" << (int)speeds.at<double>(2);
-	ss << ":" << -tribblerSpeed*50;
+	ss << ":" << -tribblerSpeed*30;
 
 	std::string tmp = ss.str();
 	SendMessage(tmp);

@@ -188,6 +188,9 @@ void Robot::Run()
 			frontUpdated = m_pFrontVision->PublishState();
 			m_pComModule->ProcessCommands();
 			robotTracker.Predict(dt, mainUpdated, frontUpdated);
+			//TODO: remove this if ball in tribbler is working
+			m_pComModule->SetBallInTribbler(gFieldState.ballsFront[gFieldState.closestBallTribbler].distance < 100);
+			
 			if (counter > 10) {
 				fps = (double)counter / dt;
 				t1 = t2;

@@ -80,7 +80,7 @@ bool FrontCameraVision::PublishState() {
 	boost::mutex::scoped_lock lock(state_mutex); //allow one command at a time
 	if (stateUpdated) {
 		memcpy(&gFieldState.ballsFront, &localStateCopy.balls, MAX_BALLS * sizeof(BallPosition));
-		gFieldState.closestBallTribbler = gFieldState.ballsFront[0].isValid ? 0 : 15;
+		gFieldState.closestBallTribbler = gFieldState.ballsFront[0].isValid ? 0 : MAX_BALLS-1;
 		stateUpdated = false;
 
 		return true;

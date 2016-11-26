@@ -54,6 +54,10 @@ public:
 
 	virtual bool MessageReceived(const std::string & message);
 	virtual void SendMessages();
+	void SetBallInTribbler(bool inTribbler) {
+		CoilBoard::SetBallInTribbler(inTribbler);
+	}
+
 protected:
 
 };
