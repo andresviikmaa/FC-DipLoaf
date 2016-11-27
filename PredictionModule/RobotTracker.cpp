@@ -33,7 +33,60 @@ RobotTracker::~RobotTracker()
 }
 
 void RobotTracker::Predict(double dt, bool mainCamUpdated, bool frontCamUpdated) {
+
+	// use last ball if lost
+	if (gFieldState.closestBall == MAX_BALLS - 1 && ballLost1 < 10) {
+		if (lastFieldState.closestBall != MAX_BALLS - 1) {
+			// use last
+			gFieldState.balls[gFieldState.closestBall] = lastFieldState.balls[lastFieldState.closestBall];
+			ballLost1++;
+		}
+	}
+	else {
+		ballLost1 = 0;
+		// avoid jumping between balls
+		if (lastFieldState.closestBall != MAX_BALLS - 1 && ballLost2 < 10) {
+			if (lastFieldState.balls[lastFieldState.closestBall].distance > 10 && gFieldState.balls[gFieldState.closestBall].distance > lastFieldState.balls[lastFieldState.closestBall].distance * 1.8){
+				// use last
+				gFieldState.balls[gFieldState.closestBall] = lastFieldState.balls[lastFieldState.closestBall];
+				ballLost2++;
+			}
+			else {
+				ballLost2 = 0;
+			}
+		}
+		else {
+			ballLost2 = 0;
+		}
+	}
+
+	/*
+	if (ballFrontLost < 10 && gFieldState.closestBall == MAX_BALLS - 1 && lastFieldState.closestBall < 12){
+		gFieldState.closestBall = 13;
+		gFieldState.balls[gFieldState.closestBall] = lastFieldState.balls[lastFieldState.closestBall];
+		ballFrontLost++;
+	}
+	else {
+		if (gFieldState.balls[gFieldState.closestBall].distance > lastFieldState.balls[lastFieldState.closestBall].distance * 1.8){
+			gFieldState.closestBall = 13;
+			gFieldState.balls[gFieldState.closestBall] = lastFieldState.balls[lastFieldState.closestBall];
+			ballFrontLost++;
+		}
+		else {
+			ballFrontLost = 0;
+		}
+	}
+	if (ballLost < 10 && gFieldState.closestBall == MAX_BALLS - 1 && lastFieldState.closestBall < 12){
+		gFieldState.closestBall = 12;
+		gFieldState.balls[gFieldState.closestBall] = lastFieldState.balls[lastFieldState.closestBall];
+		ballLost++;
+	}
+	else {
+		ballLost = 0;
+	}
+	*/
 	DetectRobotLocation();
+	memcpy(&lastFieldState, &gFieldState, sizeof(FieldState));
 }
 void RobotTracker::DetectRobotLocation(){
 	auto &Y = gFieldState.gates[YELLOW_GATE];

@@ -66,7 +66,7 @@ DriveMode DriveInstruction::step2(double dt, DriveMode driveMode) {
 bool DriveInstruction::aimTarget(const ObjectPosition &target, Speed &speed, double errorMargin) {
 	double heading = target.heading;
 	if (fabs(heading) > errorMargin) {
-		speed.rotation = sign0(heading) * std::min(40.0, std::max(fabs(heading), 5.0));
+		speed.rotation = -sign0(heading) * std::min(40.0, std::max(fabs(heading), 5.0));
 
 		speed.velocity = 0;
 		speed.heading = 0;

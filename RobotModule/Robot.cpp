@@ -166,6 +166,8 @@ void Robot::Run()
 #ifdef GUSTAV
 	gRobotState.runMode = ROBOT_MODE_1VS1;
 	gRobotState.gameMode = GAME_MODE_START_PLAY;
+	debug = true;
+
 #endif
 	std::stringstream subtitles;
 	double fps = 0.;
@@ -177,7 +179,6 @@ void Robot::Run()
 		RobotTracker robotTracker;
 		bool frontUpdated = false;
 		bool mainUpdated = false;
-		debug = true;
 		while (!exitRobot)
 		{
 			double t2 = (double)cv::getTickCount();

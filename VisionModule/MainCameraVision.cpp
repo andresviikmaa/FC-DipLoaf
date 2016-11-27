@@ -385,6 +385,8 @@ void MainCameraVision::FindBalls() {
 void MainCameraVision::FindClosestBalls(){
 	uchar closest = MAX_BALLS, closest2 = MAX_BALLS, closest3 = MAX_BALLS-1;
 	double dist1 = INT_MAX, dist2 = INT_MAX, dist3 = INT_MAX;
+	gFieldState.closestBallInFront = MAX_BALLS - 1;
+	gFieldState.closestBall = MAX_BALLS - 1;
 	for (int i = 0; i < localState.ballCount; i++){
 		auto &ball = gFieldState.balls[i];
 		auto &ballFront = gFieldState.ballsFront[i];
@@ -392,7 +394,7 @@ void MainCameraVision::FindClosestBalls(){
 			gFieldState.closestBall = i;
 			dist1 = ball.distance;
 		}
-		if (ball.distance < dist2 && abs(ball.angle) < 130){
+		if (ball.distance < dist2 && abs(ball.heading) < 90){
 			gFieldState.closestBallInFront = i;
 			dist2 = ball.distance;
 		}

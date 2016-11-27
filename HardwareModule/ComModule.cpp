@@ -34,12 +34,13 @@ ComModule::~ComModule()
 
 
 void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed) {
-	//angularSpeed /= 5.;
+	direction *= -1.;
+	angularSpeed *= -1.;
 	gFieldState.self.distance = fowardSpeed;
 	gFieldState.self.heading = direction;
 	gFieldState.self.angle = angularSpeed;
 
-	const int maxSpeed = 30;
+	const int maxSpeed = 60;
 	/*
 	direction = 0;
 	angularSpeed = 0;
