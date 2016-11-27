@@ -34,7 +34,7 @@ ComModule::~ComModule()
 
 
 void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed) {
-	angularSpeed /= 5.;
+	//angularSpeed /= 5.;
 	gFieldState.self.distance = fowardSpeed;
 	gFieldState.self.heading = direction;
 	gFieldState.self.angle = angularSpeed;
