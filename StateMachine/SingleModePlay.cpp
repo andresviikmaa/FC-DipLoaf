@@ -113,6 +113,8 @@ public:
 
 	DriveMode step(double dt)
 	{
+		return DRIVEMODE_CATCH_BALL;
+
 		auto &target = gFieldState.balls[gFieldState.closestBall];
 		if (target.distance > 10000) return DRIVEMODE_DRIVE_TO_BALL;
 		if (m_pCom->BallInTribbler()) return DRIVEMODE_CATCH_BALL;
@@ -421,6 +423,7 @@ std::pair<DriveMode, DriveInstruction*> SingleDriveModes[] = {
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_DRIVE_HOME, new DriveToHome()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_DRIVE_HOME_AT_START, new DriveHomeAtStart()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_DRIVE_TO_BALL, new DriveToBall()),
+	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_DRIVE_TO_BALL_FRONT, new DriveToBallFront()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_DRIVE_TO_BALL_NAIVE, new DriveToBallNaive()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_DIRVE_TO_BALL_AVOID_TURN, new DriveToBallAvoidTurn()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_DRIVE_TO_BALL_ANGLED, new DriveToBallAngled()),
