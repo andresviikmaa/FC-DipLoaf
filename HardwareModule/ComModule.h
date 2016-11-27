@@ -57,6 +57,8 @@ public:
 	void SetBallInTribbler(bool inTribbler) {
 		CoilBoard::SetBallInTribbler(inTribbler);
 	}
+	virtual void sendAck(const std::string & message);
+
 
 protected:
 

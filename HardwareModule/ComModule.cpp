@@ -17,20 +17,24 @@ ComModule::ComModule(boost::asio::io_service &io, const std::string ip_address, 
 ComModule::ComModule(boost::asio::io_service &io, const std::string ip_address, ushort port1):
 	io(io), UdpServer(io, ip_address, port1)
 {
-	SendMessage("fs:0");
+	//SendMessage("fs:0");
 	SendMessage("charge");
 }
 
 ComModule::~ComModule()
 {
-	SendMessage("fs:1");
-	for (int i = 0; i< 10; i++) {
-		SendMessage("discharge");
-		std::this_thread::sleep_for(std::chrono::milliseconds(300));
-	}
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	//SendMessage("fs:1");
+	//for (int i = 0; i< 10; i++) {
+	//	SendMessage("discharge");
+	//	std::this_thread::sleep_for(std::chrono::milliseconds(300));
+	//}
+	//std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
+void ComModule::sendAck(const std::string & message){
+
+	SendMessage("ref:" + message);
+};
 
 
 void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed) {
@@ -89,9 +93,10 @@ bool ComModule::MessageReceived(const std::string & message) {
 	boost::split(params, tmp, boost::is_any_of(":"));
 	const auto &command = params[0];
 	if (command == "speeds" /*<speeds:%d:%d:%d:%d:%d>*/) {
-		std::cout << "cmd: " << tmp << std::endl;
+		//std::cout << "cmd: " << tmp << std::endl;
 	}
 	else if (command == "ref" /*<ref:%s>*/) {
+		std::cout << "cmd: " << tmp << std::endl;
 		handleMessage(params[1]);
 	}
 	else if (command == "toggle-side" /*<toggle-side>*/) {

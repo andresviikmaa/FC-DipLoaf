@@ -50,7 +50,7 @@ void UdpServer::start_receive2()
 {
 	broadcast_socket.async_receive_from(
 		boost::asio::buffer(recv_buffer_), recv_endpoint,
-		boost::bind(&UdpServer::handle_receive, this,
+		boost::bind(&UdpServer::handle_receive2, this,
 		boost::asio::placeholders::error,
 		boost::asio::placeholders::bytes_transferred));
 }
@@ -81,7 +81,7 @@ void UdpServer::handle_receive2(const boost::system::error_code& error,
 
 			std::string message = std::string(recv_buffer_.begin(), recv_buffer_.end());
 			message.resize(size);
-			std::cout << "udp packet2:" << message << std::endl;
+			//std::cout << "udp packet2:" << message << std::endl;
 			MessageReceived(message);
 		}
 		start_receive2();
