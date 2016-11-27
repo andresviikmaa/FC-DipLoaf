@@ -98,7 +98,7 @@ public:
 				lastSpeed = speed;
 			}
 		}
-		//std::cout << "output" << speed.velocity << speed.heading <<speed.rotation<< std::endl;
+		std::cout << "output" << speed.velocity << speed.heading <<speed.rotation<< std::endl;
 		m_pCom->Drive(speed.velocity, speed.heading, speed.rotation);		
 		return DRIVEMODE_DRIVE_TO_BALL_NAIVE;
 	}
@@ -210,11 +210,11 @@ public:
 		double rotation = 0;
 		double errorMargin = 5;
 		double maxDistance = 40;
-		if (fabs(gateHeading) > errorMargin) rotation = sign0(gateHeading) * std::min(40.0, std::max(fabs(gateHeading), 5.0));
+		if (fabs(gateHeading) > errorMargin) rotation = -sign0(gateHeading) * std::min(40.0, std::max(fabs(gateHeading), 5.0));
 		double heading = 0;
 		double speed = 0;
 		if (ballDistance > maxDistance) {
-			heading = -ballHeading;// +sign(gateHeading) / ballDistance;
+			heading = ballHeading;// +sign(gateHeading) / ballDistance;
 			if (fabs(heading) > 30) heading = sign0(heading)*(fabs(heading) + 15);
 			speed = std::max(60.0, ballDistance);
 		}
@@ -224,11 +224,11 @@ public:
 				return DRIVEMODE_CATCH_BALL;
 			}
 			if (fabs(ballHeading) > errorMargin){
-				heading = ballHeading + -sign0(ballHeading) * 45;
+				heading = ballHeading + sign0(ballHeading) * 45;
 				speed = 35;
 			}
 			rotation = 0;
-			if (fabs(gateHeading) > errorMargin) rotation = sign0(gateHeading) * std::min(40.0, std::max(fabs(gateHeading), 5.0));
+			if (fabs(gateHeading) > errorMargin) rotation = -sign0(gateHeading) * std::min(40.0, std::max(fabs(gateHeading), 5.0));
 			// drive around the ball
 			//heading = ballHeading + sign(ballHeading) * 90;
 			//std::max(fabs(ballHeading), 35.0);
