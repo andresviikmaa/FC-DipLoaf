@@ -97,8 +97,8 @@ protected:
 	FrontCamera m_frontCamera;
 	double orientation;
 	// main camera
-	cv::Mat frame = cv::Mat(1024, 1280, CV_8UC3);
-	cv::Mat frame_blank = cv::Mat(1024, 1280, CV_8UC3, cv::Scalar(21, 188, 80));
+	cv::Mat frame = cv::Mat(1280, 1024, CV_8UC3);
+	cv::Mat frame_blank = cv::Mat(1280, 1024, CV_8UC3, cv::Scalar(21, 188, 80));
 	// front camera
 	cv::Mat front_frame = cv::Mat(480, 640, CV_8UC3);
 	cv::Mat front_frame_copy = cv::Mat(480, 640, CV_8UC3);;
