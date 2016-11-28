@@ -7,7 +7,8 @@ public:
 	RobotTracker();
 	~RobotTracker();
 	void Predict(double dt, bool mainCamUpdated, bool frontCamUpdated);
-	void DetectRobotLocation();
+	void PredictLostBalls(double dt);
+	void DetectRobotLocation(double dt);
 #ifdef SHOW_UI
 	void Draw();
 #endif

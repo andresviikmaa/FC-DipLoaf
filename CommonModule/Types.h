@@ -56,7 +56,7 @@ struct BallPosition: public ObjectPosition
 };
 struct GatePosition : public ObjectPosition
 {
-	cv::Point2d minCornerPolarCoords;
+	cv::Point2d minCornerPolarCoords = cv::Point2d(INT_MAX, INT_MAX);
 };
 enum RobotPos: uchar {
 	ROBOT_POS_UNKNOWN = 0,

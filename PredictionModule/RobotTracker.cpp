@@ -32,7 +32,15 @@ RobotTracker::~RobotTracker()
 {
 }
 
-void RobotTracker::Predict(double dt, bool mainCamUpdated, bool frontCamUpdated) {
+void RobotTracker::Predict(double dt, bool mainCamUpdated, bool frontCamUpdated) 
+{
+	DetectRobotLocation();
+	memcpy(&lastFieldState, &gFieldState, sizeof(FieldState));
+	DetectRobotLocation(dt);
+	PredictLostBalls(dt);
+}
+void RobotTracker::PredictLostBalls(double dt)
+{
 
 	// use last ball if lost
 	if (gFieldState.closestBall == MAX_BALLS - 1 && ballLost1 < 10) {
@@ -85,10 +93,8 @@ void RobotTracker::Predict(double dt, bool mainCamUpdated, bool frontCamUpdated)
 		ballLost = 0;
 	}
 	*/
-	DetectRobotLocation();
-	memcpy(&lastFieldState, &gFieldState, sizeof(FieldState));
 }
-void RobotTracker::DetectRobotLocation(){
+void RobotTracker::DetectRobotLocation(double dt){
 	auto &Y = gFieldState.gates[YELLOW_GATE];
 	auto &B = gFieldState.gates[BLUE_GATE];
 
