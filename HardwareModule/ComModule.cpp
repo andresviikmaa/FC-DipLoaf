@@ -3,6 +3,7 @@
 #include <thread>
 #include <chrono>
 #include "../CommonModule/FieldState.h"
+#include "opencv2/imgproc.hpp"
 
 extern cv::Mat wheelAngles;
 extern FieldState gFieldState;
@@ -88,8 +89,13 @@ bool ComModule::MessageReceived(const std::string & message) {
 	std::string tmp = message.substr(1, message.size() - 1);
 	boost::split(params, tmp, boost::is_any_of(":"));
 	const auto &command = params[0];
-	if (command == "speeds" /*<speeds:%d:%d:%d:%d:%d>*/) {
+	const int SIMULATOR_SPEED = 1;
+	if (command == "speeds" && params.size() > 4/*<speeds:%d:%d:%d:%d:%d>*/) {
 		std::cout << "cmd: " << tmp << std::endl;
+		gFieldState.self.wheelSpeeds[0] = atoi(params[1].c_str());
+		gFieldState.self.wheelSpeeds[1] = atoi(params[2].c_str());
+		gFieldState.self.wheelSpeeds[2] = atoi(params[3].c_str());
+		gFieldState.self.wheelSpeeds[3] = atoi(params[4].c_str());
 	}
 	else if (command == "ref" /*<ref:%s>*/) {
 		handleMessage(params[1]);

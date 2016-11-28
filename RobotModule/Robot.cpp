@@ -119,6 +119,7 @@ bool Robot::MessageReceived(const boost::array<char, BUF_SIZE>& buffer, size_t s
 			m_AutoPilots[newMode]->Enable(true);
 
 		}
+		return true;
 	}
 	else if (code == COMMAND_DEBUG) {
 		debug = !debug;
@@ -129,8 +130,10 @@ bool Robot::MessageReceived(const boost::array<char, BUF_SIZE>& buffer, size_t s
 		return true;
 	}
 	else if (code == COMMAND_FIELD_STATE && size == sizeof(FieldState)) {
+		// memcpy partner state
 		return false;
 	}
+	return false;
 };
 
 bool Robot::MessageReceived(const std::string & message) {

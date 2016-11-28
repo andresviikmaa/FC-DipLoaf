@@ -23,7 +23,7 @@ const uchar MAX_BALLS = 15;
 		ObjectPosition partner;
 		GatePosition gates[2]; //0 - BLUE_GATE, 1 -YELLOW_GATE
 		ObjectPosition opponents[2];
-		ObjectPosition self;
+		RobotPosition self;
 		BallPosition balls[MAX_BALLS];
 		BallPosition ballsFront[MAX_BALLS];
 
