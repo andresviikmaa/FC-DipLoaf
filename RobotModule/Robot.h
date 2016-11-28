@@ -18,6 +18,8 @@ private:
 
 	void Run();
     boost::mutex remote_mutex;
+	bool debug = false;
+	bool debug_step = false;
 protected:
 	OBJECT targetGate= NUMBER_OF_OBJECTS; //uselected
 	bool captureFrames = false;

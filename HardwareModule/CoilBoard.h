@@ -1,6 +1,7 @@
 #pragma  once
 #include <boost/timer/timer.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+
 class CoilBoard
 {
 private:
@@ -26,6 +27,7 @@ public:
 	};
 	bool KickAllowed(int force);
 	bool BallInTribbler(bool wait=false) { 
+
 		if(wait) {
 			if (ballInTribbler) { return BallInTribblerTime() > 300; }
 			else return BallNotInTribblerTime() < 300;

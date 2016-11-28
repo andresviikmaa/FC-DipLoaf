@@ -2,8 +2,10 @@
 #include <boost/algorithm/string.hpp>
 #include <thread>
 #include <chrono>
+#include "../CommonModule/FieldState.h"
 
 extern cv::Mat wheelAngles;
+extern FieldState gFieldState;
 
 ComModule::ComModule(boost::asio::io_service &io, const std::string ip_address, ushort port1, ushort port2):
 	io(io), UdpServer(io, ip_address, port1, port2)
@@ -22,8 +24,9 @@ ComModule::ComModule(boost::asio::io_service &io, const std::string ip_address, 
 ComModule::~ComModule()
 {
 	SendMessage("fs:1");
-	for (int i = 0; i< 50; i++) {
+	for (int i = 0; i< 10; i++) {
 		SendMessage("discharge");
+		std::this_thread::sleep_for(std::chrono::milliseconds(300));
 	}
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
@@ -31,13 +34,17 @@ ComModule::~ComModule()
 
 
 void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed) {
-	
+	direction *= -1.;
+	angularSpeed *= -1.;
+	gFieldState.self.distance = fowardSpeed;
+	gFieldState.self.heading = direction;
+	gFieldState.self.angle = angularSpeed;
 
-	const int maxSpeed = 30;
+	const int maxSpeed = 60;
 	/*
 	direction = 0;
-	angularSpeed = 30;
-	fowardSpeed = 0;
+	angularSpeed = 0;
+	fowardSpeed = 30;
 	*/
 	if (fowardSpeed > maxSpeed) fowardSpeed = maxSpeed;
 	if (fowardSpeed < -maxSpeed) fowardSpeed = -maxSpeed;
@@ -82,7 +89,7 @@ bool ComModule::MessageReceived(const std::string & message) {
 	boost::split(params, tmp, boost::is_any_of(":"));
 	const auto &command = params[0];
 	if (command == "speeds" /*<speeds:%d:%d:%d:%d:%d>*/) {
-
+		std::cout << "cmd: " << tmp << std::endl;
 	}
 	else if (command == "ref" /*<ref:%s>*/) {
 		handleMessage(params[1]);
@@ -94,6 +101,7 @@ bool ComModule::MessageReceived(const std::string & message) {
 
 	}
 	else if (command == "ball" /*<ball:%d>*/) {
+		std::cout << "cmd: " << tmp << std::endl;
 		bool ball = false;
 		SetBallInTribbler(params[1][0]=='1');
 	}
@@ -110,9 +118,9 @@ void ComModule::SendMessages() {
 	cv::Mat speeds = wheelAngles * targetSpeedXYW *8;
 	ss << ":" << -(int)speeds.at<double>(0);
 	ss << ":" << (int)speeds.at<double>(1);
-	ss << ":" << -(int)speeds.at<double>(3);
+	ss << ":" << (int)speeds.at<double>(3);
 	ss << ":" << (int)speeds.at<double>(2);
-	ss << ":" << tribblerSpeed*50;
+	ss << ":" << -tribblerSpeed*30;
 
 	std::string tmp = ss.str();
 	SendMessage(tmp);

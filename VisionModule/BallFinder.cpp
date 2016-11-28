@@ -13,12 +13,12 @@ BallFinder::~BallFinder()
 
 
 
-bool BallFinder::Locate(cv::Mat &imgThresholded, cv::Mat &frameHSV, cv::Mat &frameBGR, std::vector<cv::Point2d> &objectCoords) {
+bool BallFinder::Locate(cv::Mat &imgThresholded, cv::Mat &frameHSV, cv::Mat &frameBGR, std::vector<cv::Point2d> &objectCoords, int minBallSize) {
 
 	try{
 		cv::Point2d notValidPosition = cv::Point2d(-1.0, -1.0);
 	
-		int smallestBallArea = 4;
+		int smallestBallArea = minBallSize;
 		cv::Point2d center(-1, -1);
 
 		if (imgThresholded.rows == 0){
@@ -32,7 +32,9 @@ bool BallFinder::Locate(cv::Mat &imgThresholded, cv::Mat &frameHSV, cv::Mat &fra
 
 		//cv::Scalar blackColor(0, 0, 0);
 		//cv::Scalar whiteColor(255, 255, 255);
-		cv::Scalar redColor(0, 0, 255);
+#ifdef SHOW_UI
+		cv::Scalar redColor(0, 255, 255);
+#endif
 
 		cv::findContours(imgThresholded, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE); // Find the contours in the image
 
@@ -51,20 +53,41 @@ bool BallFinder::Locate(cv::Mat &imgThresholded, cv::Mat &frameHSV, cv::Mat &fra
 #ifdef SHOW_UI
 				rectangle(frameBGR, bounding_rect.tl(), bounding_rect.br(), redColor, 1, 8, 0);
 #endif
-				try{objectCoords.push_back(cv::Point2d((M.m10 / M.m00), (M.m01 / M.m00)) /*- frameCenter*/);}
+				//rectangle(frameBGR, bounding_rect.tl() - cv::Point(20, 20), bounding_rect.br() + cv::Point(20, 20), redColor, 1, 8, 0);
+
+				try{
+					objectCoords.push_back(cv::Point2d((M.m10 / M.m00), (M.m01 / M.m00)) /*- frameCenter*/);
+					ballsUpdatedCount++;
+				}
 				catch(cv::Exception ex){return false;}
-				ballsUpdatedCount++;
 			}
 		}
 		return true;
 	}catch (cv::Exception ex){ return false; }
 }
 
-bool BallFinder::validateBall(ThresholdedImages &HSVRanges, cv::Point2d endPoint, cv::Mat &frameHSV, cv::Mat &frameBGR)
+bool BallFinder::validateBall(ThresholdedImages &HSVRanges, cv::Point endPoint, cv::Mat &frameHSV, cv::Mat &frameBGR)
 {
 	cv::Mat innerThresholded = HSVRanges[INNER_BORDER];
 	cv::Mat outerThresholded = HSVRanges[OUTER_BORDER];
 	cv::Mat fieldThresholded = HSVRanges[FIELD];
+
+	cv::Rect privateZone(-20, -20, 40, 40);
+	privateZone += endPoint;
+	if (privateZone.tl().x < 0) return false;
+	if (privateZone.tl().y < 0) return false;
+	if (privateZone.br().x > frameBGR.size().width) return false;
+	if (privateZone.br().y > frameBGR.size().height) return false;
+	cv::Mat roiField(fieldThresholded, privateZone);
+
+	bool inField = cv::countNonZero(roiField) > 30;
+#ifdef SHOW_UI
+	cv::Scalar redColor(255, 0, 255);
+	cv::Scalar greenColor(0, 255, 0);
+
+	rectangle(frameBGR, privateZone.tl(), privateZone.br(), inField ? greenColor : redColor, 1, 8, 0);
+#endif
+	return inField; // some green pixel near by
 
 /*	
 	cv::circle(innerThresholded, cv::Point(innerThresholded.size() / 2), 70, cv::Scalar(0, 255, 0), -1);
@@ -74,7 +97,7 @@ bool BallFinder::validateBall(ThresholdedImages &HSVRanges, cv::Point2d endPoint
 	cv::Point startPoint;
 	startPoint.x = frameHSV.cols / 2;
 	startPoint.y = frameHSV.rows / 2;
-	endPoint += cv::Point2d(frameHSV.size()) / 2;
+	endPoint += cv::Point(frameHSV.size()) / 2;
 
 	cv::LineIterator iterator(frameHSV, startPoint, endPoint, 8);
 	int behindLineCount = 0;

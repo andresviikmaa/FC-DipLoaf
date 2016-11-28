@@ -16,5 +16,7 @@ protected:
 	cv::Mat field;// = cv::Mat(310, 500, CV_8UC3, cv::Scalar::all(245)); // blink display
 	cv::Point2d c/*enter*/;
 	FieldState lastFieldState;
+	int ballLost1 = 0;
+	int ballLost2 = 0;
 };
 

@@ -15,9 +15,9 @@ const uchar MAX_BALLS = 15;
 		bool gateObstructed;
 
 		uchar ballCount; // number or balls visible
-		uchar closestBall; // index to closeset ball by distance
-		uchar closestBallInFront; // index to closeset ball by distance with heading -130 .. 130
-		uchar closestBallTribbler; // front cam balls
+		uchar closestBall = MAX_BALLS -1; // index to closeset ball by distance
+		uchar closestBallInFront = MAX_BALLS - 1; // index to closeset ball by distance with heading -130 .. 130
+		uchar closestBallTribbler = MAX_BALLS - 1; // front cam balls
 		cv::Point2d collisionRange; // which directions are blocked
 
 		ObjectPosition partner;

@@ -13,7 +13,7 @@ protected:
 	std::stringstream ss;
 	bool ballInTribbler;
 	int tribblerSpeed;
-
+	Speed lastSpeed;
 public:
 	ComModule(boost::asio::io_service &io, const std::string ip_address, ushort port1, ushort port2);
 	ComModule(boost::asio::io_service &io, const std::string ip_address, ushort port1);
@@ -44,12 +44,20 @@ public:
 	virtual long BallInTribblerTime() {
 		return CoilBoard::BallInTribblerTime();
 	};
-	std::string GetDebugInfo() { return ""; }
+	std::string GetDebugInfo() {
+		std::stringstream ss;
+		ss << lastSpeed.velocity << ":" << lastSpeed.heading << ":" << lastSpeed.rotation << std::endl;
+		return ss.str(); 
+	}
 
 	virtual void ProcessCommands();
 
 	virtual bool MessageReceived(const std::string & message);
 	virtual void SendMessages();
+	void SetBallInTribbler(bool inTribbler) {
+		CoilBoard::SetBallInTribbler(inTribbler);
+	}
+
 protected:
 
 };

@@ -11,16 +11,17 @@ struct RobotState
 	uint stateSize;
 	OBJECT ourTeam = TEAM_PINK;
 	OBJECT oppoonentTeam = TEAM_PURPLE;
-	OBJECT targetGate = YELLOW_GATE;
-	OBJECT homeGate = BLUE_GATE;
+	OBJECT targetGate = BLUE_GATE;
+	OBJECT homeGate = YELLOW_GATE;
 
 	char FIELD_MARKER = 'A';
 	char TEAM_MARKER = 'A';
 	char ROBOT_MARKER = 'A';
-
+	bool ballInTribbler = false;
+	bool ballInTribblerWait = false;
 	RunMode runMode = ROBOT_MODE_IDLE; // 1vs1, idle, 2vs2
-	uchar gameMode;  // referee commands
-	uchar pendingGameMode;
-	uchar playState; // statemachine state
+	uchar gameMode = GAME_MODE_STOPED;  // referee commands
+	uchar pendingGameMode = GAME_MODE_STOPED;
+	uchar driveState = 0; // statemachine state
 };
 

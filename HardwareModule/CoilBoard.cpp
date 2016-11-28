@@ -1,7 +1,9 @@
 #include "CoilBoard.h"
 #include <chrono>
 #include "../CommonModule/Types.h"
+#include "../CommonModule/RobotState.h"
 
+extern RobotState gRobotState;
 #define TRIBBLER_QUEUE_SIZE 30
 #define TRIBBLER_STATE_THRESHOLD 16
 
@@ -12,10 +14,11 @@ void CoilBoard::SetBallInTribbler(bool inTribbler)
 	if (ballInTribbler && !inTribbler)
 		ballLostTime = boost::posix_time::microsec_clock::local_time();
 	ballInTribbler = inTribbler;
+	gRobotState.ballInTribbler = ballInTribbler;
 
 }
 
-long CoilBoard::BallInTribblerTime(){
+long CoilBoard::BallInTribblerTime() {
 	if (ballInTribbler) return (boost::posix_time::microsec_clock::local_time() - ballCatchTime).total_milliseconds();
 	else return 0L;
 }

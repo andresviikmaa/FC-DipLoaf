@@ -64,24 +64,11 @@ enum COMMAND : uchar {
 	COMMAND_SET_CONF = 11,
 	COMMAND_MANUAL_CONTROL = 20,
 	COMMAND_STATEMACHINE_STATE = 30,
+	COMMAND_DEBUG = 100,
+	COMMAND_DEBUG_STEP = 101
 };
 
-//TODO: convert to commandline options
-//#define USE_ROBOTIINA_WIFI
-#ifdef USE_ROBOTIINA_WIFI 
-// robotiina wifi
-boost::asio::ip::address bind_addr = boost::asio::ip::address::from_string("0.0.0.0"); // this computer ip
-boost::asio::ip::address brdc_addr = boost::asio::ip::address::from_string("192.168.42.255"); // netmask 255.255.255.240
-#else
-// any local network
-boost::asio::ip::address bind_addr = boost::asio::ip::address::from_string("0.0.0.0"); // all interfaces
-#ifdef WIN32
-boost::asio::ip::address brdc_addr = boost::asio::ip::address::from_string("127.255.255.255"); // netmask 255.255.255.240
-#else
-boost::asio::ip::address brdc_addr = boost::asio::ip::address_v4::broadcast(); // local network
-#endif
 
-#endif
 
 Robot::Robot(boost::asio::io_service &io, ICamera *pMainCamera, ICamera *pFrontCamera, ISoccerRobot* pSoccerRobot, bool master)
 	: io(io), UdpServer(io, 30000, master), master(master)
@@ -133,7 +120,17 @@ bool Robot::MessageReceived(const boost::array<char, BUF_SIZE>& buffer, size_t s
 
 		}
 	}
-	return false; 
+	else if (code == COMMAND_DEBUG) {
+		debug = !debug;
+		return true;
+	}
+	else if (code == COMMAND_DEBUG_STEP) {
+		debug_step = true;
+		return true;
+	}
+	else if (code == COMMAND_FIELD_STATE && size == sizeof(FieldState)) {
+		return false;
+	}
 };
 
 bool Robot::MessageReceived(const std::string & message) {
@@ -165,9 +162,12 @@ void Robot::Run()
 {
 	exitRobot = false;
 	double t1 = (double)cv::getTickCount();
+#define GUSTAV
 #ifdef GUSTAV
 	gRobotState.runMode = ROBOT_MODE_1VS1;
 	gRobotState.gameMode = GAME_MODE_START_PLAY;
+	debug = true;
+
 #endif
 	std::stringstream subtitles;
 	double fps = 0.;
@@ -189,6 +189,9 @@ void Robot::Run()
 			frontUpdated = m_pFrontVision->PublishState();
 			m_pComModule->ProcessCommands();
 			robotTracker.Predict(dt, mainUpdated, frontUpdated);
+			//TODO: remove this if ball in tribbler is working
+			m_pComModule->SetBallInTribbler(gFieldState.ballsFront[gFieldState.closestBallTribbler].distance < 100);
+			
 			if (counter > 10) {
 				fps = (double)counter / dt;
 				t1 = t2;
@@ -198,12 +201,22 @@ void Robot::Run()
 			counter++;
 			io.poll();
 			// MessageReceived handled 
-
-			m_AutoPilots[gRobotState.runMode]->Step(dt);
+			if (debug_step) {
+				dt = 1;
+			}
+			if (!debug || debug_step) {
+				m_AutoPilots[gRobotState.runMode]->Step(dt);
+			}
 			m_pComModule->SendMessages();
 #ifdef SHOW_UI
 			robotTracker.Draw();
 #endif
+			if (debug_step) {
+				std::cout << "debug step: " << gFieldState.self.distance << " " << gFieldState.self.heading << " " << gFieldState.self.angle << std::endl;
+				std::this_thread::sleep_for(std::chrono::milliseconds(200));
+				m_pComModule->Drive(0, 0, 0);
+				debug_step = false;
+			}
 			subtitles.str("");
 			//subtitles << oss.str();
 			//subtitles << "|" << m_pAutoPilot->GetDebugInfo();
@@ -212,6 +225,10 @@ void Robot::Run()
 			std::string debug = " " + m_AutoPilots[gRobotState.runMode]->GetDebugInfo();
 			debug[0] = COMMAND_STATEMACHINE_STATE;
 			SendData(debug.c_str(), debug.size());
+
+//			std::string debug2 = " " + m_pComModule->GetDebugInfo();
+//			debug2[0] = COMMAND_WHEELS_STATE;
+//			SendData(debug2.c_str(), debug2.size());
 int ms = 50;
 		std::chrono::milliseconds dura(ms);
 		std::this_thread::sleep_for(dura);

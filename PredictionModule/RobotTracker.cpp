@@ -33,28 +33,60 @@ RobotTracker::~RobotTracker()
 }
 
 void RobotTracker::Predict(double dt, bool mainCamUpdated, bool frontCamUpdated) {
-	uchar closest = MAX_BALLS, closest2 = MAX_BALLS, closest3 = MAX_BALLS;
-	double dist1 = INT_MAX, dist2 = INT_MAX, dist3 = INT_MAX;
-	for (int i = 0; i < MAX_BALLS; i++){
-		auto &ball = gFieldState.balls[i];
-		auto &ballFront = gFieldState.ballsFront[i];
-		if (mainCamUpdated && ball.isValid && ball.distance < dist1){
-			gFieldState.closestBall = i;
-			dist1 = ball.distance;
+
+	// use last ball if lost
+	if (gFieldState.closestBall == MAX_BALLS - 1 && ballLost1 < 10) {
+		if (lastFieldState.closestBall != MAX_BALLS - 1) {
+			// use last
+			gFieldState.balls[gFieldState.closestBall] = lastFieldState.balls[lastFieldState.closestBall];
+			ballLost1++;
 		}
-		if (mainCamUpdated && ball.isValid && ball.distance < dist2 && abs(ball.angle) < 130){
-			gFieldState.closestBallInFront = i;
-			dist2 = ball.distance;
+	}
+	else {
+		ballLost1 = 0;
+		// avoid jumping between balls
+		if (lastFieldState.closestBall != MAX_BALLS - 1 && ballLost2 < 10) {
+			if (lastFieldState.balls[lastFieldState.closestBall].distance > 10 && gFieldState.balls[gFieldState.closestBall].distance > lastFieldState.balls[lastFieldState.closestBall].distance * 1.8){
+				// use last
+				gFieldState.balls[gFieldState.closestBall] = lastFieldState.balls[lastFieldState.closestBall];
+				ballLost2++;
+			}
+			else {
+				ballLost2 = 0;
+			}
 		}
-		if (frontCamUpdated && ballFront.isValid && ballFront.distance < dist2){
-			closest3 = i;
-			gFieldState.closestBallTribbler = ballFront.distance;
+		else {
+			ballLost2 = 0;
 		}
-		//for (auto ball : lastFieldState.balls){
-		//
-		//}
-	};
+	}
+
+	/*
+	if (ballFrontLost < 10 && gFieldState.closestBall == MAX_BALLS - 1 && lastFieldState.closestBall < 12){
+		gFieldState.closestBall = 13;
+		gFieldState.balls[gFieldState.closestBall] = lastFieldState.balls[lastFieldState.closestBall];
+		ballFrontLost++;
+	}
+	else {
+		if (gFieldState.balls[gFieldState.closestBall].distance > lastFieldState.balls[lastFieldState.closestBall].distance * 1.8){
+			gFieldState.closestBall = 13;
+			gFieldState.balls[gFieldState.closestBall] = lastFieldState.balls[lastFieldState.closestBall];
+			ballFrontLost++;
+		}
+		else {
+			ballFrontLost = 0;
+		}
+	}
+	if (ballLost < 10 && gFieldState.closestBall == MAX_BALLS - 1 && lastFieldState.closestBall < 12){
+		gFieldState.closestBall = 12;
+		gFieldState.balls[gFieldState.closestBall] = lastFieldState.balls[lastFieldState.closestBall];
+		ballLost++;
+	}
+	else {
+		ballLost = 0;
+	}
+	*/
 	DetectRobotLocation();
+	memcpy(&lastFieldState, &gFieldState, sizeof(FieldState));
 }
 void RobotTracker::DetectRobotLocation(){
 	auto &Y = gFieldState.gates[YELLOW_GATE];

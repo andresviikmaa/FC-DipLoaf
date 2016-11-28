@@ -6,6 +6,7 @@ enum SingleModeDriveStates {
 	DRIVEMODE_LOCATE_HOME,
 	DRIVEMODE_DRIVE_HOME,
 	DRIVEMODE_DRIVE_HOME_AT_START,
+	DRIVEMODE_DRIVE_TO_BALL_FRONT,
 	DRIVEMODE_CATCH_BALL,
 	DRIVEMODE_LOCATE_GATE,
 	DRIVEMODE_AIM_GATE,
@@ -71,4 +72,5 @@ class SingleModePlay : public StateMachine {
 public:
 
 	SingleModePlay(ISoccerRobot *pComModule);
+
 };

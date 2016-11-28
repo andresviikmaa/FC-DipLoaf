@@ -83,6 +83,8 @@ public:
 	virtual std::string GetDebugInfo() = 0;
 	virtual void ProcessCommands() = 0;
 	virtual void SendMessages() = 0;
+	virtual void SetBallInTribbler(bool inTribbler) = 0;
+
 
 
 };

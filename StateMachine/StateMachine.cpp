@@ -19,9 +19,16 @@ void StateMachine::enableTestMode(bool enable)
 	if (!testMode) m_pComModule->Drive(0, 0, 0);
 }
 
+
 void StateMachine::Step(double dt) {
 	DriveMode newMode = curDriveMode->first;
-	newMode = testMode ? curDriveMode->second->step2(double(dt), newMode) : curDriveMode->second->step1(double(dt), newMode);
+	if (reset) {
+		newMode = DRIVEMODE_IDLE;
+		reset = false;
+	}
+	else {
+		newMode = testMode ? curDriveMode->second->step2(double(dt), newMode) : curDriveMode->second->step1(double(dt), newMode);
+	}
 	auto old = curDriveMode;
 	if (testMode) {
 		if (testDriveMode != DRIVEMODE_IDLE && newMode == DRIVEMODE_IDLE) newMode = testDriveMode;
