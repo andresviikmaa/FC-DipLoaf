@@ -161,6 +161,18 @@ bool Robot::MessageReceived(const std::string & message) {
 	}
 	return true;
 };
+void Robot::InitializeTarget(){
+	auto &B = gFieldState.gates[BLUE_GATE];
+	auto &Y = gFieldState.gates[YELLOW_GATE];
+	if (B.distance > Y.distance){
+		gRobotState.targetGate = BLUE_GATE;
+		gRobotState.homeGate = YELLOW_GATE;
+	}
+	else {
+		gRobotState.targetGate = BLUE_GATE;
+		gRobotState.homeGate = YELLOW_GATE;
+	}
+}
 void Robot::Run()
 {
 	exitRobot = false;
@@ -176,6 +188,7 @@ void Robot::Run()
 	double fps = 0.;
 	size_t counter = 0;
 	//m_AutoPilots[curPlayMode]->Reset();
+	lastGameMode = GAME_MODE_END_HALF;
 	try {
 		m_pMainVision->Enable(true);
 		m_pFrontVision->Enable(true);
@@ -184,6 +197,11 @@ void Robot::Run()
 		bool mainUpdated = false;
 		while (!exitRobot)
 		{
+			if (lastGameMode != GAME_MODE_START_PLAY && gRobotState.gameMode == GAME_MODE_START_PLAY){
+				//InitializeTarget();
+				//robotTracker.Reset();
+
+			}
 			double t2 = (double)cv::getTickCount();
 			double dt = (t2 - t1) / cv::getTickFrequency();
 

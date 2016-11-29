@@ -20,6 +20,8 @@ private:
     boost::mutex remote_mutex;
 	bool debug = false;
 	bool debug_step = false;
+	uchar lastGameMode = GAME_MODE_END_HALF;
+
 protected:
 	OBJECT targetGate= NUMBER_OF_OBJECTS; //uselected
 	bool captureFrames = false;
@@ -36,4 +38,5 @@ public:
 	bool MessageReceived(const boost::array<char, BUF_SIZE>& buffer, size_t size);
 	bool MessageReceived(const std::string & message);
 
+	void InitializeTarget();
 };
