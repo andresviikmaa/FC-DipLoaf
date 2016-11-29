@@ -1,11 +1,16 @@
-#include "RobotPosition.h"
+#include "RobotLocation.h"
+#include "../CommonModule/FieldState.h"
+
 double angleBetween(const cv::Point2d &a, const cv::Point2d &b);
+
+extern FieldState gFieldState;
+extern cv::Mat wheelAngles;
 
 //RobotLocation::RobotPosition() {
 //	this->polarMetricCoords = cv::Point(0, 0);
 //} 
 
-RobotLocation::RobotLocation(GateLocation &yellowGate, GateLocation &blueGate, cv::Point initialCoords):
+RobotLocation::RobotLocation(GatePosition &yellowGate, GatePosition &blueGate, cv::Point initialCoords) :
 yellowGate(yellowGate), blueGate(blueGate), filter(initialCoords){
 	this->polarMetricCoords = cv::Point(0, 0);
 	this->fieldCoords.x = initialCoords.x;
@@ -16,13 +21,48 @@ RobotLocation::~RobotLocation()
 {
 }
 
+void Reset(double x, double y, double heading){
+
+}
+
+
+void RobotLocation::updateOdometer(short speeds[4], double dt){
+	const double TAMBOV = 1;
+
+	wheelSpeeds.at<double>(0, 0) = speeds[0];
+	wheelSpeeds.at<double>(1, 0) = speeds[1];
+	wheelSpeeds.at<double>(2, 0) = speeds[2];
+	wheelSpeeds.at<double>(3, 0) = speeds[3];
+
+	cv::Mat robotSpeed = cv::Mat_<double>(3, 1);
+	cv::solve(wheelAngles, wheelSpeeds, robotSpeed, cv::DECOMP_SVD);
+
+	double dr = TAMBOV * (robotSpeed.at<double>(2)*dt);
+
+	double heading = gFieldState.self.heading - dr;
+	if (heading > 360) heading -= 360;
+	if (heading < -360) heading += 360;
+
+	//SYNC_OBJECT(self);
+	cv::Mat rotMat = getRotationMatrix2D(cv::Point(0, 0), angle, 1);
+	cv::Mat rotatedSpeed = rotMat * robotSpeed;
+	double dx = TAMBOV * rotatedSpeed.at<double>(0)*dt;
+	double dy = TAMBOV * rotatedSpeed.at<double>(1)*dt;
+
+	fieldCoords.x += dx;
+	fieldCoords.y -= dy;
+
+	fieldCoords = filter.doFiltering(cv::Point(fieldCoords.x, fieldCoords.y));
+
+}
+
 void RobotLocation::updateFieldCoordsNew(cv::Point2d orgin, double dt) {
 
 
-	double d1 = blueGate.getDistance();
-	double d2 = yellowGate.getDistance();
-	double a1 = blueGate.getAngle();
-	double a2 = yellowGate.getAngle();
+	double d1 = blueGate.distance;
+	double d2 = yellowGate.distance;
+	double a1 = blueGate.angle;
+	double a2 = yellowGate.angle;
 	double a = a1 - a2;
 	if (a < 0) a += 360;
 
@@ -60,8 +100,8 @@ void RobotLocation::updateFieldCoordsNew(cv::Point2d orgin, double dt) {
 	double angleToBlueGate = angleBetween(fieldCoords - blueGate.fieldCoords, { 0, 1 });
 	double angleToYellowGate = angleBetween(fieldCoords - yellowGate.fieldCoords, { 0, 1 });
 	// now add real gate angle to this angle
-	auto da1 = (angleToBlueGate - blueGate.getAngle());
-	auto da2 = (angleToYellowGate - yellowGate.getAngle());
+	auto da1 = (angleToBlueGate - blueGate.angle);
+	auto da2 = (angleToYellowGate - yellowGate.angle);
 	// for taking average, they must have same sign
 	if (abs(da1 - da2) > 180) {
 		if (da1 < 0) da1 = 360 + da1;
@@ -89,6 +129,12 @@ void RobotLocation::predict(double dt){
 	polarMetricCoords.y = rotationSpeed * dt;
 
 }
+
+void updateOdometer(short wheelSpeeds, double dt){
+
+
+}
+
 void RobotLocation::updatePolarCoords() {
 	return;
 }
@@ -161,12 +207,12 @@ bool RobotLocation::isRobotAboveCenterLine(double yellowGoalAngle, double blueGo
 double RobotLocation::getRobotDirection(){
 
 	// we have triangle and two conrners are known, subtract those from full circle
-	return  ((int)(yellowGate.getAngle() - blueGate.getAngle()) % 360); // <- this is not correct
+	return  ((int)(yellowGate.angle - blueGate.angle) % 360); // <- this is not correct
 	
 	// distance between the centers
 	double distance = cv::norm(yellowGate.fieldCoords - blueGate.fieldCoords);
-	double yellowGoalDist = yellowGate.getDistance();
-	double blueGoalDist = blueGate.getDistance();
+	double yellowGoalDist = yellowGate.distance;
+	double blueGoalDist = blueGate.distance;
 
 	// if two circle radiuses do not reach
 	while (distance > yellowGoalDist + blueGoalDist) {
@@ -181,7 +227,7 @@ double RobotLocation::getRobotDirection(){
 	double gammaCos = (aSqr + bSqr - cSqr) / ab2;
 	double gammaRads = acos(gammaCos);
 	double gammaDegrees = gammaRads*(180 / PI);
-	double dir = gammaDegrees + (isRobotAboveCenterLine(yellowGate.getAngle(), blueGate.getAngle()) ? 0 : -360);
-	return blueGate.getAngle() + dir;
+	double dir = gammaDegrees + (isRobotAboveCenterLine(yellowGate.angle, blueGate.angle) ? 0 : -360);
+	return blueGate.angle + dir;
 	
 }

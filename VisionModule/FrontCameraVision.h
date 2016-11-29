@@ -3,7 +3,7 @@
 #include "../CommonModule/Interfaces.h"
 #include "../CommonModule/ConfigurableModule.h"
 #include "VisionInterfaces.h"
-#include "../CommonModule/FieldState.h"
+
 #include "MainCameraVision.h"
 
 class FrontCameraVision :

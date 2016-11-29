@@ -4,6 +4,7 @@
 #include "../CommonModule/Interfaces.h"
 #include "../CommonModule/FieldState.h"
 #include "../CommonModule/RobotState.h"
+#include "RobotLocation.h"
 
 #ifdef SHOW_UI
 extern IDisplay * display;
@@ -14,7 +15,7 @@ extern FieldState gPartnerFieldState;
 extern RobotState gRobotState;
 extern RobotState gPartnerRobotState;
 
-RobotTracker::RobotTracker()
+RobotTracker::RobotTracker() : self(gFieldState.gates[BLUE_GATE], gFieldState.gates[YELLOW_GATE])
 {
 #ifdef SHOW_UI
 	green = cv::imread("field.png", 1);   // Read the file
@@ -97,11 +98,27 @@ void RobotTracker::PredictLostBalls(double dt)
 void RobotTracker::DetectRobotLocation(double dt){
 	auto &Y = gFieldState.gates[YELLOW_GATE];
 	auto &B = gFieldState.gates[BLUE_GATE];
+	auto &lY = lastFieldState.gates[YELLOW_GATE];
+	auto &lB = lastFieldState.gates[BLUE_GATE];
 
-	if (Y.isValid && B.isValid){
-		;
+	self.updateOdometer(gFieldState.self.wheelSpeeds, dt);
+	if (Y.isValid && B.isValid){		
+		self.updateFieldCoords(cv::Point2d(0, 0), dt);
+	} else { 
+		self.predict(dt);
 	}
 
+}
+void RobotTracker::Reset(){
+	auto &Y = gFieldState.gates[YELLOW_GATE];
+	auto &B = gFieldState.gates[BLUE_GATE];
+
+	if (Y.distance < B.distance){
+		self.Reset(-300, -230, B.heading);
+	}
+	else {
+		self.Reset(300, 230, Y.heading);
+	}
 }
 #ifdef SHOW_UI
 void RobotTracker::Draw(){

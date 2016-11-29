@@ -120,7 +120,7 @@
     <ClCompile Include="KalmanFilter.cpp" />
     <ClCompile Include="kdNode2D.cpp" />
     <ClCompile Include="ObjectPosition.cpp" />
-    <ClCompile Include="RobotPosition.cpp" />
+    <ClCompile Include="RobotLocation.cpp" />
     <ClCompile Include="RobotTracker.cpp" />
     <ClCompile Include="TargetPosition.cpp" />
   </ItemGroup>
@@ -132,7 +132,7 @@
     <ClInclude Include="KalmanFilter.h" />
     <ClInclude Include="kdNode2D.h" />
     <ClInclude Include="ObjectPosition.h" />
-    <ClInclude Include="RobotPosition.h" />
+    <ClInclude Include="RobotLocation.h" />
     <ClInclude Include="RobotTracker.h" />
     <ClInclude Include="TargetPosition.h" />
   </ItemGroup>

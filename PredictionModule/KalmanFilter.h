@@ -4,13 +4,13 @@
 class KalmanFilter {
 protected:
 	cv::KalmanFilter KF = cv::KalmanFilter(4, 2, 0);
-	cv::Mat_<float> measurement = cv::Mat_<float>(2, 1);
-	cv::Mat_<float> estimated = cv::Mat_<float>(2, 1);
+	cv::Mat_<double> measurement = cv::Mat_<double>(2, 1);
+	cv::Mat_<double> estimated = cv::Mat_<double>(2, 1);
 	int predictCount = 0;
 public:
-	KalmanFilter(const cv::Point2i &startPoint);
-	cv::Point2d doFiltering(const cv::Point2i &point);
+	KalmanFilter(const cv::Point2d &startPoint);
+	cv::Point2d doFiltering(const cv::Point2d &point);
 	cv::Point2d getPrediction();
-	void reset(const cv::Point2i &point);
+	void resetFilter(const cv::Point2d &point);
 	
 };

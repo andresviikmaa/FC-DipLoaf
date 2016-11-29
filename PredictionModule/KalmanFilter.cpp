@@ -1,6 +1,6 @@
 #include "KalmanFilter.h"
 
-KalmanFilter::KalmanFilter(const cv::Point2i &startPoint){
+KalmanFilter::KalmanFilter(const cv::Point2d &startPoint){
 	KF.transitionMatrix = (cv::Mat_<float>(4, 4) << 1, 0, 1, 0,
 		0, 1, 0, 1,
 		0, 0, 1, 0,
@@ -31,17 +31,18 @@ KalmanFilter::KalmanFilter(const cv::Point2i &startPoint){
 	setIdentity(KF.errorCovPost, cv::Scalar::all(1e-6));
 }
 
-cv::Point2d KalmanFilter::doFiltering(const cv::Point2i &point) {
+cv::Point2d KalmanFilter::doFiltering(const cv::Point2d &point) {
 	// First predict, to update the internal statePre variable
 	getPrediction();
 
 	//Get point
-	measurement(0) = (float)(point.x);
-	measurement(1) = (float)(point.y);
+	measurement(0) = point.x;
+	measurement(1) = point.y;
+	measurement(1) = point.z;
 
 	//The update phase
 	estimated = KF.correct(measurement);
-	cv::Point statePt((int)(estimated.at<float>(0)), (int)(estimated.at<float>(1)));
+	cv::Point2d statePt(estimated.at<double>(0), estimated.at<double>(1));
 	return statePt;
 //	return cv::Point2d(estimated);
   
@@ -49,16 +50,16 @@ cv::Point2d KalmanFilter::doFiltering(const cv::Point2i &point) {
 
 cv::Point2d KalmanFilter::getPrediction() {
 	cv::Mat prediction = KF.predict();
-	return cv::Point2d(prediction.at<float>(0), prediction.at<float>(1));
+	return cv::Point2d(prediction.at<double>(0), prediction.at<double>(1));
 	//return cv::Point2d(prediction);
 }
 
 
-void KalmanFilter::reset(const cv::Point2i &startPoint){
-	measurement(0) = (float)(startPoint.x);
-	measurement(1) = (float)(startPoint.y);
-	estimated(0) = (float)(startPoint.x);
-	estimated(1) = (float)(startPoint.y);
+void KalmanFilter::resetFilter(const cv::Point2d &startPoint){
+	measurement(0) = startPoint.x;
+	measurement(1) = startPoint.y;
+	estimated(0) = startPoint.x;
+	estimated(1) = startPoint.y;
 
 	KF.statePre.at<float>(0) = (float)(startPoint.x);
 	KF.statePre.at<float>(1) = (float)(startPoint.y);

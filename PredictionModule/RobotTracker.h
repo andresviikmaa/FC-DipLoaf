@@ -1,6 +1,8 @@
 #pragma once
 #include <opencv2/core.hpp>
 #include "../CommonModule/FieldState.h"
+#include "RobotLocation.h"
+
 class RobotTracker
 {
 public:
@@ -9,6 +11,7 @@ public:
 	void Predict(double dt, bool mainCamUpdated, bool frontCamUpdated);
 	void PredictLostBalls(double dt);
 	void DetectRobotLocation(double dt);
+	void Reset();
 #ifdef SHOW_UI
 	void Draw();
 #endif
@@ -19,5 +22,6 @@ protected:
 	FieldState lastFieldState;
 	int ballLost1 = 0;
 	int ballLost2 = 0;
+	RobotLocation self;
 };
 

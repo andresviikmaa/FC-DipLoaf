@@ -36,9 +36,6 @@
     <ClCompile Include="ObjectPosition.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RobotPosition.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TargetPosition.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -46,6 +43,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RobotTracker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RobotLocation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -68,9 +68,6 @@
     <ClInclude Include="ObjectPosition.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RobotPosition.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TargetPosition.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -78,6 +75,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RobotTracker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RobotLocation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
