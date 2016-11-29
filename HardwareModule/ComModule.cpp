@@ -45,7 +45,7 @@ void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed)
 	gFieldState.self.heading = direction;
 	gFieldState.self.angle = angularSpeed;
 
-	const int maxSpeed = 60;
+	const int maxSpeed = 90;
 	/*
 	direction = 0;
 	angularSpeed = 0;
@@ -95,7 +95,7 @@ bool ComModule::MessageReceived(const std::string & message) {
 	const auto &command = params[0];
 	const int SIMULATOR_SPEED = 1;
 	if (command == "speeds" && params.size() > 4/*<speeds:%d:%d:%d:%d:%d>*/) {
-		std::cout << "cmd: " << tmp << std::endl;
+		//std::cout << "cmd: " << tmp << std::endl;
 		gFieldState.self.wheelSpeeds[0] = atoi(params[1].c_str());
 		gFieldState.self.wheelSpeeds[1] = atoi(params[2].c_str());
 		gFieldState.self.wheelSpeeds[2] = atoi(params[3].c_str());

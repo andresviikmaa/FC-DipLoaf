@@ -122,10 +122,11 @@ bool Robot::MessageReceived(const boost::array<char, BUF_SIZE>& buffer, size_t s
 		return true;
 	}
 	else if (code == COMMAND_DEBUG) {
+		m_pComModule->Drive(0, 0, 0);
 		debug = !debug;
 		return true;
 	}
-	else if (code == COMMAND_DEBUG_STEP) {
+	else if (code == COMMAND_DEBUG_STEP) {		
 		debug_step = true;
 		return true;
 	}
@@ -209,7 +210,7 @@ void Robot::Run()
 			mainUpdated = m_pMainVision->PublishState();
 			frontUpdated = m_pFrontVision->PublishState();
 			m_pComModule->ProcessCommands();
-			robotTracker.Predict(dt, mainUpdated, frontUpdated);
+			if(gFieldState.closestBallTribbler > 3) robotTracker.Predict(dt, mainUpdated, frontUpdated);
 			//TODO: remove this if ball in tribbler is working
 			m_pComModule->SetBallInTribbler(gFieldState.ballsFront[gFieldState.closestBallTribbler].distance < 100);
 			

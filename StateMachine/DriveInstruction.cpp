@@ -74,6 +74,17 @@ bool DriveInstruction::aimTarget(const ObjectPosition &target, Speed &speed, dou
 	}
 	else return fabs(heading) < errorMargin;
 }
+
+bool DriveInstruction::aimTargetAroundBall(const ObjectPosition &target, Speed &speed, double errorMargin) {
+	double heading = target.heading;
+	if (fabs(heading) > errorMargin) {
+		speed.rotation = -sign0(heading) * std::min(40.0, std::max(fabs(heading), 5.0));
+		speed.velocity = fabs(heading);
+		speed.heading = -sign0(heading) * 90;
+	}
+	return fabs(heading) < errorMargin;
+}
+
 bool DriveInstruction::catchTarget(const ObjectPosition &target, Speed &speed) {
 	if (m_pCom->BallInTribbler()) return true;
 	double heading = target.heading;
@@ -127,8 +138,10 @@ bool DriveInstruction::driveToTargetWithAngle(const ObjectPosition &target, Spee
 }
 
 bool DriveInstruction::preciseAim(const ObjectPosition &target, Speed &speed, double errorMargin) {
-	if (target.heading > errorMargin) speed.rotation = target.heading;
-	return target.heading <= errorMargin;
+	if (target.distance < 150) speed.heading = target.heading*3;
+	else if (fabs(target.heading) > errorMargin) speed.rotation = target.heading;
+	std::cout<<"precise aim" << target.heading << std::endl;
+	return fabs(target.heading) < errorMargin;
 }
 
 

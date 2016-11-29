@@ -35,6 +35,7 @@ public:
 
 	const static bool USE_ANGLED_DRIVING = false;
 	bool aimTarget(const ObjectPosition &target, Speed &speed, double errorMargin = (USE_ANGLED_DRIVING) ? 90 : 10);
+	bool aimTargetAroundBall(const ObjectPosition &target, Speed &speed, double errorMargin);
 	bool catchTarget(const ObjectPosition &target, Speed &speed);
 	bool driveToTarget(const ObjectPosition &target, Speed &speed, double maxDistance = 50);
 	bool driveToTargetWithAngle(const ObjectPosition &target, Speed &speed, double maxDistance = 50, double errorMargin = 10);

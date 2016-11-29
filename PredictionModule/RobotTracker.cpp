@@ -53,7 +53,7 @@ void RobotTracker::PredictLostBalls(double dt)
 	else {
 		ballLost1 = 0;
 		// avoid jumping between balls
-		if (lastFieldState.closestBall != MAX_BALLS - 1 && ballLost2 < 10) {
+		if (lastFieldState.closestBall != MAX_BALLS - 1 && ballLost2 < 100) {
 			if (lastFieldState.balls[lastFieldState.closestBall].distance > 10 && gFieldState.balls[gFieldState.closestBall].distance > lastFieldState.balls[lastFieldState.closestBall].distance * 1.8){
 				// use last
 				gFieldState.balls[gFieldState.closestBall] = lastFieldState.balls[lastFieldState.closestBall];
