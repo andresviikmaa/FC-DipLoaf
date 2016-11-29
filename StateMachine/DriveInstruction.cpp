@@ -78,11 +78,11 @@ bool DriveInstruction::aimTarget(const ObjectPosition &target, Speed &speed, dou
 bool DriveInstruction::aimTargetAroundBall(const ObjectPosition &target, Speed &speed, double errorMargin) {
 	double heading = target.heading;
 	if (fabs(heading) > errorMargin) {
-		speed.rotation = -sign0(heading) * std::min(40.0, std::max(fabs(heading), 5.0));
-		speed.velocity = fabs(heading);
-		speed.heading = -sign0(heading) * 90;
+		speed.rotation = -(heading) * 3;// turn toward target
+		speed.velocity = fabs(heading) * 3;//side moving speed same as rotation
+		speed.heading = sign0(heading) * 90; //move sideways opposite to turning
 	}
-	return fabs(heading) < errorMargin;
+	return fabs(heading) <= errorMargin;
 }
 
 bool DriveInstruction::catchTarget(const ObjectPosition &target, Speed &speed) {
@@ -138,9 +138,11 @@ bool DriveInstruction::driveToTargetWithAngle(const ObjectPosition &target, Spee
 }
 
 bool DriveInstruction::preciseAim(const ObjectPosition &target, Speed &speed, double errorMargin) {
-	if (target.distance < 150) speed.heading = target.heading*3;
+	if (target.distance < 150 && fabs(target.heading) > errorMargin){
+		speed.heading = target.heading * 3;//if target close move sideways
+		speed.velocity = 30;
+	}
 	else if (fabs(target.heading) > errorMargin) speed.rotation = target.heading;
-	std::cout<<"precise aim" << target.heading << std::endl;
 	return fabs(target.heading) < errorMargin;
 }
 
