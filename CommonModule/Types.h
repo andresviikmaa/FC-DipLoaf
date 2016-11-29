@@ -37,7 +37,9 @@ typedef struct {
 
 struct ObjectPosition
 {
-	bool isValid;
+	bool isValid;	
+	bool isPredicted = 1;
+
 	double distance;
 	double angle;
 	double heading;
@@ -54,11 +56,17 @@ struct BallPosition: public ObjectPosition
 };
 struct GatePosition : public ObjectPosition
 {
-	cv::Point2d minCornerPolarCoords;
+	cv::Point2d minCornerPolarCoords = cv::Point2d(INT_MAX, INT_MAX);
+};
+enum RobotPos: uchar {
+	ROBOT_POS_UNKNOWN = 0,
+	ROBOT_POS_GATES_FOUND,
+	ROBOT_POS_FIXED
 };
 struct RobotPosition : public ObjectPosition
 {
-
+	short wheelSpeeds[4];
+	RobotPos fix = (RobotPos)99;
 };
 
 //for conf file

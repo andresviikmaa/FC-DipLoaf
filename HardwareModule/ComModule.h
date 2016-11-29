@@ -14,6 +14,7 @@ protected:
 	bool ballInTribbler;
 	int tribblerSpeed;
 	Speed lastSpeed;
+	cv::Mat wheelSpeeds = (cv::Mat_<double>(4, 1) << 0.0, 0.0, 0.0, 0.0);
 public:
 	ComModule(boost::asio::io_service &io, const std::string ip_address, ushort port1, ushort port2);
 	ComModule(boost::asio::io_service &io, const std::string ip_address, ushort port1);
@@ -57,6 +58,8 @@ public:
 	void SetBallInTribbler(bool inTribbler) {
 		CoilBoard::SetBallInTribbler(inTribbler);
 	}
+	virtual void sendAck(const std::string & message);
+
 
 protected:
 

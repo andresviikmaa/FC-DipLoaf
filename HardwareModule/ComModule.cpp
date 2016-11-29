@@ -3,6 +3,7 @@
 #include <thread>
 #include <chrono>
 #include "../CommonModule/FieldState.h"
+#include "opencv2/imgproc.hpp"
 
 extern cv::Mat wheelAngles;
 extern FieldState gFieldState;
@@ -17,20 +18,24 @@ ComModule::ComModule(boost::asio::io_service &io, const std::string ip_address, 
 ComModule::ComModule(boost::asio::io_service &io, const std::string ip_address, ushort port1):
 	io(io), UdpServer(io, ip_address, port1)
 {
-	SendMessage("fs:0");
+	//SendMessage("fs:0");
 	SendMessage("charge");
 }
 
 ComModule::~ComModule()
 {
-	SendMessage("fs:1");
-	for (int i = 0; i< 10; i++) {
-		SendMessage("discharge");
-		std::this_thread::sleep_for(std::chrono::milliseconds(300));
-	}
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	//SendMessage("fs:1");
+	//for (int i = 0; i< 10; i++) {
+	//	SendMessage("discharge");
+	//	std::this_thread::sleep_for(std::chrono::milliseconds(300));
+	//}
+	//std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
+void ComModule::sendAck(const std::string & message){
+
+	SendMessage("ref:" + message);
+};
 
 
 void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed) {
@@ -88,10 +93,16 @@ bool ComModule::MessageReceived(const std::string & message) {
 	std::string tmp = message.substr(1, message.size() - 1);
 	boost::split(params, tmp, boost::is_any_of(":"));
 	const auto &command = params[0];
-	if (command == "speeds" /*<speeds:%d:%d:%d:%d:%d>*/) {
+	const int SIMULATOR_SPEED = 1;
+	if (command == "speeds" && params.size() > 4/*<speeds:%d:%d:%d:%d:%d>*/) {
 		std::cout << "cmd: " << tmp << std::endl;
+		gFieldState.self.wheelSpeeds[0] = atoi(params[1].c_str());
+		gFieldState.self.wheelSpeeds[1] = atoi(params[2].c_str());
+		gFieldState.self.wheelSpeeds[2] = atoi(params[3].c_str());
+		gFieldState.self.wheelSpeeds[3] = atoi(params[4].c_str());
 	}
 	else if (command == "ref" /*<ref:%s>*/) {
+		std::cout << "cmd: " << tmp << std::endl;
 		handleMessage(params[1]);
 	}
 	else if (command == "toggle-side" /*<toggle-side>*/) {

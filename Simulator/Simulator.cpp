@@ -306,6 +306,7 @@ void Simulator::UpdateRobotPos(double dt) {
 	self.polarMetricCoords.y -= dr;
 	if (self.polarMetricCoords.y > 360) self.polarMetricCoords.y -= 360;
 	if (self.polarMetricCoords.y < -360) self.polarMetricCoords.y += 360;
+	SYNC_OBJECT(self);
 	cv::Mat rotMat = getRotationMatrix2D(cv::Point(0, 0), self.angle, 1);
 	cv::Mat rotatedSpeed = rotMat * robotSpeed;
 	double dx = SIMULATOR_SPEED*rotatedSpeed.at<double>(0)*dt;
@@ -313,7 +314,6 @@ void Simulator::UpdateRobotPos(double dt) {
 
 	self.fieldCoords.x += dx;
 	self.fieldCoords.y -= dy;
-	SYNC_OBJECT(self);
 
 	if (!isMaster && id > 0) {
 		std::stringstream message;
