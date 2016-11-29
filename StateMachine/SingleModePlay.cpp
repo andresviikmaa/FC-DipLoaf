@@ -20,14 +20,14 @@ void SingleModeIdle::onEnter() {
 }
 
 DriveMode SingleModeIdle::step(double dt) {
-	if (gRobotState.gameMode == GAME_MODE_START_PLAY) {
-		gRobotState.gameMode = GAME_MODE_IN_PROGRESS;
-		//return DRIVEMODE_DRIVE_HOME_AT_START;
-	}
+	//if (gRobotState.gameMode == GAME_MODE_START_PLAY) {
+	//	gRobotState.gameMode = GAME_MODE_IN_PROGRESS;
+	//	//return DRIVEMODE_DRIVE_HOME_AT_START;
+	//}
 	if (gRobotState.gameMode != GAME_MODE_IN_PROGRESS) {
 		return DRIVEMODE_IDLE;
 	}
-	return DRIVEMODE_DRIVE_TO_BALL; //DRIVEMODE_DRIVE_HOME_AT_START;
+	return DRIVEMODE_DRIVE_HOME_AT_START;
 }
 
 /*BEGIN DriveToBall*/
@@ -71,16 +71,10 @@ public:
 		else {
 			auto &target = gFieldState.balls[gFieldState.closestBall];
 
-			
-			//auto &frontTarget = gFieldState.ballsFront[gFieldState.closestBallTribbler];
-
 			if (target.distance > 10000) return DRIVEMODE_DRIVE_HOME;
 			if (m_pCom->BallInTribbler()) return DRIVEMODE_CATCH_BALL;
 			if (aimTarget(target, speed, 10))
 				driveToTarget(target, speed, 35);
-			//std::cout<<frontTarget.distance<<std::endl;
-			//if (gFieldState.closestBallTribbler == 0)
-			//	if (preciseAim(frontTarget, speed)) return DRIVEMODE_CATCH_BALL;
 
 			if (gFieldState.collisionWithUnknown && fabs(speed.velocity) > 1.) {
 				if (gFieldState.collisionRange.x < gFieldState.collisionRange.y) {
@@ -98,7 +92,6 @@ public:
 				lastSpeed = speed;
 			}
 		}
-		std::cout << "output" << speed.velocity << speed.heading <<speed.rotation<< std::endl;
 		m_pCom->Drive(speed.velocity, speed.heading, speed.rotation);		
 		return DRIVEMODE_DRIVE_TO_BALL_NAIVE;
 	}
@@ -185,6 +178,11 @@ public:
 };
 class DriveToBallAimGate : public DriveInstruction
 {
+protected:
+	boost::posix_time::ptime dodgeTime = boost::posix_time::microsec_clock::local_time();
+	bool alreadyDodged = false;
+	Speed lastSpeed;
+
 public:
 	DriveToBallAimGate(const std::string &name = "DRIVE_TO_BALL_AIM_GATE") : DriveInstruction(name){};
 
@@ -243,12 +241,14 @@ class DriveToHome : public DriveInstruction
 public:
 	DriveToHome(const std::string &name = "DRIVE_HOME") : DriveInstruction(name){};
 	virtual DriveMode step(double dt){
-		if (gFieldState.closestBall < MAX_BALLS-1) return DRIVEMODE_DRIVE_TO_BALL;
-
+		if (m_pCom->BallInTribbler()) return DRIVEMODE_AIM_GATE;
 		auto target = gFieldState.gates[gRobotState.homeGate];
-		if (target.distance < 50) return DRIVEMODE_DRIVE_TO_BALL;
-		else m_pCom->Drive(40, target.heading);
-	return DRIVEMODE_DRIVE_HOME;
+		if (target.distance < 80 || (gFieldState.closestBall < MAX_BALLS - 1)) {
+			m_pCom->Drive(0, 0, 0);
+			return DRIVEMODE_DRIVE_TO_BALL;
+		}
+		else m_pCom->Drive(80, target.heading);
+		return DRIVEMODE_DRIVE_HOME;
 	}
 };
 
@@ -258,31 +258,30 @@ public:
 	DriveHomeAtStart(const std::string &name = "DRIVE_HOME_AT_START") : DriveInstruction(name){};
 	virtual DriveMode step(double dt){
 		auto target = gFieldState.gates[gRobotState.homeGate];
-		if (target.distance < 90) return DRIVEMODE_DRIVE_TO_BALL;
-		//else m_pCom->Drive(90, 0, -sign0(target.heading)*20);
+		const ObjectPosition &ball = gFieldState.balls[gFieldState.closestBall];
+		if (target.distance < 90 || target.distance / 2 > ball.distance){
+			m_pCom->Drive(0, 0, 0);
+			return DRIVEMODE_DRIVE_TO_BALL;
+		}
+		//else m_pCom->Drive(90, 0, -sign0(target.getHeading())*20);
 		else{
 			const ObjectPosition &homeGate = gFieldState.gates[gRobotState.homeGate];
 			const ObjectPosition &gate = gFieldState.gates[gRobotState.targetGate];
 			double gateHeading = gate.heading;
-			double ballHeading = -sign0(homeGate.heading)*(fabs(homeGate.heading)-35) ;
-			double ballDistance = homeGate.distance;
+			double ballHeading = sign0(homeGate.heading)*(fabs(homeGate.heading) - 35);
 			double rotation = 0;
 			double errorMargin = 5;
-			double maxDistance = 40;
-			if (fabs(gateHeading) > errorMargin) rotation = sign0(gateHeading) * std::min(40.0, std::max(fabs(gateHeading), 5.0));
+			if (fabs(gateHeading) > errorMargin) rotation = -sign0(gateHeading) * std::min(40.0, std::max(fabs(gateHeading), 5.0));
 			double heading = 0;
 			double speed = 0;
-			if (ballDistance > maxDistance) {
-				heading = ballHeading;// +sign(gateHeading) / ballDistance;
-				if (fabs(heading) > 30) heading = -sign0(heading)*(fabs(heading) + 15);
-				speed = std::max(60.0, ballDistance);
-			}
+			heading = ballHeading;// +sign(gateHeading) / ballDistance;
+			if (fabs(heading) > 30) heading = sign0(heading)*(fabs(heading) + 15);
+			speed = 80;//std::min(30.0,std::max(60.0, target.getDistance()));//limited speed			
 			m_pCom->Drive(speed, heading, 0);
 		}
-	return DRIVEMODE_DRIVE_HOME_AT_START;
+		return DRIVEMODE_DRIVE_HOME_AT_START;
 	}
 };
-
 
 
 /*BEGIN CatchBall*/
@@ -315,10 +314,10 @@ DriveMode CatchBall::step(double dt)
 
 	}
 	else {
-		double heading = -sign0(target.heading)*10.;
+		double heading = sign0(target.heading)*10.;
 		//move slightly in order not to get stuck
 		speed.velocity = 50;
-		speed.rotation = heading;
+		speed.rotation = -heading;
 	}
 	m_pCom->Drive(speed.velocity, speed.heading, speed.rotation);
 	return DRIVEMODE_CATCH_BALL;
@@ -350,16 +349,38 @@ void CatchBall::onExit(){}//DO_NOT_STOP_TRIBBLER
 DriveMode AimGate::step(double dt)
 {
 	GatePosition target = gFieldState.gates[gRobotState.targetGate];
-	target.heading -= 15;
 	if (!m_pCom->BallInTribbler()) return DRIVEMODE_DRIVE_TO_BALL;
-	double errorMargin;
-	if (target.distance > 200) errorMargin = 1;
-	else errorMargin = 2;	
-	if (aimTarget(target, speed, errorMargin)) return DRIVEMODE_KICK; 
+	if ((boost::posix_time::microsec_clock::local_time() - dodgeTime).total_milliseconds() < 800){
+		speed = lastSpeed;
+	}
+	else {
+		double errorMargin;
+		if (target.distance > 200) errorMargin = 1;
+		else errorMargin = 2;
+		if (aimTarget(target, speed, errorMargin)) {
+			if (target.distance > 125 && gFieldState.gateObstructed && !alreadyDodged) {
+				alreadyDodged = true;
+				dodgeTime = boost::posix_time::microsec_clock::local_time();
+				double heading = gFieldState.gates[gRobotState.homeGate].heading;
+				if (heading < 0) {
+					speed.heading = heading + 80;
+				}
+				else {
+					speed.heading = heading - 80;
+				}
+				speed.velocity = 100;
+			}
+			else {
+				m_pCom->Drive(0, 0, 0);
+				std::this_thread::sleep_for(std::chrono::milliseconds(20));
+				if (aimTarget(target, speed, errorMargin)) { alreadyDodged = false; return DRIVEMODE_KICK; }
+			}
+		}
+	}
+	lastSpeed = speed;
 	m_pCom->Drive(speed.velocity, speed.heading, speed.rotation);
 	return DRIVEMODE_AIM_GATE;
 }
-
 
 /*BEGIN Kick*/
 void Kick::onEnter()

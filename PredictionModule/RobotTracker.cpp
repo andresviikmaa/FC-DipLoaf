@@ -34,7 +34,7 @@ RobotTracker::~RobotTracker()
 
 void RobotTracker::Predict(double dt, bool mainCamUpdated, bool frontCamUpdated) 
 {
-	DetectRobotLocation();
+	DetectRobotLocation(dt);
 	memcpy(&lastFieldState, &gFieldState, sizeof(FieldState));
 	DetectRobotLocation(dt);
 	PredictLostBalls(dt);
