@@ -41,6 +41,8 @@ void RobotTracker::Predict(double dt, bool mainCamUpdated, bool frontCamUpdated)
 }
 void RobotTracker::PredictLostBalls(double dt)
 {
+	// check positions not indices 
+	// copy/paste from last year code
 
 	// use last ball if lost
 	if (gFieldState.closestBall == MAX_BALLS - 1 && ballLost1 < 10) {
