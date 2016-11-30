@@ -43,8 +43,12 @@ public:
 		for (int i = range.start; i < range.end; i++)
 		{
 
-#define THRESHOLD(range, h, s,v) \
+#define THRESHOLD_HSV(range, h, s,v) \
 					(range.hue.low <= h) && (range.hue.high >= h) && (range.sat.low <= s) && (range.sat.high >= s) && (range.val.low <= v) && (range.val.high >= v)
+#define THRESHOLD_HS(range, h, s,v) \
+					(range.hue.low <= h) && (range.hue.high >= h) && (range.sat.low <= s) && (range.sat.high >= s)
+
+#define THRESHOLD THRESHOLD_HS
 
 #ifndef USE_INRANGE
 			for (int j = (frameHSV.cols*frameHSV.rows * 3 / diff)*i, k = (frameHSV.cols*frameHSV.rows / diff)*i; j < (frameHSV.cols*frameHSV.rows * 3 / diff)*(i + 1); j += 3, k++) {

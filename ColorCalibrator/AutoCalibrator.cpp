@@ -122,20 +122,21 @@ void AutoCalibrator::mouseClicked(int x, int y, int flags){
 	markers.push_back(std::make_pair(object_id, cv::Point(x, y)));
 	std::queue<cv::Point> points;
 
-
+	int step = 1;
+	if (object_id == FIELD) step = 10;
 	points.push(cv::Point(x, y));
 	std::vector<cv::Point> neighbourhood;
-	neighbourhood.push_back(cv::Point(0, -1));
-	neighbourhood.push_back(cv::Point(0, 1));
-
-	neighbourhood.push_back(cv::Point(-1, 0));
-	neighbourhood.push_back(cv::Point(1, 0));
-
-
-	neighbourhood.push_back(cv::Point(-1, -1));
-	neighbourhood.push_back(cv::Point(1, 1));
-	neighbourhood.push_back(cv::Point(1, -1));
-	neighbourhood.push_back(cv::Point(-1, 1));
+	neighbourhood.push_back(cv::Point(0, -step));
+	neighbourhood.push_back(cv::Point(0, step));
+	//
+	neighbourhood.push_back(cv::Point(-step, 0));
+	neighbourhood.push_back(cv::Point(step, 0));
+	//
+	//
+	neighbourhood.push_back(cv::Point(-step, -step));
+	neighbourhood.push_back(cv::Point(step, step));
+	neighbourhood.push_back(cv::Point(step, -step));
+	neighbourhood.push_back(cv::Point(-step, step));
 
 	cv::Mat1b mask(frameHSV.rows, frameHSV.cols, uchar(0));
 	mask.at<uchar>(y, x) = uchar(255);
@@ -143,13 +144,18 @@ void AutoCalibrator::mouseClicked(int x, int y, int flags){
 	range = { { 179, 0 }, { 255, 0 }, { 255, 0 } };
 
 	size_t counter = 0;
+	cv::Vec3f hsv1;
+	cv::Scalar mean;
+	size_t N = neighbourhood.size();
 	do {
 		auto point = points.front();
 
 		//cv::Vec3f hsv1 = frameHSV.at<cv::Vec3b>(point.y, point.x);
-		cv::Scalar mean = cv::mean(frameHSV, mask);
-		cv::Vec3f hsv1 = cv::Vec3f(mean[0], mean[1], mean[2]);
-		for (auto n : neighbourhood){
+		mean = cv::mean(frameHSV, mask);
+		hsv1 = cv::Vec3f(mean[0], mean[1], mean[2]);
+		//for (auto n : neighbourhood){
+		for (int i = 0; i < 3;i++){
+			auto n = neighbourhood[rand() % N];
 			auto next = point + n;
 			cv::Vec3f hsv2 = frameHSV.at<cv::Vec3b>(next.y, next.x);
 			auto col = frameBGR.at<cv::Vec3b>(next.y, next.x);
@@ -162,6 +168,8 @@ void AutoCalibrator::mouseClicked(int x, int y, int flags){
 
 			float error[3] = { 10, 20, 50 };
 			if (object_id == BALL) { error[0] = 10; error[1] = 50; error[2] = 255; };
+			if (object_id == FIELD) { error[0] = 10; error[1] = 30; error[2] = 255; };
+
 			frameBGR.at<cv::Vec3b>(next.y, next.x) = cv::Vec3b(0, 0, 255);
 			if (diff[0] < error[0] && diff[1] < error[1] && diff[2] < error[2]){
 				//buffer.at<cv::Vec3b>(next.y, next.x) = cv::Vec3b(0, 0, 255);
@@ -181,8 +189,8 @@ void AutoCalibrator::mouseClicked(int x, int y, int flags){
 		points.pop();
 		counter++;
 
-	} while (!points.empty() && counter < 2000);
-	std::cout << "counter: " << counter << std::endl;
+	} while (!points.empty() && counter < 40000);
+	std::cout << "counter: " << counter << ", mean: " << mean << std::endl;
 
 	cv::Mat imgThresholded;
 	cv::inRange(frameHSV, cv::Scalar(range.hue.low, range.sat.low, range.val.low), cv::Scalar(range.hue.high, range.sat.high, range.val.high), imgThresholded); //Threshold the image
@@ -219,54 +227,19 @@ int AutoCalibrator::Draw() {
 			GaussianBlur(frameBGR, frameBGR, cv::Size(3, 3), 0, 0, cv::BORDER_DEFAULT);
 
 			frameBGR.copyTo(buffer);
-			//cv::Mat frameHSV;
-			//cvtColor(frameBGR, frameHSV, CV_BGR2HSV);
-			//std::vector<cv::Mat> channels(3);
-			//// split img:
-			//cv::split(frameHSV, channels);
-			//
-			//cv::Mat shiftedH = channels[0].clone();
-			//int shift = 25; // in openCV hue values go from 0 to 180 (so have to be doubled to get to 0 .. 360) because of byte range from 0 to 255
-			//for (int j = 0; j<shiftedH.rows; ++j)
-			//	for (int i = 0; i<shiftedH.cols; ++i)
-			//	{
-			//		shiftedH.at<unsigned char>(j, i) = (shiftedH.at<unsigned char>(j, i) + shift) % 180;
-			//	}
-			//
-			//imshow("hs", shiftedH);
-			//imshow("h", channels[0]);
-			//imshow("s", channels[1]);
-			//imshow("v", channels[2]);
-			//
-			//cv::Mat cannyH;
-			//cv::Mat cannyHs;
-			//cv::Mat cannyS;
-			//cv::Mat cannyV;
-			//
-			////cvtColor(frameBGR, frameBGR, CV_RGB2GRAY);
-			//cv::Laplacian(shiftedH, cannyHs, CV_16S, 3, 1, 0, cv::BORDER_DEFAULT);
-			//cv::Laplacian(channels[0], cannyH, CV_16S, 3, 1, 0, cv::BORDER_DEFAULT);
-			//cv::Laplacian(channels[1], cannyS, CV_16S, 3, 1, 0, cv::BORDER_DEFAULT);
-			//cv::Laplacian(channels[2], cannyV, CV_16S, 3, 1, 0, cv::BORDER_DEFAULT);
-			//cv::convertScaleAbs(cannyHs, cannyHs);
-			//cv::convertScaleAbs(cannyH, cannyH);
-			//cv::convertScaleAbs(cannyS, cannyS);
-			//cv::convertScaleAbs(cannyV, cannyV);
-			//
-			////cv::Canny(shiftedH, cannyHs, 100, 50);
-			////cv::Canny(channels[1], cannyS, 200, 100);
-			//
-			//imshow("chs", cannyHs);
-			//imshow("ch", cannyH);
-			//imshow("cs", cannyS);
-			//imshow("cv", cannyV);
-				ShowImage(frameBGR);
+			ShowImage(frameBGR);
 		}
 
 		else if (screenshot_mode == GRAB_FRAME){
 			last_screenshot_mode = screenshot_mode;
 			frameBGR.copyTo(image);
 			cvtColor(frameBGR, frameHSV, CV_BGR2HSV);
+			int shift = 25; // in openCV hue values go from 0 to 180 (so have to be doubled to get to 0 .. 360) because of byte range from 0 to 255
+			for (int j = 0; j<frameHSV.rows; ++j)
+				for (int i = 0; i<frameHSV.cols; ++i)
+				{
+					frameHSV.at<unsigned char>(j, i) = (frameHSV.at<unsigned char>(j, i) + shift) % 180;
+				}
 
 			screenshot_mode = THRESHOLDING;
 
@@ -277,7 +250,7 @@ int AutoCalibrator::Draw() {
 				for (int i = 0; i < NUMBER_OF_OBJECTS; i++) {
 					createButton(OBJECT_LABELS[(OBJECT)i], '-', [&, i] {
 						//GetObjectThresholds(i, OBJECT_LABELS[(OBJECT)i]);
-						object_name = name;
+						object_name = OBJECT_LABELS[(OBJECT)i];
 						object_id = (OBJECT)i;
 						screenshot_mode = GET_THRESHOLD;
 					});

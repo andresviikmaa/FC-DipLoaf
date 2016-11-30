@@ -22,9 +22,9 @@ protected:
 public:
 	AutoCalibrator(ICamera * pCamera);
 	void Reset() { 
-		cv::resize(white, image, frame_size);
+		//cv::resize(white, image, frame_size);
 		//display = cv::Mat(frame_size.y, frame_size.x, CV_8U, cv::Scalar::all(255));
-		white.copyTo(display);
+		//white.copyTo(display);
 		frames = 0;
 		screenshot_mode = LIVE_FEED;
 	};
