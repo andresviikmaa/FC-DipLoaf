@@ -124,6 +124,7 @@ void AutoCalibrator::mouseClicked(int x, int y, int flags){
 
 	int step = 1;
 	if (object_id == FIELD) step = 10;
+	if (object_id == BLUE_GATE || object_id == YELLOW_GATE) step = 3;
 	points.push(cv::Point(x, y));
 	std::vector<cv::Point> neighbourhood;
 	neighbourhood.push_back(cv::Point(0, -step));
@@ -141,37 +142,45 @@ void AutoCalibrator::mouseClicked(int x, int y, int flags){
 	cv::Mat1b mask(frameHSV.rows, frameHSV.cols, uchar(0));
 	mask.at<uchar>(y, x) = uchar(255);
 
-	range = { { 179, 0 }, { 255, 0 }, { 255, 0 } };
+	range = { { 255, 0 }, { 255, 0 }, { 255, 0 } };
 
 	size_t counter = 0;
 	cv::Vec3f hsv1;
 	cv::Scalar mean;
 	size_t N = neighbourhood.size();
+	cv::Mat frameBGRCopy;
+	frameBGR.copyTo(frameBGRCopy);
 	do {
 		auto point = points.front();
 
 		//cv::Vec3f hsv1 = frameHSV.at<cv::Vec3b>(point.y, point.x);
 		mean = cv::mean(frameHSV, mask);
 		hsv1 = cv::Vec3f(mean[0], mean[1], mean[2]);
+		int w = frameBGR.size().width;
+		int h = frameBGR.size().height;
 		//for (auto n : neighbourhood){
 		for (int i = 0; i < 3;i++){
 			auto n = neighbourhood[rand() % N];
 			auto next = point + n;
+			if (next.x < 0 || next.y < 0) continue;
+			if (next.x >= w || next.y >=h) continue;
 			cv::Vec3f hsv2 = frameHSV.at<cv::Vec3b>(next.y, next.x);
-			auto col = frameBGR.at<cv::Vec3b>(next.y, next.x);
-			if (col[2] == 255) continue;
+			auto col = frameBGRCopy.at<cv::Vec3b>(next.y, next.x);
+			if (col[1] == 0 && col[2] == 127 && col[2] == 255) continue; // processed
 
 			cv::Vec3f diff;
 			diff[0] = abs(hsv1[0] - hsv2[0]);
 			diff[1] = abs(hsv1[1] - hsv2[1]);
 			diff[2] = abs(hsv1[2] - hsv2[2]);
 
-			float error[3] = { 10, 20, 50 };
-			if (object_id == BALL) { error[0] = 10; error[1] = 50; error[2] = 255; };
-			if (object_id == FIELD) { error[0] = 10; error[1] = 30; error[2] = 255; };
+			float error[3] = { 10, 30, 150 };
+			//if (object_id == BALL) { error[0] = 20; error[1] = 30; error[2] = 255; };
+			if (object_id == FIELD) { error[0] = 50; error[1] = 255; error[2] = 255; };
+			if (object_id == BLUE_GATE) { error[0] = 10; error[1] = 10; error[2] = 100; };
+			//if (object_id == INNER_BORDER) { error[0] = 20; error[1] = 40; error[2] = 255; };
 
-			frameBGR.at<cv::Vec3b>(next.y, next.x) = cv::Vec3b(0, 0, 255);
-			if (diff[0] < error[0] && diff[1] < error[1] && diff[2] < error[2]){
+			frameBGRCopy.at<cv::Vec3b>(next.y, next.x) = cv::Vec3b(0, 127, 255);
+			if (diff[0] < error[0] && diff[1] < error[1] /*&& diff[2] < error[2]*/){
 				//buffer.at<cv::Vec3b>(next.y, next.x) = cv::Vec3b(0, 0, 255);
 				mask.at<uchar>(next.y, next.x) = uchar(255);
 				points.push(next);
@@ -189,7 +198,7 @@ void AutoCalibrator::mouseClicked(int x, int y, int flags){
 		points.pop();
 		counter++;
 
-	} while (!points.empty() && counter < 40000);
+	} while (!points.empty() && counter < 6000);
 	std::cout << "counter: " << counter << ", mean: " << mean << std::endl;
 
 	cv::Mat imgThresholded;
@@ -234,13 +243,13 @@ int AutoCalibrator::Draw() {
 			last_screenshot_mode = screenshot_mode;
 			frameBGR.copyTo(image);
 			cvtColor(frameBGR, frameHSV, CV_BGR2HSV);
-			int shift = 25; // in openCV hue values go from 0 to 180 (so have to be doubled to get to 0 .. 360) because of byte range from 0 to 255
-			for (int j = 0; j<frameHSV.rows; ++j)
-				for (int i = 0; i<frameHSV.cols; ++i)
-				{
-					frameHSV.at<unsigned char>(j, i) = (frameHSV.at<unsigned char>(j, i) + shift) % 180;
-				}
-
+			//int shift = 25; // in openCV hue values go from 0 to 180 (so have to be doubled to get to 0 .. 360) because of byte range from 0 to 255
+			//for (int j = 0; j<frameHSV.rows; ++j)
+			//	for (int i = 0; i<frameHSV.cols; ++i)
+			//	{
+			//		frameHSV.at<unsigned char>(j, i) = (frameHSV.at<unsigned char>(j, i) + shift) % 180;
+			//	}
+			//
 			screenshot_mode = THRESHOLDING;
 
 		}
