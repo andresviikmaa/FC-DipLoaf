@@ -113,11 +113,15 @@ public:
 
 	DriveMode step(double dt)
 	{
+		m_pCom->ToggleTribbler(250);
 		//return DRIVEMODE_CATCH_BALL;
-		if (m_pCom->BallInTribbler()) return DRIVEMODE_AIM_GATE;
+		if (m_pCom->BallInTribbler()) 
+			return DRIVEMODE_AIM_GATE;
 		auto &target = gFieldState.ballsFront[gFieldState.closestBallTribbler];
-		if (target.distance > 10000) return DRIVEMODE_DRIVE_TO_BALL;//target too far	
-		if (preciseAim(target, speed, 2))  return DRIVEMODE_CATCH_BALL; 
+		if (target.distance > 10000) 
+			return DRIVEMODE_DRIVE_TO_BALL;//target too far	
+		if (preciseAim(target, speed, 2))  
+			return DRIVEMODE_CATCH_BALL; 
 		
 		//std::cout << "output" << speed.velocity << speed.heading <<speed.rotation<< std::endl;
 		m_pCom->Drive(speed.velocity, speed.heading, speed.rotation);
@@ -186,8 +190,12 @@ public:
 	DriveToBallAimGate(const std::string &name = "DRIVE_TO_BALL_AIM_GATE") : DriveInstruction(name){};
 
 	DriveMode step(double dt){
-		if (m_pCom->BallInTribbler() || gFieldState.closestBallTribbler < 3) //if frontCam sees ball
+		
+		if (m_pCom->BallInTribbler() || gFieldState.ballsFront[gFieldState.closestBallTribbler].distance < 10000){ //if frontCam sees ball
+			std::cout << gFieldState.ballsFront[gFieldState.closestBallTribbler].distance << std::endl;
+			m_pCom->Drive(0, 0, 0);
 			return DRIVEMODE_DRIVE_TO_BALL_FRONT;
+		}
 
 		if (gFieldState.obstacleNearBall) {
 			ACTIVE_DRIVE_TO_BALL_MODE = DRIVEMODE_DRIVE_TO_BALL_ANGLED;
@@ -313,10 +321,14 @@ DriveMode CatchBall::step(double dt)
 	return DRIVEMODE_CATCH_BALL;
 }
 
+void CatchBall::onExit()
+{
+}
 /*BEGIN AimGate*/
 
 DriveMode AimGate::step(double dt)
 {
+	m_pCom->ToggleTribbler(250);
 	GatePosition target = gFieldState.gates[gRobotState.targetGate];
 	target.heading -= 15; //compensate ball spin - to the left, to the left.
 	if (!m_pCom->BallInTribbler()) return DRIVEMODE_DRIVE_TO_BALL; //lost ball, find new

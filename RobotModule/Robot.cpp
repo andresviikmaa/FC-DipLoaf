@@ -182,7 +182,7 @@ void Robot::Run()
 #ifdef GUSTAV
 	gRobotState.runMode = ROBOT_MODE_1VS1;
 	gRobotState.gameMode = GAME_MODE_START_PLAY;
-	debug = true;
+	//debug = true;
 
 #endif
 	std::stringstream subtitles;
