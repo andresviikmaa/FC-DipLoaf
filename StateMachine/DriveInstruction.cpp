@@ -78,9 +78,9 @@ bool DriveInstruction::aimTarget(const ObjectPosition &target, Speed &speed, dou
 bool DriveInstruction::aimTargetAroundBall(const ObjectPosition &target, Speed &speed, double errorMargin) {
 	double heading = target.heading;
 	if (fabs(heading) > errorMargin) {
-		speed.rotation = -(heading) * 3;// turn toward target
-		speed.velocity = fabs(heading) * 3;//side moving speed same as rotation
-		speed.heading = sign0(heading) * 90; //move sideways opposite to turning
+		speed.rotation = (heading) ;// turn toward target
+		speed.velocity = fabs(heading) * 2;//side moving speed same as rotation
+		speed.heading = -sign0(heading) * 90; //move sideways opposite to turning
 	}
 	return fabs(heading) <= errorMargin;
 }
@@ -139,11 +139,11 @@ bool DriveInstruction::driveToTargetWithAngle(const ObjectPosition &target, Spee
 
 bool DriveInstruction::preciseAim(const ObjectPosition &target, Speed &speed, double errorMargin) {
 	if (target.distance < 150 && fabs(target.heading) > errorMargin){
-		speed.heading = -target.heading * 3;//if target close move sideways
+		speed.heading = -target.heading;//if target close move sideways
 		speed.velocity = 10;
 	}
 	else if (fabs(target.heading) > errorMargin){
-		speed.rotation = -target.heading;
+		speed.rotation = -target.heading/2;
 		speed.velocity = 40;
 	}
 	return fabs(target.heading) < errorMargin;

@@ -131,7 +131,7 @@ void ComModule::SendMessages() {
 	ss << ":" << (int)speeds.at<double>(1);
 	ss << ":" << (int)speeds.at<double>(3);
 	ss << ":" << (int)speeds.at<double>(2);
-	ss << ":" << -tribblerSpeed*30;
+	ss << ":" << -tribblerSpeed*40;
 
 	std::string tmp = ss.str();
 	SendMessage(tmp);
