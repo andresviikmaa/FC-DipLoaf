@@ -113,6 +113,7 @@ int main(int argc, char* argv[])
 
 		ComModule mainboard(io, settings.ethernetIp, settings.ethernetPort);
 		std::cout << "Done" << std::endl;
+		std::cout << "master: " << settings.master << std::endl;
 		Robot robot(io, &mainCamera, &frontCamera, &mainboard, settings.master);
 		robot.Launch();
 

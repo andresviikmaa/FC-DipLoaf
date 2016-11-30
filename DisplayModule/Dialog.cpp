@@ -154,7 +154,6 @@ int Dialog::Draw() {
 		}
 		cv::imshow(m_title, display_empty);
 	}
-std::cout << display.size() << std::endl;
 	//display_empty.copyTo(display);
 
 	return 0;

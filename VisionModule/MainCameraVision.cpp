@@ -401,14 +401,15 @@ void MainCameraVision::FindClosestBalls(){
 	};
 #ifdef SHOW_UI
 	cv::Scalar redColor(255, 0, 255);
-	cv::Scalar greenColor(255, 255, 0);
+	cv::Scalar greenColor(255, 0, 0);
 
 	cv::Rect privateZone(-19, -19, 38, 38);
+	cv::Rect privateZone2(-15, -15, 30, 30);
 	cv::Point p1 = gFieldState.balls[gFieldState.closestBall].rawPixelCoords + frameCenter;
 	cv::Point p2 = gFieldState.balls[gFieldState.closestBallInFront].rawPixelCoords + frameCenter;
 
 	rectangle(frameBGR, privateZone.tl() + p1, privateZone.br() + p1, greenColor, 3, 8, 0);
-	rectangle(frameBGR, privateZone.tl() + p2, privateZone.br() + p2, redColor, 3, 8, 0);
+	rectangle(frameBGR, privateZone2.tl() + p2, privateZone2.br() + p2, redColor, 3, 8, 0);
 #endif
 }
 void MainCameraVision::FindOtherRobots() {
