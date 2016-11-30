@@ -66,6 +66,12 @@ ADD_LIBRARY( StateMachine STATIC
    StateMachine/SingleModePlay.cpp
    StateMachine/StateMachine.cpp
 )
+
+ADD_LIBRARY( PredictionModule STATIC
+   PredictionModule/RobotTracker.cpp
+)
+
+
 TARGET_LINK_LIBRARIES( CommonModule  ${OpenCV_LIBS} ${Boost_LIBRARIES} atomic )
 TARGET_LINK_LIBRARIES( DisplayModule CommonModule ${OpenCV_LIBS} ${Boost_LIBRARIES} atomic )
 TARGET_LINK_LIBRARIES( HardwareModule CommonModule ${OpenCV_LIBS} ${Boost_LIBRARIES} atomic )
@@ -76,7 +82,7 @@ TARGET_LINK_LIBRARIES( StateMachine CommonModule ${OpenCV_LIBS} ${Boost_LIBRARIE
 set(ROBOTIINA_FILES  Robotiina/Robotiina.cpp)
 
 add_executable(robotiina ${ROBOTIINA_FILES})
-target_link_libraries( robotiina RobotModule CommonModule HardwareModule VisionModule StateMachine ${OpenCV_LIBS} ${Boost_LIBRARIES} -lX11 )
+target_link_libraries( robotiina RobotModule CommonModule HardwareModule VisionModule StateMachine PredictionModule ${OpenCV_LIBS} ${Boost_LIBRARIES} -lX11 )
 
 set(COLORCALIB_FILES  ColorCalibrator/ColorCalibrator.cpp ColorCalibrator/AutoCalibrator.cpp)
 
