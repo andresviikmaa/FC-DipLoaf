@@ -58,6 +58,11 @@ Dialog::~Dialog(){
 }
 void Dialog::ShowImage(const std::string &window, const cv::Mat &image, bool flip){
 	boost::mutex::scoped_lock lock(display_mutex); //allow one command at a time
+	if(image.size().width == 0) {
+		display.setTo(cv::Scalar(127,255,127));
+		std::cout  << "empty image: " << window << std::endl;
+		return;
+	}
 	if (windows.size() == 0){
 		activeWindow = window;
 	}
@@ -69,9 +74,9 @@ void Dialog::ShowImage(const std::string &window, const cv::Mat &image, bool fli
 		windows.insert(name);
 	}
 	if (window == activeWindow){
-		image.copyTo(display);
+		//image.copyTo(display);
 		camSize = image.size();
-		//resize(image, display, display.size());
+		resize(image, display, display.size());
 	}
 
 }
@@ -79,6 +84,7 @@ void Dialog::ShowImage(const std::string &window, const cv::Mat &image, bool fli
 void Dialog::ShowImage(const cv::Mat &image, bool flipX) {
 	boost::mutex::scoped_lock lock(display_mutex); //allow one command at a time
 
+if(image.size().width == 0)return;
 #ifdef VIRTUAL_FLIP
 		if(flipX)
 			cv::flip(image, cam1_area, 1);
@@ -148,6 +154,7 @@ int Dialog::Draw() {
 		}
 		cv::imshow(m_title, display_empty);
 	}
+std::cout << display.size() << std::endl;
 	//display_empty.copyTo(display);
 
 	return 0;

@@ -39,15 +39,15 @@ void ComModule::sendAck(const std::string & message){
 
 
 void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed) {
-	direction *= -1.;
-	angularSpeed *= -1.;
+	//direction *= -1.;
+	//angularSpeed *= -1.;
 	gFieldState.self.distance = fowardSpeed;
 	gFieldState.self.heading = direction;
 	gFieldState.self.angle = angularSpeed;
 
 	const int maxSpeed = 60;
 	/*
-	direction = 0;
+	direction = 45;
 	angularSpeed = 0;
 	fowardSpeed = 30;
 	*/
@@ -65,8 +65,8 @@ void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed)
 	}
 
 
-	targetSpeedXYW.at<double>(0) = sin((direction)* CV_PI / 180.0)* fowardSpeed;
-	targetSpeedXYW.at<double>(1) = cos((direction)* CV_PI / 180.0)* fowardSpeed;
+	targetSpeedXYW.at<double>(0) = cos((direction)* CV_PI / 180.0)* fowardSpeed;
+	targetSpeedXYW.at<double>(1) = sin((direction)* CV_PI / 180.0)* fowardSpeed;
 	targetSpeedXYW.at<double>(2) = angularSpeed;
 
 };
@@ -95,7 +95,7 @@ bool ComModule::MessageReceived(const std::string & message) {
 	const auto &command = params[0];
 	const int SIMULATOR_SPEED = 1;
 	if (command == "speeds" && params.size() > 4/*<speeds:%d:%d:%d:%d:%d>*/) {
-		std::cout << "cmd: " << tmp << std::endl;
+		//std::cout << "cmd: " << tmp << std::endl;
 		gFieldState.self.wheelSpeeds[0] = atoi(params[1].c_str());
 		gFieldState.self.wheelSpeeds[1] = atoi(params[2].c_str());
 		gFieldState.self.wheelSpeeds[2] = atoi(params[3].c_str());
@@ -127,10 +127,10 @@ void ComModule::SendMessages() {
 	ss << "speeds";
 
 	cv::Mat speeds = wheelAngles * targetSpeedXYW *8;
+	ss << ":" << (int)speeds.at<double>(2);
+	ss << ":" << -(int)speeds.at<double>(3);
 	ss << ":" << -(int)speeds.at<double>(0);
 	ss << ":" << (int)speeds.at<double>(1);
-	ss << ":" << (int)speeds.at<double>(3);
-	ss << ":" << (int)speeds.at<double>(2);
 	ss << ":" << -tribblerSpeed*30;
 
 	std::string tmp = ss.str();

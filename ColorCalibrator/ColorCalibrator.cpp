@@ -17,6 +17,10 @@ po::options_description desc("Allowed options");
 
 int main(int argc, char* argv[])
 {
+	//cv::Mat green = cv::imread("field.png", 1);
+	//cv::imshow("green", green);
+	//cv::waitKey(0);
+	//return 0;
 	desc.add_options()
 		("help", "produce help message")
 		("name", po::value<std::string>(), "set Camera config file name");
