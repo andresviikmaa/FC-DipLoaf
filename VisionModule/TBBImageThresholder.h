@@ -43,8 +43,12 @@ public:
 		for (int i = range.start; i < range.end; i++)
 		{
 
-#define THRESHOLD(range, h, s,v) \
+#define THRESHOLD_HSV(range, h, s,v) \
 					(range.hue.low <= h) && (range.hue.high >= h) && (range.sat.low <= s) && (range.sat.high >= s) && (range.val.low <= v) && (range.val.high >= v)
+#define THRESHOLD_HS(range, h, s,v) \
+					(range.hue.low <= h) && (range.hue.high >= h) && (range.sat.low <= s) && (range.sat.high >= s)
+
+#define THRESHOLD THRESHOLD_HSV
 
 #ifndef USE_INRANGE
 			for (int j = (frameHSV.cols*frameHSV.rows * 3 / diff)*i, k = (frameHSV.cols*frameHSV.rows / diff)*i; j < (frameHSV.cols*frameHSV.rows * 3 / diff)*(i + 1); j += 3, k++) {
@@ -68,11 +72,12 @@ public:
 				frameHSV.data[j + 2] = v * 255;
 
 
-				tbl.data[k] = ball ? 255 : 0;
-				tbg.data[k] = blue ? 255 : 0;
+				tfd.data[k] = field || inner_b ? 255 : 0;
+
+				tbl.data[k] = ball && !yellow ? 255 : 0;
+				tbg.data[k] = blue && !field ? 255 : 0;
 				tyg.data[k] = yellow ? 255 : 0;
 
-				tfd.data[k] = field ? 255 : 0;
 				tib.data[k] = inner_b ? 255 : 0;
 				tob.data[k] = outer_b ? 255 : 0;
 
@@ -97,5 +102,5 @@ public:
 protected:
 	cv::Mat frameHSV;
 	std::vector<OBJECT> objectList;
-	int diff = 8;
+	int diff = 4;
 };
