@@ -385,7 +385,7 @@ void MainCameraVision::FindBalls() {
 }
 
 void MainCameraVision::FindMissingBalls(){
-	return;
+	
 	cv::Rect2d r(-19, -19, 38, 38);
 	
 	for (auto &ball1 : localState.balls){
@@ -463,7 +463,7 @@ void MainCameraVision::FindClosestBalls(){
 	};
 #ifdef SHOW_UI
 	cv::Scalar redColor(255, 0, 255);
-	cv::Scalar greenColor(255, 255, 0);
+	cv::Scalar greenColor(0, 255, 255);
 
 	cv::Rect privateZone(-19, -19, 38, 38);
 	cv::Rect privateZone2(-15, -15, 30, 30);
@@ -473,7 +473,7 @@ void MainCameraVision::FindClosestBalls(){
 		rectangle(frameBGR, privateZone.tl() + p1, privateZone.br() + p1, greenColor, 3, 8, 0);
 	}
 	else {
-		//rectangle(frameBGR, privateZone2.tl() + p2, privateZone2.br() + p2, redColor, 3, 8, 0);
+		rectangle(frameBGR, privateZone2.tl() + p1, privateZone2.br() + p1, redColor, 3, 8, 0);
 	}
 #endif
 }
