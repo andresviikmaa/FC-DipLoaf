@@ -34,7 +34,7 @@ ComModule::~ComModule()
 
 void ComModule::sendAck(const std::string & message){
 
-	SendMessage("ref:" + message);
+	SendMessage("rf:" + message);
 };
 
 
