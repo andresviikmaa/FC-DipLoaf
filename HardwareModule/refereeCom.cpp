@@ -33,7 +33,7 @@ void RefereeCom::handleMessage1vs1(const std::string & command, bool sendAck){
 		gRobotState.gameMode = GAME_MODE_END_HALF;
 	}
 	else if (command == "PING-----") {
-		#pragma message("Fix referee ping")
+		; // just send ack
 	}
 	if (sendAck){
 		this->sendAck("a" + std::string(1, gRobotState.FIELD_MARKER) + std::string(1, gRobotState.ROBOT_MARKER) + "ACK------");
