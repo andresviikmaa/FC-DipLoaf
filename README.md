@@ -22,3 +22,8 @@ Robotex football contestant
   control center
   
  https://github.com/andresviikmaa/FC-Diploaf-Control
+
+
+##previous years
+* 2015 - https://github.com/martinappo/robotiina2015
+* 2014 - https://github.com/andresviikmaa/Robotiina
