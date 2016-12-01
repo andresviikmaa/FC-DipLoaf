@@ -15,7 +15,7 @@ BallFinder::~BallFinder()
 
 bool BallFinder::Locate(cv::Mat &imgThresholded, cv::Mat &frameHSV, cv::Mat &frameBGR, std::vector<cv::Point2d> &objectCoords, int minBallSize) {
 
-	try{
+	//try{
 		cv::Point2d notValidPosition = cv::Point2d(-1.0, -1.0);
 	
 		int smallestBallArea = minBallSize;
@@ -55,15 +55,14 @@ bool BallFinder::Locate(cv::Mat &imgThresholded, cv::Mat &frameHSV, cv::Mat &fra
 #endif
 				//rectangle(frameBGR, bounding_rect.tl() - cv::Point(20, 20), bounding_rect.br() + cv::Point(20, 20), redColor, 1, 8, 0);
 
-				try{
+				if (M.m00 > 0.001) {
 					objectCoords.push_back(cv::Point2d((M.m10 / M.m00), (M.m01 / M.m00)) /*- frameCenter*/);
 					ballsUpdatedCount++;
 				}
-				catch(cv::Exception ex){return false;}
 			}
 		}
 		return true;
-	}catch (cv::Exception ex){ return false; }
+	//}catch (cv::Exception ex){ return false; }
 }
 
 bool BallFinder::validateBall(ThresholdedImages &HSVRanges, cv::Point endPoint, cv::Mat &frameHSV, cv::Mat &frameBGR)
