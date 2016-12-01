@@ -100,6 +100,9 @@ bool ComModule::MessageReceived(const std::string & message) {
 		gFieldState.self.wheelSpeeds[1] = atoi(params[2].c_str());
 		gFieldState.self.wheelSpeeds[2] = atoi(params[3].c_str());
 		gFieldState.self.wheelSpeeds[3] = atoi(params[4].c_str());
+
+		cv::solve(wheelAngles, gFieldState.self.wheelSpeeds, robotSpeed, cv::DECOMP_SVD);
+		std::cout << robotSpeed << std::endl;
 	}
 	else if (command == "ref" /*<ref:%s>*/) {
 		std::cout << "cmd: " << tmp << std::endl;
