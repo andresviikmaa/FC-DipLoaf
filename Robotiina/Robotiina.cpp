@@ -31,7 +31,7 @@ boost::asio::io_service io2;
 std::atomic_bool exitRobot;
 
 //TODO: convert to commandline options
-#define USE_ROBOTIINA_WIFI
+//#define USE_ROBOTIINA_WIFI
 #ifdef USE_ROBOTIINA_WIFI 
 // robotiina wifi
 boost::asio::ip::address bind_addr = boost::asio::ip::address::from_string("0.0.0.0"); // this computer ip

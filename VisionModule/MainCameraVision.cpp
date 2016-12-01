@@ -159,6 +159,7 @@ bool MainCameraVision::PublishState() {
 		//memcpy(&gFieldState.self, &localStateCopy.self, sizeof(ObjectPosition));
 		memcpy(&gFieldState.partner, &localStateCopy.self, sizeof(ObjectPosition));
 		memcpy(&gFieldState.opponents, &localStateCopy.gates, 2 * sizeof(ObjectPosition));
+		gFieldState.closestBall = localStateCopy.closestBall;
 
 		stateUpdated = false;
 		return true;
@@ -384,6 +385,7 @@ void MainCameraVision::FindBalls() {
 }
 
 void MainCameraVision::FindMissingBalls(){
+	return;
 	cv::Rect2d r(-19, -19, 38, 38);
 	
 	for (auto &ball1 : localState.balls){
@@ -417,10 +419,12 @@ void MainCameraVision::FindMissingBalls(){
 			}
 		}
 	}
+	/*
 	if (lostBallCount > 0) {
 		std::cout << "lost count: " << lostBallCount << ", couunter" << ballCounter << std::endl;
 		//assert(lostBallCount < 5);
 	}
+	*/
 #ifdef SHOW_UI
 	cv::Rect2d r2(-30, -30, 60, 60);
 
@@ -439,20 +443,21 @@ void MainCameraVision::FindClosestBalls(){
 	FindMissingBalls();
 	uchar closest = MAX_BALLS, closest2 = MAX_BALLS, closest3 = MAX_BALLS-1;
 	double dist1 = INT_MAX, dist2 = INT_MAX, dist3 = INT_MAX;
-	gFieldState.closestBallInFront = MAX_BALLS - 1;
-	gFieldState.closestBall = MAX_BALLS - 1;
+	localState.closestBallInFront = MAX_BALLS - 1;
+	localState.closestBall = MAX_BALLS - 1;
 	uchar i=0;
 	for (auto &ball : localState.balls){
-		i++;
 		if (!ball.isValid) continue;
 		localState.ballCount++;
 
 		if (ball.distance < dist1){
-			gFieldState.closestBall = i;
+			localState.closestBall = i;
 			dist1 = ball.distance;
 		}
+		i++;
+
 		//if (ball.distance < dist2 && abs(ball.heading) < 90){
-		//	gFieldState.closestBallInFront = i;
+		//	localState.closestBallInFront = i;
 		//	dist2 = ball.distance;
 		//}
 	};
@@ -462,9 +467,9 @@ void MainCameraVision::FindClosestBalls(){
 
 	cv::Rect privateZone(-19, -19, 38, 38);
 	cv::Rect privateZone2(-15, -15, 30, 30);
-	cv::Point p1 = gFieldState.balls[gFieldState.closestBall].rawPixelCoords + frameCenter;
-	//cv::Point p2 = gFieldState.balls[gFieldState.closestBallInFront].rawPixelCoords + frameCenter;
-	if (gFieldState.balls[gFieldState.closestBall].isPredicted) {
+	cv::Point p1 = localState.balls[localState.closestBall].rawPixelCoords + frameCenter;
+	//cv::Point p2 = localState.balls[localState.closestBallInFront].rawPixelCoords + frameCenter;
+	if (localState.balls[localState.closestBall].isPredicted) {
 		rectangle(frameBGR, privateZone.tl() + p1, privateZone.br() + p1, greenColor, 3, 8, 0);
 	}
 	else {

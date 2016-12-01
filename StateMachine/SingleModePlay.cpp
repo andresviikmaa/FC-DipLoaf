@@ -312,14 +312,17 @@ DriveMode CatchBall::step(double dt)
 	}
 	const BallPosition & target = gFieldState.ballsFront[gFieldState.closestBallTribbler];
 
-	if (gFieldState.closestBallTribbler >3)  return DRIVEMODE_DRIVE_TO_BALL; //if frontCam doesn't see ball
+	if (target.distance > 10000) {
+		return DRIVEMODE_DRIVE_TO_BALL;//target too far	
+	} 
 	speed.velocity, speed.heading, speed.rotation = 0;
 	if (fabs(target.heading) <= 2.) { //if heading correct 
 		if (catchTarget(target, speed)) { //if ball in tribbler; sets velocity to 60
 			m_pCom->ToggleTribbler(250);
 			return DRIVEMODE_AIM_GATE;
 		}
-		speed.rotation = -(target.heading);//random constant 
+		int randomConstant = 1.5;
+		speed.rotation = target.heading * randomConstant;
 	}
 	else return DRIVEMODE_DRIVE_TO_BALL_FRONT;
 	m_pCom->Drive(speed.velocity, speed.heading, speed.rotation);// velocity = 60; heading  = 0
@@ -350,7 +353,7 @@ DriveMode AimGate::step(double dt)
 void Kick::onEnter()
 {
 	DriveInstruction::onEnter();
-	m_pCom->ToggleTribbler(100);//slow down, don't stop, might loose ball
+//	m_pCom->ToggleTribbler(100);//slow down, don't stop, might loose ball
 	m_pCom->Drive(0, 0, 0);
 	//ACTIVE_DRIVE_TO_BALL_MODE = DRIVEMODE_DRIVE_TO_BALL_AIM_GATE;
 }
@@ -358,7 +361,7 @@ DriveMode Kick::step(double dt)
 {
 	//std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	double dist = gFieldState.gates[gRobotState.targetGate].distance;
-	m_pCom->Kick((dist > 500) ? 5000 : 2500); // if close use half kick strength
+	m_pCom->Kick((dist > 350) ? 5000 : 2500); // if close use half kick strength
 	std::this_thread::sleep_for(std::chrono::milliseconds(50)); //less than half second wait.
 	m_pCom->ToggleTribbler(0);
 	return DRIVEMODE_DRIVE_TO_BALL;
