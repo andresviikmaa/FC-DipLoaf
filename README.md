@@ -19,3 +19,6 @@ Robotex football contestant
   * cmake -DCMAKE_BUILD_TYPE=Realease .
   * cmake -DSHOW_UI=ON -DCMAKE_BUILD_TYPE=Debug .
   
+  control center
+  
+ https://github.com/andresviikmaa/FC-Diploaf-Control
