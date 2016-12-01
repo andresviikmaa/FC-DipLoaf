@@ -4,6 +4,8 @@
 #include "../CommonModule/Interfaces.h"
 #include "../CommonModule/FieldState.h"
 #include "../CommonModule/RobotState.h"
+#include <iostream>
+#include "kdNode2D.h"
 
 #ifdef SHOW_UI
 extern IDisplay * display;
@@ -41,6 +43,15 @@ void RobotTracker::Predict(double dt, bool mainCamUpdated, bool frontCamUpdated)
 }
 void RobotTracker::PredictLostBalls(double dt)
 {
+	/*
+	kdNode2D last(lastFieldState.balls, MAX_BALLS);
+	for (auto &ball : gFieldState.balls){
+		auto prev = last.nearest(ball);
+		std::cout << ball.distance << " <-> " << prev.second->distance << " | " << ball.heading << " <:>" << prev.second->heading << std::endl;
+	}
+	*/
+	// check positions not indices 
+	// copy/paste from last year code
 
 	// use last ball if lost
 	if (gFieldState.closestBall == MAX_BALLS - 1 && ballLost1 < 10) {
@@ -48,6 +59,7 @@ void RobotTracker::PredictLostBalls(double dt)
 			// use last
 			gFieldState.balls[gFieldState.closestBall] = lastFieldState.balls[lastFieldState.closestBall];
 			ballLost1++;
+			std::cout << "ballLost1: " << ballLost1 << std::endl;
 		}
 	}
 	else {
@@ -58,6 +70,8 @@ void RobotTracker::PredictLostBalls(double dt)
 				// use last
 				gFieldState.balls[gFieldState.closestBall] = lastFieldState.balls[lastFieldState.closestBall];
 				ballLost2++;
+				std::cout << "ballLost2: " << ballLost2 << std::endl;
+
 			}
 			else {
 				ballLost2 = 0;

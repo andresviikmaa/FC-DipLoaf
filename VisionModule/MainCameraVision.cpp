@@ -371,6 +371,7 @@ void MainCameraVision::FindBalls() {
 		// this is dangerous as fixed size array is used. TODO: convert balls back to vector perhaps.
 		if (ballFinder.validateBall(thresholdedImages, ball, frameHSV, frameBGR)) {
 			UpdateObjectPostion(localState.balls[localState.ballCount], ball);
+			localState.balls[localState.ballCount].id = 0;
 			localState.ballCount++;
 		}
 		if (localState.ballCount >= MAX_BALLS) break;
@@ -382,33 +383,93 @@ void MainCameraVision::FindBalls() {
 
 }
 
+void MainCameraVision::FindMissingBalls(){
+	cv::Rect2d r(-19, -19, 38, 38);
+	
+	for (auto &ball1 : localState.balls){
+		for (auto &ball2 : lastBalls){
+			if (ball2.isValid && (r + ball2.rawPixelCoords).contains(ball1.rawPixelCoords)){
+				ball1.id = ball2.id;
+				ball2.id = 0;
+				ball1.isUpdated = true;
+				ball1.isPredicted = false;
+
+				break;
+			}
+		}
+		if (ball1.id == 0 && ball1.isValid){
+			ball1.isUpdated = false;
+			ball1.id = ++ballCounter;
+		}
+	}
+	int lostBallCount = 0;
+	for (auto &ball2 : lastBalls){
+		if (ball2.id != 0){
+			lostBallCount++;
+			for (auto &ball1 : localState.balls){
+				if (!ball1.isValid){
+					//ball1 = ball2;
+					memcpy(&ball1, &ball2, sizeof(BallPosition));
+					ball1.isPredicted = true;
+					//std::cout << "ball lost" << ball1.rawPixelCoords << std::endl;
+					break;
+				}
+			}
+		}
+	}
+	if (lostBallCount > 0) {
+		std::cout << "lost count: " << lostBallCount << ", couunter" << ballCounter << std::endl;
+		//assert(lostBallCount < 5);
+	}
+#ifdef SHOW_UI
+	cv::Rect2d r2(-30, -30, 60, 60);
+
+	for (auto &ball1 : localState.balls){
+		if (!ball1.isUpdated) continue;
+		cv::Scalar c(0, ball1.isUpdated ? 255:0, ball1.isPredicted ? 255 : 0 );
+		//cv::rectangle(frameBGR, r2 + frameCenter + ball1.rawPixelCoords, c, 3, 8, 0);
+		cv::putText(frameBGR, std::to_string(ball1.id), ball1.rawPixelCoords + frameCenter + cv::Point2d(20, 20), cv::FONT_HERSHEY_DUPLEX, 0.4, cv::Scalar(23, 40, 245));
+	}
+#endif // SHOW_UI
+
+	memcpy(lastBalls, localState.balls, MAX_BALLS * sizeof(BallPosition));
+}
+
 void MainCameraVision::FindClosestBalls(){
+	FindMissingBalls();
 	uchar closest = MAX_BALLS, closest2 = MAX_BALLS, closest3 = MAX_BALLS-1;
 	double dist1 = INT_MAX, dist2 = INT_MAX, dist3 = INT_MAX;
 	gFieldState.closestBallInFront = MAX_BALLS - 1;
 	gFieldState.closestBall = MAX_BALLS - 1;
-	for (int i = 0; i < localState.ballCount; i++){
-		auto &ball = gFieldState.balls[i];
-		auto &ballFront = gFieldState.ballsFront[i];
+	uchar i=0;
+	for (auto &ball : localState.balls){
+		i++;
+		if (!ball.isValid) continue;
+		localState.ballCount++;
+
 		if (ball.distance < dist1){
 			gFieldState.closestBall = i;
 			dist1 = ball.distance;
 		}
-		if (ball.distance < dist2 && abs(ball.heading) < 90){
-			gFieldState.closestBallInFront = i;
-			dist2 = ball.distance;
-		}
+		//if (ball.distance < dist2 && abs(ball.heading) < 90){
+		//	gFieldState.closestBallInFront = i;
+		//	dist2 = ball.distance;
+		//}
 	};
 #ifdef SHOW_UI
 	cv::Scalar redColor(255, 0, 255);
 	cv::Scalar greenColor(255, 255, 0);
 
 	cv::Rect privateZone(-19, -19, 38, 38);
+	cv::Rect privateZone2(-15, -15, 30, 30);
 	cv::Point p1 = gFieldState.balls[gFieldState.closestBall].rawPixelCoords + frameCenter;
-	cv::Point p2 = gFieldState.balls[gFieldState.closestBallInFront].rawPixelCoords + frameCenter;
-
-	rectangle(frameBGR, privateZone.tl() + p1, privateZone.br() + p1, greenColor, 3, 8, 0);
-	rectangle(frameBGR, privateZone.tl() + p2, privateZone.br() + p2, redColor, 3, 8, 0);
+	//cv::Point p2 = gFieldState.balls[gFieldState.closestBallInFront].rawPixelCoords + frameCenter;
+	if (gFieldState.balls[gFieldState.closestBall].isPredicted) {
+		rectangle(frameBGR, privateZone.tl() + p1, privateZone.br() + p1, greenColor, 3, 8, 0);
+	}
+	else {
+		//rectangle(frameBGR, privateZone2.tl() + p2, privateZone2.br() + p2, redColor, 3, 8, 0);
+	}
 #endif
 }
 void MainCameraVision::FindOtherRobots() {
