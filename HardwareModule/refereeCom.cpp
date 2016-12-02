@@ -95,6 +95,9 @@ void RefereeCom::handleMessage1vs1(const std::string & command, bool sendAck){
 	else if (command == "PING-----") {
 		; // just send ack
 	}
+	else if (command == "ACK------") {
+		return; // ignore ack
+	}
 	if (sendAck){
 		this->sendAck("a" + std::string(1, gRobotState.FIELD_MARKER) + std::string(1, gRobotState.ROBOT_MARKER) + "ACK------");
 	}
