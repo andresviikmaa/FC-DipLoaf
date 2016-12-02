@@ -19,7 +19,7 @@ protected:
 public:
 	FrontCameraVision(ICamera * pCamera);
 	~FrontCameraVision();
-	void ProcessFrame();
+	void ProcessFrame(double dt);
 //	void ThresholdFrame();
 	void FindGate();
 	void FindBall();

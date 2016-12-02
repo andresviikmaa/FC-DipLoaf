@@ -52,7 +52,7 @@ struct BallPosition: public ObjectPosition
 {
 	uchar id;
 	bool isUpdated;
-	double speed;
+	double lostTime;
 };
 struct GatePosition : public ObjectPosition
 {
