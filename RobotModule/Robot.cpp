@@ -269,9 +269,9 @@ void Robot::Run()
 //			std::string debug2 = " " + m_pComModule->GetDebugInfo();
 //			debug2[0] = COMMAND_WHEELS_STATE;
 //			SendData(debug2.c_str(), debug2.size());
-//int ms = 50;
-		//std::chrono::milliseconds dura(ms);
-		//std::this_thread::sleep_for(dura);
+			int ms = 50;
+			std::chrono::milliseconds dura(ms);
+			std::this_thread::sleep_for(dura);
 
 			//int key = cv::waitKey(50);
 			//if (key == 27) {
