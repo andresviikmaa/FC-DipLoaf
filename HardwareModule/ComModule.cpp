@@ -45,7 +45,7 @@ void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed)
 	gFieldState.self.heading = direction;
 	gFieldState.self.angle = angularSpeed;
 
-	const int maxSpeed = 30;
+	const int maxSpeed = 60;
 	/*
 	direction = 0;
 	angularSpeed = 0;

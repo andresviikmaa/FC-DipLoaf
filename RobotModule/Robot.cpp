@@ -185,12 +185,15 @@ void Robot::Run()
 	double u1 = (double)cv::getTickCount();
 #define GUSTAV
 #ifdef GUSTAV
-	if (true){//2v2
+	if (false){//2v2
 		gRobotState.runMode = ROBOT_MODE_2VS2;
 		gRobotState.gameMode = GAME_MODE_START_OUR_PENALTY;
 	}
 	else{
 		gRobotState.runMode = ROBOT_MODE_1VS1;
+		gRobotState.FIELD_MARKER = 'B';
+		gRobotState.targetGate = BLUE_GATE;
+		gRobotState.homeGate = YELLOW_GATE;
 		gRobotState.gameMode = GAME_MODE_START_PLAY;
 	}
 
