@@ -181,9 +181,9 @@ void Robot::Run()
 	double u1 = (double)cv::getTickCount();
 #define GUSTAV
 #ifdef GUSTAV
-	if (false){//2v2
+	if (true){//2v2
 		gRobotState.runMode = ROBOT_MODE_2VS2;
-		gRobotState.gameMode = GAME_MODE_START_OUR_KICK_OFF;
+		gRobotState.gameMode = GAME_MODE_START_OUR_PENALTY;
 	}
 	else{
 		gRobotState.runMode = ROBOT_MODE_1VS1;

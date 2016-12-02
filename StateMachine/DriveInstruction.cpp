@@ -138,14 +138,15 @@ bool DriveInstruction::driveToTargetWithAngle(const ObjectPosition &target, Spee
 }
 
 bool DriveInstruction::preciseAim(const ObjectPosition &target, Speed &speed, double errorMargin) {
+
+	speed.velocity = 60;
 	if (target.distance < 150 && fabs(target.heading) > errorMargin){
 
 		speed.heading = target.heading * 1.5;//if target close move sideways
-		speed.velocity = 15;
+		speed.velocity = 30;
 	}
 	else if (fabs(target.heading) > errorMargin){
 		speed.rotation = -target.heading/2;
-		speed.velocity = 40;
 	}
 	return fabs(target.heading) < errorMargin;
 }

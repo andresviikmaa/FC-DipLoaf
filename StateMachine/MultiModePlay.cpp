@@ -98,6 +98,11 @@ public:
 
 		auto &target = gFieldState.balls[gFieldState.closestBall];
 
+		if (gFieldState.ballsFront[gFieldState.closestBallTribbler].distance < 10000){ //if frontCam sees ball
+			m_pCom->Drive(0, 0, 0);
+			return DRIVEMODE_CATCH_BALL;
+		}
+
 		if (m_pCom->BallInTribbler(true)) {
 			std::cout << "BallInTribbler" << std::endl;
 			return DRIVEMODE_AIM_GATE;
@@ -119,15 +124,26 @@ private:
 public:
 	CatchBall2v2(bool mode) : CatchBall("2V2_CATCH_BALL"), master(mode){};
 	virtual DriveMode step(double dt){
-			if (m_pCom->BallInTribbler(true)){
-				std::cout << "BallInTribbler" << std::endl;
-				if (gRobotState.gameMode == GAME_MODE_START_OUR_KICK_OFF) return DRIVEMODE_2V2_AIM_PARTNER;
-				else return DRIVEMODE_2V2_OFFENSIVE;
-			};
+
+		m_pCom->ToggleTribbler(250);
+		if (m_pCom->BallInTribbler()){
+			std::cout << "BallInTribbler" << std::endl;
+			if (gRobotState.gameMode == GAME_MODE_START_OUR_KICK_OFF) return DRIVEMODE_2V2_AIM_PARTNER;
+			else if (gRobotState.gameMode == GAME_MODE_START_OUR_PENALTY) return DRIVEMODE_AIM_GATE;
+			else return DRIVEMODE_2V2_OFFENSIVE;
+		};
+		auto &target = gFieldState.ballsFront[gFieldState.closestBallTribbler];
+		if (target.distance > 10000) {
+			//std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			return DRIVEMODE_DRIVE_TO_BALL;//target too far	
+		}
+		preciseAim(target, speed, 2);
+		m_pCom->Drive(speed.velocity, speed.heading, speed.rotation);
+		/*
 
 	const BallPosition & target = gFieldState.balls[gFieldState.closestBall];
 	double heading = target.heading;
-		if (/*STUCK_IN_STATE(3000) ||*/ target.distance > (initDist + 10)) return DRIVEMODE_DRIVE_TO_BALL;
+		if ( target.distance > (initDist + 10)) return DRIVEMODE_DRIVE_TO_BALL;
 	speed.velocity, speed.heading, speed.rotation = 0;
 	if (fabs(target.heading) <= 2.) {
 		if (catchTarget(target, speed)) {
@@ -145,6 +161,7 @@ public:
 		speed.rotation = -heading;
 	}
 	m_pCom->Drive(speed.velocity, speed.heading, speed.rotation);
+	*/
 	return DRIVEMODE_CATCH_BALL;
 
 /*
@@ -356,7 +373,7 @@ public:
 		}
 		else {
 			speed.rotation = lastGatePosition.heading;
-			if(fabs(speed.rotation) > 50) speed.rotation = sign0(speed.rotation)*50;				
+			if(fabs(speed.rotation) > 50) speed.rotation = sign0(speed.rotation)*25;				
 		}
 		m_pCom->Drive(speed.velocity, speed.heading, -speed.rotation);
 		return DRIVEMODE_AIM_GATE;
@@ -459,6 +476,12 @@ public:
 
 		const ObjectPosition &ball = gFieldState.balls[gFieldState.closestBall];
 		const ObjectPosition &gate = gFieldState.gates[gRobotState.homeGate];
+
+		if ( gFieldState.ballsFront[gFieldState.closestBallTribbler].distance < 10000){ //if frontCam sees ball
+			m_pCom->Drive(0, 0, 0);
+			return DRIVEMODE_CATCH_BALL;
+		}
+
 		double gateHeading = gate.heading;
 		double ballHeading = ball.heading;
 		double ballDistance = ball.distance;
@@ -479,8 +502,8 @@ public:
 				return DRIVEMODE_CATCH_BALL;
 			}
 			if (fabs(ballHeading) > errorMargin) {
-				heading = ballHeading + sign0(ballHeading) * 45;
-				speed = 35;
+				heading = ballHeading + sign0(ballHeading) * 55;
+				speed = 60;
 			}
 			rotation = 0;
 			if (fabs(gateHeading) > errorMargin) rotation = -sign0(gateHeading) * std::min(40.0, std::max(fabs(gateHeading), 5.0));
