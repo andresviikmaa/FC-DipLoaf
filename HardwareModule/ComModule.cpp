@@ -39,7 +39,7 @@ void ComModule::sendAck(const std::string & message){
 
 
 void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed) {
-	direction *= -1.;
+	//direction *= -1.;
 	angularSpeed *= -1.;
 	gFieldState.self.distance = fowardSpeed;
 	gFieldState.self.heading = direction;

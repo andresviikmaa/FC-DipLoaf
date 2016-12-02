@@ -35,7 +35,7 @@ std::atomic_bool exitRobot;
 #ifdef USE_ROBOTIINA_WIFI 
 // robotiina wifi
 boost::asio::ip::address bind_addr = boost::asio::ip::address::from_string("0.0.0.0"); // this computer ip
-boost::asio::ip::address brdc_addr = boost::asio::ip::address::from_string("192.168.0.255"); // netmask 255.255.255.240
+boost::asio::ip::address brdc_addr = boost::asio::ip::address::from_string("192.168.42.255"); // netmask 255.255.255.240
 #else
 // any local network
 boost::asio::ip::address bind_addr = boost::asio::ip::address::from_string("0.0.0.0"); // all interfaces
@@ -45,7 +45,7 @@ boost::asio::ip::address brdc_addr = boost::asio::ip::address_v4::broadcast(); /
 
 #ifdef WIN32
 BOOL CtrlHandler(DWORD fdwCtrlType)
-{ 
+{  
 	switch( fdwCtrlType ) 
 	{
 		// Handle the CTRL-C signal. 

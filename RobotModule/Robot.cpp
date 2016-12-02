@@ -185,12 +185,14 @@ void Robot::Run()
 	double u1 = (double)cv::getTickCount();
 #define GUSTAV
 #ifdef GUSTAV
-	if (false){//2v2
+	gRobotState.FIELD_MARKER = 'B';
+	gRobotState.targetGate = BLUE_GATE;
+	gRobotState.homeGate = YELLOW_GATE;
+	if (true){//2v2
 		gRobotState.runMode = ROBOT_MODE_2VS2;
 		//gRobotState.gameMode = GAME_MODE_START_OUR_PENALTY;
 	}
 	else{
-		gRobotState.FIELD_MARKER = 'B';
 		gRobotState.runMode = ROBOT_MODE_1VS1;
 		//gRobotState.gameMode = GAME_MODE_START_PLAY;
 	}
@@ -267,9 +269,9 @@ void Robot::Run()
 //			std::string debug2 = " " + m_pComModule->GetDebugInfo();
 //			debug2[0] = COMMAND_WHEELS_STATE;
 //			SendData(debug2.c_str(), debug2.size());
-//int ms = 50;
-		//std::chrono::milliseconds dura(ms);
-		//std::this_thread::sleep_for(dura);
+int ms = 50;
+		std::chrono::milliseconds dura(ms);
+		std::this_thread::sleep_for(dura);
 
 			//int key = cv::waitKey(50);
 			//if (key == 27) {

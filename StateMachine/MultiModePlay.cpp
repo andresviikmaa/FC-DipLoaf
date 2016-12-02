@@ -109,6 +109,8 @@ public:
 
 	virtual DriveMode step(double dt){
 		if (gPartnerRobotState.driveState != DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_PARTNER && gPartnerRobotState.driveState != DRIVEMODE_IDLE) {
+			std::chrono::milliseconds dura(500);
+		std::this_thread::sleep_for(dura);
 			return DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_GATE;
 		}
 
