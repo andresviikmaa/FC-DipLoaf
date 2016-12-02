@@ -45,7 +45,7 @@ void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed)
 	gFieldState.self.heading = direction;
 	gFieldState.self.angle = angularSpeed;
 
-	const int maxSpeed = 60;
+	const int maxSpeed = 100;
 	/*
 	direction = 0;
 	angularSpeed = 0;
@@ -131,7 +131,7 @@ void ComModule::SendMessages() {
 	ss << ":" << (int)speeds.at<double>(1);
 	ss << ":" << (int)speeds.at<double>(3);
 	ss << ":" << (int)speeds.at<double>(2);
-	ss << ":" << -tribblerSpeed*25;
+	ss << ":" << -tribblerSpeed*25*0;
 
 	std::string tmp = ss.str();
 	SendMessage(tmp);

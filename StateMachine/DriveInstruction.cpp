@@ -152,11 +152,11 @@ bool DriveInstruction::preciseAim(const ObjectPosition &target, Speed &speed, do
 
 bool DriveInstruction::preciseAim(const ObjectPosition &ball, const ObjectPosition &gate, Speed &speed, double errorMargin) {
 
-	speed.heading = ball.heading * 1.5;
-	speed.rotation = -gate.heading / 2;
-	speed.velocity = 40;
+	speed.heading = ball.heading * 1.4;
+	speed.rotation = -gate.heading / 1.5;
+	speed.velocity = 60;
 
-	return fabs(ball.heading - gate.heading) < 2.;
+	return fabs(ball.heading - gate.heading) < 1.8;
 }
 
 
