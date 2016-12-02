@@ -208,16 +208,12 @@ void MainCameraVision::UpdateObjectPostion(ObjectPosition & object, const cv::Po
 
 	double distanceInCm = dist == 0 ? 0.0 : std::max(0.0, 13.13*exp(0.008 * dist));
 
-	double angle = angleBetween(pos - frameCenter, { 1, 0 });
+	double angle = angleBetween(pos - frameCenter, { -1, 0 });
 	//double angle = atan((object.rawPixelCoords.y) / (object.rawPixelCoords.x)) * 180 / PI;
 	//TODO: hack to fix simulator, as 
 	if (distanceInCm < 14 && fabs(fabs(angle) - 270)<0.01)  angle = 0;
 	// flip angle alony y axis
-#ifndef VIRTUAL_FLIP
-	object.polarMetricCoords = { distanceInCm, angle };
-#else
-	object.polarMetricCoords = { distanceInCm, -angle + 360 };
-#endif
+	object.polarMetricCoords = { distanceInCm, 360-angle};
 	SYNC_OBJECT(object);
 	object.isValid = true;
 }

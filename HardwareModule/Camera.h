@@ -21,7 +21,6 @@ private:
 	cv::Size frameSize;
 	cv::Point2d cameraOrgin;
 	cv::Rect roi = cv::Rect(175, 60, 960, 960);
-	bool flip = false;
 	double fps;
 	int frames = 0;
 	double time = 0;
