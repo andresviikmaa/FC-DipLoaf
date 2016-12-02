@@ -108,7 +108,7 @@ public:
 	CatchKickOff() : DriveInstruction("2V2_CATCH_KICKOFF"){};
 
 	virtual DriveMode step(double dt){
-		if (gPartnerRobotState.driveState != DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_PARTNER) {
+		if (gPartnerRobotState.driveState != DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_PARTNER && gPartnerRobotState.driveState != DRIVEMODE_IDLE) {
 			return DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_GATE;
 		}
 
