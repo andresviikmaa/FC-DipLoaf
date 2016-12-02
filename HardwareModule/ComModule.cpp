@@ -39,8 +39,8 @@ void ComModule::sendAck(const std::string & message){
 
 
 void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed) {
-	//direction *= -1.;
-	//angularSpeed *= -1.;
+	direction *= -1.;
+	angularSpeed *= -1.;
 	gFieldState.self.distance = fowardSpeed;
 	gFieldState.self.heading = direction;
 	gFieldState.self.angle = angularSpeed;
@@ -65,8 +65,8 @@ void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed)
 	}
 
 
-	targetSpeedXYW.at<double>(0) = cos((direction)* CV_PI / 180.0)* fowardSpeed;
-	targetSpeedXYW.at<double>(1) = sin((direction)* CV_PI / 180.0)* fowardSpeed;
+	targetSpeedXYW.at<double>(0) = sin((direction)* CV_PI / 180.0)* fowardSpeed;
+	targetSpeedXYW.at<double>(1) = cos((direction)* CV_PI / 180.0)* fowardSpeed;
 	targetSpeedXYW.at<double>(2) = angularSpeed;
 
 };
@@ -127,11 +127,11 @@ void ComModule::SendMessages() {
 	ss << "speeds";
 
 	cv::Mat speeds = wheelAngles * targetSpeedXYW *8;
-	ss << ":" << (int)speeds.at<double>(2);
-	ss << ":" << -(int)speeds.at<double>(3);
 	ss << ":" << (int)speeds.at<double>(0);
+	ss << ":" << -(int)speeds.at<double>(3);
+	ss << ":" << (int)speeds.at<double>(2);
 	ss << ":" << (int)speeds.at<double>(1);
-	ss << ":" << -tribblerSpeed*25;
+	ss << ":" << 0;//-tribblerSpeed*25;
 
 	std::string tmp = ss.str();
 	SendMessage(tmp);

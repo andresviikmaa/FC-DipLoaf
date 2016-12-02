@@ -76,7 +76,7 @@ void FrontCameraVision::UpdateObjectPostion(ObjectPosition & object, const cv::P
 	}
 	Hor_angle = abs(Hor_angle);
 	*/
-	object.polarMetricCoords = { distance, Hor_angle };
+	object.polarMetricCoords = { distance, 360-Hor_angle };
 	SYNC_OBJECT(object);
 //	return{ distance, HorizontalDev, Hor_angle };
 	object.isValid = true;

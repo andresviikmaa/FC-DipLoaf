@@ -423,6 +423,7 @@ void MainCameraVision::FindMissingBalls(double dt){
 		if (!ball2.isUpdated){
 			ball2.isUpdated = true;
 			ball2.isPredicted = true;
+			ball2.isValid = true;
 			ball2.lostTime += dt;
 		}
 	}
@@ -461,7 +462,7 @@ void MainCameraVision::FindMissingBalls(double dt){
 	cv::Rect2d r2(-30, -30, 60, 60);
 
 	for (auto &ball1 : lastBalls){
-		if (!ball1.isUpdated) continue;
+		if (!ball1.isUpdated || !ball1.isValid) continue;
 		cv::Scalar c(0, ball1.isUpdated ? 255:0, ball1.isPredicted ? 255 : 0 );
 		//cv::rectangle(frameBGR, r2 + frameCenter + ball1.rawPixelCoords, c, 3, 8, 0);
 		cv::putText(frameBGR, std::to_string(ball1.id), ball1.rawPixelCoords + frameCenter + cv::Point2d(20, 20), cv::FONT_HERSHEY_DUPLEX, 0.4, cv::Scalar(23, 40, 245));
