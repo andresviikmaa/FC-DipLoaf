@@ -16,6 +16,12 @@ extern FieldState gPartnerFieldState;
 extern RobotState gRobotState;
 extern RobotState gPartnerRobotState;
 
+double getDistanceDiff(double initial, double diff) {
+	//TODO:: probably wrong
+	double dist1 = 125 * log(initial / 13.13);
+	double dist2 = 125 * log(initial + diff / 13.13);
+	return dist2 - dist1; 
+}
 RobotTracker::RobotTracker() : self(gFieldState.gates[BLUE_GATE], gFieldState.gates[YELLOW_GATE])
 {
 #ifdef SHOW_UI
@@ -36,79 +42,22 @@ RobotTracker::~RobotTracker()
 
 void RobotTracker::Predict(double dt, bool mainCamUpdated, bool frontCamUpdated) 
 {
+	cv::Point3d movement = self.updateOdometer(gFieldState.self.wheelSpeeds, dt);
+
 	DetectRobotLocation(dt);
 	memcpy(&lastFieldState, &gFieldState, sizeof(FieldState));
-	DetectRobotLocation(dt);
-	PredictLostBalls(dt);
+	PredictLostBalls(movement, dt);
 }
-void RobotTracker::PredictLostBalls(double dt)
+void RobotTracker::PredictLostBalls(cv::Point3d movement, double dt)
 {
-
-	return;
-	/*
-	kdNode2D last(lastFieldState.balls, MAX_BALLS);
 	for (auto &ball : gFieldState.balls){
-		auto prev = last.nearest(ball);
-		std::cout << ball.distance << " <-> " << prev.second->distance << " | " << ball.heading << " <:>" << prev.second->heading << std::endl;
+		if (ball.isPredicted){
+			ball.angle -= movement.z;
+			ball.distance -= getDistanceDiffInverted(ball.distance, cv::norm(cv::Point2d(movement.x, movement.y)));
+		}
 	}
-	*/
-	// check positions not indices 
-	// copy/paste from last year code
+	
 
-	// use last ball if lost
-	if (gFieldState.closestBall == MAX_BALLS - 1 && ballLost1 < 10) {
-		if (lastFieldState.closestBall != MAX_BALLS - 1) {
-			// use last
-			gFieldState.balls[gFieldState.closestBall] = lastFieldState.balls[lastFieldState.closestBall];
-			ballLost1++;
-			std::cout << "ballLost1: " << ballLost1 << std::endl;
-		}
-	}
-	else {
-		ballLost1 = 0;
-		// avoid jumping between balls
-		if (lastFieldState.closestBall != MAX_BALLS - 1 && ballLost2 < 30) {
-			if (lastFieldState.balls[lastFieldState.closestBall].distance > 10 && gFieldState.balls[gFieldState.closestBall].distance > lastFieldState.balls[lastFieldState.closestBall].distance * 1.8){
-				// use last
-				gFieldState.balls[gFieldState.closestBall] = lastFieldState.balls[lastFieldState.closestBall];
-				ballLost2++;
-				std::cout << "ballLost2: " << ballLost2 << std::endl;
-
-			}
-			else {
-				ballLost2 = 0;
-			}
-		}
-		else {
-			ballLost2 = 0;
-		}
-	}
-
-	/*
-	if (ballFrontLost < 10 && gFieldState.closestBall == MAX_BALLS - 1 && lastFieldState.closestBall < 12){
-		gFieldState.closestBall = 13;
-		gFieldState.balls[gFieldState.closestBall] = lastFieldState.balls[lastFieldState.closestBall];
-		ballFrontLost++;
-	}
-	else {
-		if (gFieldState.balls[gFieldState.closestBall].distance > lastFieldState.balls[lastFieldState.closestBall].distance * 1.8){
-			gFieldState.closestBall = 13;
-			gFieldState.balls[gFieldState.closestBall] = lastFieldState.balls[lastFieldState.closestBall];
-			ballFrontLost++;
-		}
-		else {
-			ballFrontLost = 0;
-		}
-	}
-	if (ballLost < 10 && gFieldState.closestBall == MAX_BALLS - 1 && lastFieldState.closestBall < 12){
-		gFieldState.closestBall = 12;
-		gFieldState.balls[gFieldState.closestBall] = lastFieldState.balls[lastFieldState.closestBall];
-		ballLost++;
-	}
-	else {
-		ballLost = 0;
-	}
-	*/
 }
 void RobotTracker::DetectRobotLocation(double dt){
 	auto &Y = gFieldState.gates[YELLOW_GATE];
@@ -116,12 +65,12 @@ void RobotTracker::DetectRobotLocation(double dt){
 	auto &lY = lastFieldState.gates[YELLOW_GATE];
 	auto &lB = lastFieldState.gates[BLUE_GATE];
 
-	self.updateOdometer(gFieldState.self.wheelSpeeds, dt);
 	if (Y.isValid && B.isValid){		
 		self.updateFieldCoords(cv::Point2d(0, 0), dt);
 	} else { 
 		self.predict(dt);
 	}
+
 
 }
 void RobotTracker::Reset(){

@@ -26,7 +26,7 @@ void Reset(double x, double y, double heading){
 }
 
 
-void RobotLocation::updateOdometer(short speeds[4], double dt){
+cv::Point3d RobotLocation::updateOdometer(short speeds[4], double dt){
 	const double TAMBOV = 1;
 
 	wheelSpeeds.at<double>(0, 0) = speeds[0];
@@ -51,8 +51,10 @@ void RobotLocation::updateOdometer(short speeds[4], double dt){
 
 	fieldCoords.x += dx;
 	fieldCoords.y -= dy;
-
+	
 	fieldCoords = filter.doFiltering(cv::Point(fieldCoords.x, fieldCoords.y));
+	
+	return cv::Point3d(dx, dy, dr);
 
 }
 
