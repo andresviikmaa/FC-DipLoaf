@@ -99,8 +99,8 @@ bool Robot::Launch()
 	return true;
 }
 void Robot::SendFieldState() {
-	const char * pData = reinterpret_cast<const char*>(&gFieldState);
-	SendData(pData, sizeof(FieldState));
+	//const char * pData = reinterpret_cast<const char*>(&gFieldState);
+	//SendData(pData, sizeof(FieldState));
 	const char * pData2 = reinterpret_cast<const char*>(&gRobotState);
 	SendData(pData2, sizeof(RobotState));
 

@@ -65,7 +65,7 @@ void UdpServer::handle_receive(const boost::system::error_code& error,
 
 			std::string message = std::string(recv_buffer_.begin(), recv_buffer_.end());
 			message.resize(size);
-			std::cout << "udp packet:" << message << std::endl;
+			//std::cout << "udp packet:" << message << std::endl;
 			MessageReceived(message);
 		}
 		start_receive();

@@ -18,7 +18,7 @@ ComModule::ComModule(boost::asio::io_service &io, const std::string ip_address, 
 ComModule::ComModule(boost::asio::io_service &io, const std::string ip_address, ushort port1):
 	io(io), UdpServer(io, ip_address, port1)
 {
-	SendMessage("fs:0");
+	SendMessage("fs:1");
 	SendMessage("charge");
 }
 
@@ -45,7 +45,7 @@ void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed)
 	gFieldState.self.heading = direction;
 	gFieldState.self.angle = angularSpeed;
 
-	const int maxSpeed = 60;
+	const int maxSpeed = 100;
 	/*
 	direction = 0;
 	angularSpeed = 0;
