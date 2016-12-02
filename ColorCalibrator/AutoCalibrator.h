@@ -49,6 +49,7 @@ protected:
 
 	HSVColorRange range/* =  {{0,179},{0,255},{0,255}}*/;
 	void SaveConf(const std::string &name);
+	void LoadConf(const std::string &name);
 private:
     bool done;
 	std::string object_name;
