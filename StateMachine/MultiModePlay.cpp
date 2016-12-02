@@ -220,7 +220,7 @@ public:
 		DriveMode step(double dt)
 		{
 			ObjectPosition partnerPosition = gFieldState.gates[gRobotState.homeGate];
-			partnerPosition.heading -= 20;
+			partnerPosition.heading -= 25;
 			auto &target = gFieldState.ballsFront[gFieldState.closestBallTribbler];
 
 			if (target.distance > 10000) {
@@ -231,7 +231,7 @@ public:
 				return DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_PARTNER;
 			}
 
-			if (preciseAim(target, partnerPosition, speed, 10)) {
+			if (preciseAim(target, partnerPosition, speed, 7)) {
 				if (m_pCom->BallInTribbler()){
 					m_pCom->Kick(800);
 					return DRIVEMODE_2V2_DEFENSIVE;

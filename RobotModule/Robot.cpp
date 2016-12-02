@@ -142,7 +142,12 @@ bool Robot::MessageReceived(const boost::array<char, BUF_SIZE>& buffer, size_t s
 };
 
 bool Robot::MessageReceived(const std::string & message) {
-	std::cout << "MessageReceived: " << message << std::endl;
+	
+	if (lastMessage != message){
+		std::cout << "MessageReceived: " << message << std::endl;
+		lastMessage = message;
+	}
+	
 	if (message.empty()) return false;
 	COMMAND code = (COMMAND)message[0];
 
@@ -185,9 +190,13 @@ void Robot::Run()
 	double u1 = (double)cv::getTickCount();
 #define GUSTAV
 #ifdef GUSTAV
-	if (false){//2v2
+	if (true){//2v2
 		gRobotState.runMode = ROBOT_MODE_2VS2;
-		gRobotState.gameMode = GAME_MODE_START_OUR_PENALTY;
+
+		gRobotState.FIELD_MARKER = 'B';
+		gRobotState.targetGate = YELLOW_GATE;
+		gRobotState.homeGate = BLUE_GATE;
+		//gRobotState.gameMode = GAME_MODE_START_OUR_PENALTY;
 	}
 	else{
 		gRobotState.runMode = ROBOT_MODE_1VS1;
