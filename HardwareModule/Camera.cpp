@@ -78,9 +78,6 @@ Camera::Camera(const std::string &name, const std::string &device): ThreadedClas
 
 
 	if (frameCount == 1) { // image
-#ifndef VIRTUAL_FLIP
-		cv::flip(frame, frame, 1);
-#endif
 		return;
 	}
 
@@ -118,9 +115,6 @@ cv::Mat &Camera::Capture(bool bFullFrame) {
 #ifndef DOUBLE_BUFFERING
 		if (cap->isOpened()){
 			*cap >> *m_pFrame;
-#ifndef VIRTUAL_FLIP
-			cv::flip(*m_pFrame, *m_pFrame, 1);
-#endif
 		}
 #else
 		if (bCaptureNextFrame) {
@@ -164,10 +158,6 @@ void Camera::Run(){
 
 		if (cap->isOpened()) {
 			*cap >> nextFrame;
-#ifndef VIRTUAL_FLIP
-			 cv::flip(nextFrame, nextFrame, 1);
-#endif
-
 		}
 		else {
 			bCaptureNextFrame = false;

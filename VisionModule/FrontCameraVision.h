@@ -19,7 +19,7 @@ protected:
 public:
 	FrontCameraVision(ICamera * pCamera);
 	~FrontCameraVision();
-	void ProcessFrame();
+	void ProcessFrame(double dt);
 //	void ThresholdFrame();
 	void FindGate();
 	void FindBall();
@@ -27,6 +27,7 @@ public:
 	void UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos);
 	void LoadSettings();
 	bool PublishState();
+	void ResetUpdateState();
 
 };
 

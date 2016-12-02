@@ -13,7 +13,7 @@ FrontCameraVision::~FrontCameraVision()
 {
 }
 
-void  FrontCameraVision::ProcessFrame() {
+void  FrontCameraVision::ProcessFrame(double dt) {
 	ThresholdFrame();
 	//FindGate();
 	FindBall();
@@ -35,7 +35,7 @@ void FrontCameraVision::FindBall() {
 	for (auto ball : balls) {
 		// this is dangerous as fixed size array is used. TODO: convert balls back to vector perhaps.
 		//if (ballFinder.validateBall(thresholdedImages, ball, frameHSV, frameBGR)) {
-			UpdateObjectPostion(localState.balls[localState.ballCount], ball);
+			UpdateObjectPostion(lastBalls[localState.ballCount], ball);
 			localState.ballCount++;
 		//}
 		if (localState.ballCount >= MAX_BALLS) break;
@@ -43,6 +43,19 @@ void FrontCameraVision::FindBall() {
 	//localState.closestBallTribbler = localState.balls[0].isValid ? 0 : 15;
 }
 
+void FrontCameraVision::ResetUpdateState(){
+	// reset all
+	for (size_t i = 0; i < MAX_BALLS; i++) {
+		lastBalls[i].isValid = false;
+		lastBalls[i].isUpdated = false;
+		lastBalls[i].isPredicted = false;
+		lastBalls[i].distance = 10001;
+		lastBalls[i].heading = 0;
+		lastBalls[i].angle = 0;
+
+	}
+
+}
 void FrontCameraVision::UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos) {
 	object.rawPixelCoords = pos - frameCenter;
 	if (pos.x < 0) {
@@ -63,7 +76,7 @@ void FrontCameraVision::UpdateObjectPostion(ObjectPosition & object, const cv::P
 	}
 	Hor_angle = abs(Hor_angle);
 	*/
-	object.polarMetricCoords = { distance, 360-Hor_angle };
+	object.polarMetricCoords = { distance, Hor_angle };
 	SYNC_OBJECT(object);
 //	return{ distance, HorizontalDev, Hor_angle };
 	object.isValid = true;
