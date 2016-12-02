@@ -108,7 +108,7 @@ public:
 	CatchKickOff() : DriveInstruction("2V2_CATCH_KICKOFF"){};
 
 	virtual DriveMode step(double dt){
-		if (gPartnerRobotState.driveState != DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_PARTNER) {
+		if (gPartnerRobotState.driveState != DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_PARTNER && gPartnerRobotState.driveState != DRIVEMODE_IDLE) {
 			return DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_GATE;
 		}
 
@@ -259,6 +259,7 @@ std::pair<DriveMode, DriveInstruction*> SlaveDriveModes[] = {
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_DRIVE_HOME, new DriveHome2v2()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_CATCH_KICKOFF, new CatchKickOff()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_GOAL_KEEPER, new GoalKeeper()),
+	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_GATE, new DriveToBallAimGate2v2()),
 };
 
 MultiModePlay::MultiModePlay(ISoccerRobot *pComModule, bool bMaster) :StateMachine(pComModule,
