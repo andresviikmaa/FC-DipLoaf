@@ -11,8 +11,8 @@ struct RobotState
 	uint stateSize;
 	OBJECT ourTeam = TEAM_PINK;
 	OBJECT oppoonentTeam = TEAM_PURPLE;
-	OBJECT targetGate = BLUE_GATE;
-	OBJECT homeGate = YELLOW_GATE;
+	OBJECT targetGate = YELLOW_GATE;
+	OBJECT homeGate = BLUE_GATE;
 
 	char FIELD_MARKER = 'A';
 	char TEAM_MARKER = 'A';
