@@ -85,6 +85,7 @@ void RefereeCom::handleMessage(const std::string & message){
 }
 
 void RefereeCom::handleMessage1vs1(const std::string & command, bool sendAck){
+	std::cout << "handleMessage1vs1 " << command << std::endl;
 	if (command == "START----") {
 		gRobotState.gameMode = GAME_MODE_START_PLAY;
 	}

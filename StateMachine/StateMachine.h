@@ -54,7 +54,7 @@ class StateMachine: public IStateMachine
 public:
 	typedef std::map<DriveMode, DriveInstruction*> TDriveModes;
 	const TDriveModes driveModes;
-	std::atomic_bool testMode;
+	bool testMode = false;
 	bool enabled = false;
 	bool reset = false;
 	DriveMode preCrashState = DRIVEMODE_IDLE;

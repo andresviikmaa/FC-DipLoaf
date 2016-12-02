@@ -18,7 +18,7 @@ Camera::Camera(const std::string &name, const std::string &device): ThreadedClas
 
 	if (!cap->isOpened())  // if not success, exit program
 	{
-		throw std::runtime_error("Camera not found");
+		throw std::runtime_error(name + " camera not found");
 	}
 
 	paused = false;
@@ -38,7 +38,7 @@ Camera::Camera(const std::string &name, const std::string &device): ThreadedClas
 		cap->set(CV_CAP_PROP_XI_OFFSET_X, (int)((1280 - frameX)/2));
 		cap->set(CV_CAP_PROP_XI_OFFSET_Y, (int)((1024 - frameY) / 2));
 		cap->set(CV_CAP_PROP_XI_AUTO_WB, 0);
-		cap->set(CV_CAP_PROP_XI_EXPOSURE, 20000);
+		cap->set(CV_CAP_PROP_XI_EXPOSURE, 10000);
 	}
 	else {
 		cap->set(CV_CAP_PROP_FPS, 60);
