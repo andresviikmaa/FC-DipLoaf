@@ -111,6 +111,10 @@ bool Robot::MessageReceived(const boost::array<char, BUF_SIZE>& buffer, size_t s
 		memcpy(&gPartnerFieldState, &buffer, size);
 		return true;
 	}
+	else if (code == COMMAND_ROBOT_STATE && size == sizeof(ROBOT_STATE)) {
+		memcpy(&gPartnerRobotState, &buffer, size);
+		return true;
+	}
 	else if (code == COMMAND_SET_PLAY_MODE) {
 		RunMode newMode = (RunMode)buffer[1];
 		if (m_AutoPilots.find(newMode) != m_AutoPilots.end()) {
