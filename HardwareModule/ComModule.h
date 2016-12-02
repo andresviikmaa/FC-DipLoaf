@@ -33,7 +33,7 @@ public:
 		if (KickAllowed(kick)) {
 			ss.clear();
 			ss << "kick:" << kick;
-			SendMessage(ss.str());
+			//SendMessage(ss.str());
 		}
 	}
 	virtual void ToggleTribbler(int speed){

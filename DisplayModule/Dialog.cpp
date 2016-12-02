@@ -214,6 +214,10 @@ void Dialog::Run(){
 
 	while (!stop_thread) {
 		try {
+			//{
+			//	boost::mutex::scoped_lock lock(display_mutex); //allow one command at a time
+			//	cv::waitKey(0);
+			//}
 			Draw();
 			int key = cv::waitKey(10);
 			if (key == 27) stop_thread = true;

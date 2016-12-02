@@ -385,10 +385,22 @@ void MainCameraVision::FindBalls() {
 
 void MainCameraVision::FindMissingBalls(){
 	cv::Rect2d r(-19, -19, 38, 38);
+	//std::cout << "========================" << std::endl;
+	//for (auto &ball2 : lastBalls){
+	//	if (!ball2.isValid) continue;
+	//	std::cout << "<" << (int)ball2.id << "," << ball2.rawPixelCoords << std::endl;
+	//}
+	//std::cout << "------------------------" << std::endl;
 	
 	for (auto &ball1 : localState.balls){
+		if (!ball1.isValid) continue;
+		//std::cout << ">" << (int)ball1.id << "," << ball1.rawPixelCoords << std::endl;
 		for (auto &ball2 : lastBalls){
 			if (ball2.isValid && (r + ball2.rawPixelCoords).contains(ball1.rawPixelCoords)){
+				if(ball2.id == 0){
+					ball1.isValid = false;
+					break;//already used
+				}
 				ball1.id = ball2.id;
 				ball2.id = 0;
 				ball1.isUpdated = true;
@@ -397,6 +409,8 @@ void MainCameraVision::FindMissingBalls(){
 				break;
 			}
 		}
+		//std::cout << "#" << (int)ball1.id << "," << ball1.rawPixelCoords << std::endl;
+		
 		if (ball1.id == 0 && ball1.isValid){
 			ball1.isUpdated = false;
 			ball1.id = ++ballCounter;
@@ -417,8 +431,14 @@ void MainCameraVision::FindMissingBalls(){
 			}
 		}
 	}
+	//std::cout << "++++++++++++++++++++" << std::endl;
+	//for (auto &ball2 : localState.balls){
+	//	if (!ball2.isValid) continue;
+	//	std::cout << "<" << (int)ball2.id << "," << ball2.rawPixelCoords << std::endl;
+	//}
+
 	if (lostBallCount > 0) {
-		std::cout << "lost count: " << lostBallCount << ", couunter" << ballCounter << std::endl;
+		std::cout << "lost count: " << lostBallCount << ", counter: " << (int)ballCounter << std::endl;
 		//assert(lostBallCount < 5);
 	}
 #ifdef SHOW_UI

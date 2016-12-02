@@ -137,7 +137,7 @@ bool Robot::MessageReceived(const boost::array<char, BUF_SIZE>& buffer, size_t s
 };
 
 bool Robot::MessageReceived(const std::string & message) {
-	std::cout << "MessageReceived: " << message << std::endl;
+	//std::cout << "MessageReceived: " << message << std::endl;
 	if (message.empty()) return false;
 	COMMAND code = (COMMAND)message[0];
 
@@ -179,9 +179,9 @@ void Robot::Run()
 	double t1 = (double)cv::getTickCount();
 #define GUSTAV
 #ifdef GUSTAV
-	gRobotState.runMode = ROBOT_MODE_1VS1;
-	gRobotState.gameMode = GAME_MODE_START_PLAY;
-	debug = true;
+	gRobotState.runMode = ROBOT_MODE_2VS2;
+	//gRobotState.gameMode = GAME_MODE_START_PLAY;
+	//debug = true;
 
 #endif
 	std::stringstream subtitles;
