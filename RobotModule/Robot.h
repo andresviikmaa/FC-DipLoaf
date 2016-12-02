@@ -38,5 +38,5 @@ public:
 	bool MessageReceived(const boost::array<char, BUF_SIZE>& buffer, size_t size);
 	bool MessageReceived(const std::string & message);
 
-	void InitializeTarget();
+	void InitializeTarget1vs1();
 };
