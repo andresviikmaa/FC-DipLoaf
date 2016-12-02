@@ -9,7 +9,8 @@ void BallLocation::setIsUpdated(bool updated) {
 }
 void BallLocation::filterCoords(const BallLocation &ball, bool reset) {
 	if (reset) {
-		filter.reset(ball.rawPixelCoords);
+		//filter.reset(ball.rawPixelCoords);
+		assert(false);
 		filteredRawCoords = ball.rawPixelCoords;
 	}
 	else {

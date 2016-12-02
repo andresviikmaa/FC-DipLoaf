@@ -36,9 +36,13 @@ cv::Point3d RobotLocation::updateOdometer(short speeds[4], double dt){
 
 	cv::Mat robotSpeed = cv::Mat_<double>(3, 1);
 	cv::solve(wheelAngles, wheelSpeeds, robotSpeed, cv::DECOMP_SVD);
-
+#ifdef TRACE_SPEEDS
+	std::cout << "-"  << wheelSpeeds << std::endl;
+#endif
 	double dr = TAMBOV * (robotSpeed.at<double>(2)*dt);
-
+#ifdef TRACE_SPEEDS
+	std::cout << robotSpeed << std::endl;
+#endif
 	double heading = gFieldState.self.heading - dr;
 	if (heading > 360) heading -= 360;
 	if (heading < -360) heading += 360;
@@ -52,9 +56,16 @@ cv::Point3d RobotLocation::updateOdometer(short speeds[4], double dt){
 	fieldCoords.x += dx;
 	fieldCoords.y -= dy;
 	
+#ifdef TRACE_SPEEDS
+	std::cout << dr <<","<< dx <<"," << dy << std::endl;
+#endif
+
 	fieldCoords = filter.doFiltering(cv::Point(fieldCoords.x, fieldCoords.y));
 	
 	return cv::Point3d(dx, dy, dr);
+
+}
+void RobotLocation::Reset(double x, double y, double heading){
 
 }
 

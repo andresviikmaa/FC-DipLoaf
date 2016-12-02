@@ -38,7 +38,6 @@ cv::Point2d KalmanFilter::doFiltering(const cv::Point2d &point) {
 	//Get point
 	measurement(0) = point.x;
 	measurement(1) = point.y;
-	measurement(1) = point.z;
 
 	//The update phase
 	estimated = KF.correct(measurement);

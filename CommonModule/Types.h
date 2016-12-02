@@ -3,7 +3,7 @@
 #define TAU (2*PI)
 #include <vector>
 #include <opencv2/core.hpp>
-
+#define TRACE_SPEEDS
 struct ColorRange
 {
 	int low;

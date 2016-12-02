@@ -53,7 +53,8 @@ void RobotTracker::PredictLostBalls(cv::Point3d movement, double dt)
 	for (auto &ball : gFieldState.balls){
 		if (ball.isPredicted){
 			ball.angle -= movement.z;
-			ball.distance -= getDistanceDiffInverted(ball.distance, cv::norm(cv::Point2d(movement.x, movement.y)));
+			assert(false);
+			//ball.distance -= getDistanceDiffInverted(ball.distance, cv::norm(cv::Point2d(movement.x, movement.y)));
 		}
 	}
 	

@@ -39,6 +39,9 @@ void ComModule::sendAck(const std::string & message){
 
 
 void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed) {
+#ifdef TRACE_SPEEDS
+	std::cout << ">" << fowardSpeed << ", " << direction << ", " << angularSpeed << std::endl;
+#endif
 	direction *= -1.;
 	angularSpeed *= -1.;
 	gFieldState.self.distance = fowardSpeed;
@@ -68,7 +71,9 @@ void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed)
 	targetSpeedXYW.at<double>(0) = sin((direction)* CV_PI / 180.0)* fowardSpeed;
 	targetSpeedXYW.at<double>(1) = cos((direction)* CV_PI / 180.0)* fowardSpeed;
 	targetSpeedXYW.at<double>(2) = angularSpeed;
-
+#ifdef TRACE_SPEEDS
+	std::cout << "#" << targetSpeedXYW << std::endl;
+#endif
 };
 
 void ComModule::Drive(const Speed &speed) {
@@ -100,6 +105,10 @@ bool ComModule::MessageReceived(const std::string & message) {
 		gFieldState.self.wheelSpeeds[1] = atoi(params[2].c_str());
 		gFieldState.self.wheelSpeeds[2] = atoi(params[3].c_str());
 		gFieldState.self.wheelSpeeds[3] = atoi(params[4].c_str());
+#ifdef TRACE_SPEEDS
+		std::cout << "<" << tmp << std::endl;
+#endif
+
 	}
 	else if (command == "ref" /*<ref:%s>*/) {
 		std::cout << "cmd: " << tmp << std::endl;
