@@ -157,7 +157,7 @@ bool DriveInstruction::preciseAim(const ObjectPosition &ball, const ObjectPositi
 	speed.rotation = -gate.heading / 2;
 	speed.velocity = 40;
 
-	return fabs(ball.heading - gate.heading) < 2.;
+	return fabs(ball.heading - gate.heading) < errorMargin;
 }
 
 
