@@ -15,7 +15,7 @@ FrontCameraVision::~FrontCameraVision()
 
 void  FrontCameraVision::ProcessFrame() {
 	ThresholdFrame();
-	FindGate();
+	//FindGate();
 	FindBall();
 
 }

@@ -81,9 +81,12 @@ protected:
 	void CheckCollisions();
 	void FindBalls();
 	void FindClosestBalls();
+	void FindMissingBalls();
 	void FindOtherRobots();
 	virtual void UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos);
 	std::vector<OBJECT> thresholdObjects;
+	BallPosition lastBalls[MAX_BALLS];
+	uchar ballCounter = 0;
 
 public:
 	boost::mutex state_mutex;

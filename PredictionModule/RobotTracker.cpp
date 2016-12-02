@@ -5,6 +5,7 @@
 #include "../CommonModule/FieldState.h"
 #include "../CommonModule/RobotState.h"
 #include "RobotLocation.h"
+#include <iostream>
 
 #ifdef SHOW_UI
 extern IDisplay * display;
@@ -43,22 +44,36 @@ void RobotTracker::Predict(double dt, bool mainCamUpdated, bool frontCamUpdated)
 void RobotTracker::PredictLostBalls(double dt)
 {
 
+	return;
+	/*
+	kdNode2D last(lastFieldState.balls, MAX_BALLS);
+	for (auto &ball : gFieldState.balls){
+		auto prev = last.nearest(ball);
+		std::cout << ball.distance << " <-> " << prev.second->distance << " | " << ball.heading << " <:>" << prev.second->heading << std::endl;
+	}
+	*/
+	// check positions not indices 
+	// copy/paste from last year code
+
 	// use last ball if lost
 	if (gFieldState.closestBall == MAX_BALLS - 1 && ballLost1 < 10) {
 		if (lastFieldState.closestBall != MAX_BALLS - 1) {
 			// use last
 			gFieldState.balls[gFieldState.closestBall] = lastFieldState.balls[lastFieldState.closestBall];
 			ballLost1++;
+			std::cout << "ballLost1: " << ballLost1 << std::endl;
 		}
 	}
 	else {
 		ballLost1 = 0;
 		// avoid jumping between balls
-		if (lastFieldState.closestBall != MAX_BALLS - 1 && ballLost2 < 10) {
+		if (lastFieldState.closestBall != MAX_BALLS - 1 && ballLost2 < 30) {
 			if (lastFieldState.balls[lastFieldState.closestBall].distance > 10 && gFieldState.balls[gFieldState.closestBall].distance > lastFieldState.balls[lastFieldState.closestBall].distance * 1.8){
 				// use last
 				gFieldState.balls[gFieldState.closestBall] = lastFieldState.balls[lastFieldState.closestBall];
 				ballLost2++;
+				std::cout << "ballLost2: " << ballLost2 << std::endl;
+
 			}
 			else {
 				ballLost2 = 0;

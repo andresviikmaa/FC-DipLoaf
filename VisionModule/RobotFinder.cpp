@@ -14,7 +14,7 @@ RobotFinder::~RobotFinder()
 
 bool RobotFinder::Locate(cv::Mat &imgThresholded, cv::Mat &frameHSV, cv::Mat &frameBGR, std::vector<cv::Point2i> &objectCoords) {
 
-	try{
+	//try{
 		cv::Point2d notValidPosition = cv::Point2d(-1.0, -1.0);
 	
 		int smallestArea = 300;
@@ -49,10 +49,11 @@ bool RobotFinder::Locate(cv::Mat &imgThresholded, cv::Mat &frameHSV, cv::Mat &fr
 				cv::Moments M = cv::moments(contours[i]);
 				//cv::Rect bounding_rect = cv::boundingRect(contours[i]);
 				//rectangle(frameBGR, bounding_rect.tl(), bounding_rect.br(), green, 1, 8, 0);
-				try{objectCoords.push_back(cv::Point2d((M.m10 / M.m00), (M.m01 / M.m00)) - frameCenter);}
-				catch(cv::Exception ex){return false;}
+				if (M.m00 > 0.0001){
+					objectCoords.push_back(cv::Point2d((M.m10 / M.m00), (M.m01 / M.m00)) - frameCenter);
+				}
 			}
 		}
 		return true;
-	}catch (cv::Exception ex){ return false; }
+	//}catch (cv::Exception ex){ return false; }
 }
