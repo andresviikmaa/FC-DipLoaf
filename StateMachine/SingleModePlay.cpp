@@ -122,7 +122,7 @@ public:
 			//std::this_thread::sleep_for(std::chrono::milliseconds(500));
 			return DRIVEMODE_DRIVE_TO_BALL;//target too far	
 		}
-		if (preciseAim(target, speed, 2)) {
+		if (preciseAim(target, gFieldState.gates[gRobotState.targetGate], speed, 2)) {
 			//std::this_thread::sleep_for(std::chrono::milliseconds(500));
 			return DRIVEMODE_CATCH_BALL;
 		}
@@ -235,8 +235,8 @@ public:
 				return DRIVEMODE_CATCH_BALL;
 			}
 			if (fabs(ballHeading) > errorMargin){
-				heading = ballHeading + sign0(ballHeading) * 45;
-				speed = 50;
+				heading = ballHeading + sign0(ballHeading) * 55;
+				speed = 60;
 			}
 			rotation = 0;
 			if (fabs(gateHeading) > errorMargin) rotation = -sign0(gateHeading) * std::min(40.0, std::max(fabs(gateHeading), 5.0));
@@ -336,9 +336,12 @@ void CatchBall::onExit()
 
 DriveMode AimGate::step(double dt)
 {
+	return DRIVEMODE_KICK;
+
+
 	m_pCom->ToggleTribbler(250);
 	GatePosition target = gFieldState.gates[gRobotState.targetGate];
-	target.heading -= 15; //compensate ball spin - to the left, to the left.
+	//target.heading -= 15; //compensate ball spin - to the left, to the left.
 	if (!m_pCom->BallInTribbler()) return DRIVEMODE_DRIVE_TO_BALL; //lost ball, find new
 	double errorMargin = (target.distance > 200) ? 1 : 2;
 	if (aimTarget(target, speed, errorMargin)) 
