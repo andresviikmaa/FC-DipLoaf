@@ -40,5 +40,5 @@ public:
 	bool driveToTarget(const ObjectPosition &target, Speed &speed, double maxDistance = 50);
 	bool driveToTargetWithAngle(const ObjectPosition &target, Speed &speed, double maxDistance = 50, double errorMargin = 10);
 	bool preciseAim(const ObjectPosition &target, Speed &speed, double errorMargin = 5);
-	bool DriveInstruction::preciseAim(const ObjectPosition &ball, const ObjectPosition &gate, Speed &speed, double errorMargin);
+	bool preciseAim(const ObjectPosition &ball, const ObjectPosition &gate, Speed &speed, double errorMargin);
 };

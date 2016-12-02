@@ -418,18 +418,12 @@ void MainCameraVision::FindMissingBalls(double dt){
 				break;
 			}
 		}
-<<<<<<< HEAD
 		//std::cout << "#" << (int)ball1.id << "," << ball1.rawPixelCoords << std::endl;
-		
-		if (ball1.id == 0 && ball1.isValid){
-			ball1.isUpdated = false;
-			ball1.id = ++ballCounter;
-=======
+
 		if (!ball2.isUpdated){
 			ball2.isUpdated = true;
 			ball2.isPredicted = true;
 			ball2.lostTime += dt;
->>>>>>> refs/remotes/origin/master
 		}
 	}
 
