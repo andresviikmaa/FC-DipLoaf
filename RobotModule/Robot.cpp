@@ -166,10 +166,10 @@ bool Robot::MessageReceived(const std::string & message) {
 	}
 	return true;
 };
-void Robot::InitializeTarget(){
+void Robot::InitializeTarget1vs1(){
 	auto &B = gFieldState.gates[BLUE_GATE];
 	auto &Y = gFieldState.gates[YELLOW_GATE];
-	if (B.distance > Y.distance){
+	if (B.distance > Y.distance || Y.heading < 0) {
 		gRobotState.targetGate = BLUE_GATE;
 		gRobotState.homeGate = YELLOW_GATE;
 	}
@@ -212,7 +212,7 @@ void Robot::Run()
 		while (!exitRobot)
 		{
 			if (lastGameMode != GAME_MODE_START_PLAY && gRobotState.gameMode == GAME_MODE_START_PLAY){
-				//InitializeTarget();
+				InitializeTarget1vs1();
 				//robotTracker.Reset();
 
 			}
@@ -267,9 +267,9 @@ void Robot::Run()
 //			std::string debug2 = " " + m_pComModule->GetDebugInfo();
 //			debug2[0] = COMMAND_WHEELS_STATE;
 //			SendData(debug2.c_str(), debug2.size());
-//int ms = 50;
-		//std::chrono::milliseconds dura(ms);
-		//std::this_thread::sleep_for(dura);
+			int ms = 50;
+			std::chrono::milliseconds dura(ms);
+			std::this_thread::sleep_for(dura);
 
 			//int key = cv::waitKey(50);
 			//if (key == 27) {
