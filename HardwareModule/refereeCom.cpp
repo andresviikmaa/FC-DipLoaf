@@ -148,16 +148,25 @@ void RefereeCom::handleCommand2vs2(char robot, char command){
 	else {
 		bool ourTeamA = gRobotState.TEAM_MARKER == 'A';
 		char c = command;
+		/*
 		if (!ourTeamA) { 
 			c += 32; // convert command to upper case
 			ourTeamA = !ourTeamA; // and pretend that we are team A
 		}
+		*/
 		if (c == 'K') gRobotState.pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_KICK_OFF : GAME_MODE_START_OPPONENT_KICK_OFF;
 		else if (c == 'I') gRobotState.pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_INDIRECT_FREE_KICK : GAME_MODE_START_OPPONENT_INDIRECT_FREE_KICK;
 		else if (c == 'D') gRobotState.pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_FREE_KICK : GAME_MODE_START_OPPONENT_FREE_KICK;
 		else if (c == 'P') gRobotState.pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_PENALTY : GAME_MODE_START_OPPONENT_PENALTY;
 		else if (c == 'G') gRobotState.pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_GOAL : GAME_MODE_START_OPPONENT_GOAL;
 		else if (c == 'Y') gRobotState.pendingGameMode = ourTeamA ? GAME_MODE_START_OUR_YELLOW_CARD : GAME_MODE_START_OPPONENT_YELLOW_CARD;
+
+		else if (c == 'k') gRobotState.pendingGameMode = !ourTeamA ? GAME_MODE_START_OUR_KICK_OFF : GAME_MODE_START_OPPONENT_KICK_OFF;
+		else if (c == 'i') gRobotState.pendingGameMode = !ourTeamA ? GAME_MODE_START_OUR_INDIRECT_FREE_KICK : GAME_MODE_START_OPPONENT_INDIRECT_FREE_KICK;
+		else if (c == 'd') gRobotState.pendingGameMode = !ourTeamA ? GAME_MODE_START_OUR_FREE_KICK : GAME_MODE_START_OPPONENT_FREE_KICK;
+		else if (c == 'p') gRobotState.pendingGameMode = !ourTeamA ? GAME_MODE_START_OUR_PENALTY : GAME_MODE_START_OPPONENT_PENALTY;
+		else if (c == 'g') gRobotState.pendingGameMode = !ourTeamA ? GAME_MODE_START_OUR_GOAL : GAME_MODE_START_OPPONENT_GOAL;
+		else if (c == 'y') gRobotState.pendingGameMode = !ourTeamA ? GAME_MODE_START_OUR_YELLOW_CARD : GAME_MODE_START_OPPONENT_YELLOW_CARD;
 	}
 	if (robot == gRobotState.ROBOT_MARKER) {
 	
