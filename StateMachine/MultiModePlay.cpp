@@ -121,7 +121,7 @@ public:
 	virtual DriveMode step(double dt){
 			if (m_pCom->BallInTribbler(true)){
 				std::cout << "BallInTribbler" << std::endl;
-				if (gRobotState.gameMode == GAME_MODE_START_OUR_KICK_OFF)return DRIVEMODE_2V2_AIM_PARTNER;
+				if (gRobotState.gameMode == GAME_MODE_START_OUR_KICK_OFF) return DRIVEMODE_2V2_AIM_PARTNER;
 				else return DRIVEMODE_2V2_OFFENSIVE;
 			};
 
@@ -179,16 +179,18 @@ class MasterModeIdle : public Idle {
 
 	virtual DriveMode step(double dt) {
 		switch (gRobotState.gameMode) {
-		case GAME_MODE_START_OPPONENT_KICK_OFF:
-			return DRIVEMODE_2V2_OPPONENT_KICKOFF;
-//		case GAME_MODE_START_OPPONENT_THROWIN:
-//			return DRIVEMODE_2V2_OPPONENT_KICKOFF;
-		case GAME_MODE_START_OPPONENT_FREE_KICK:
-			return DRIVEMODE_2V2_OPPONENT_KICKOFF;
-		case GAME_MODE_START_OUR_KICK_OFF:
-		case GAME_MODE_START_OUR_FREE_KICK:
-//		case GAME_MODE_START_OUR_THROWIN:
-			return DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_GATE;
+
+			case GAME_MODE_START_OPPONENT_KICK_OFF:
+				return DRIVEMODE_2V2_OPPONENT_KICKOFF;
+
+			case GAME_MODE_START_OPPONENT_FREE_KICK:
+				return DRIVEMODE_2V2_OPPONENT_KICKOFF;
+
+			case GAME_MODE_START_OUR_KICK_OFF:
+			case GAME_MODE_START_OUR_PENALTY:
+			case GAME_MODE_START_OUR_FREE_KICK:
+				return DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_GATE;
+
 		}
 		return DRIVEMODE_IDLE;
 	}
@@ -196,19 +198,14 @@ class MasterModeIdle : public Idle {
 class SlaveModeIdle : public Idle {
 
 	virtual DriveMode step(double dt) {
-		//while (!gFieldState.isPlaying) return DRIVEMODE_IDLE;
 		switch (gRobotState.gameMode) {
 		case GAME_MODE_START_OPPONENT_KICK_OFF:
 			return DRIVEMODE_2V2_DEFENSIVE;
-//		case GAME_MODE_START_OPPONENT_THROWIN:
-//			return DRIVEMODE_2V2_DEFENSIVE;
 		case GAME_MODE_START_OPPONENT_FREE_KICK:
 			return DRIVEMODE_2V2_DEFENSIVE;
 		case GAME_MODE_START_OUR_KICK_OFF:
 		case GAME_MODE_START_OUR_FREE_KICK:
 			return DRIVEMODE_2V2_CATCH_KICKOFF;
-//		case GAME_MODE_START_OUR_THROWIN:
-//			return DRIVEMODE_2V2_DEFENSIVE;
 		}
 		return DRIVEMODE_IDLE;
 	}
@@ -505,7 +502,6 @@ std::pair<DriveMode, DriveInstruction*> MasterDriveModes[] = {
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_AIM_PARTNER, new AimPartner()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_AIM_GATE, new AimGate2v2()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_KICK, new Kick()),
-//	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_KICKOFF, new KickOff()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_DRIVE_HOME, new DriveHome2v2()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_OPPONENT_KICKOFF, new OpponentKickoff(true)),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_GOAL_KEEPER, new GoalKeeper()),
