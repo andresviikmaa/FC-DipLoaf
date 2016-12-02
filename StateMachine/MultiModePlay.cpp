@@ -220,24 +220,24 @@ public:
 		DriveMode step(double dt)
 		{
 			ObjectPosition partnerPosition = gFieldState.gates[gRobotState.homeGate];
-			partnerPosition.heading -= 30;
+			partnerPosition.heading -= 20;
 			auto &target = gFieldState.ballsFront[gFieldState.closestBallTribbler];
 
 			if (target.distance > 10000) {
 				/*
 					Robot must stay in center ring. If lost ball, then start rotating.
 				*/
-				m_pCom->Drive(0, 0, 30);
+				//m_pCom->Drive(0, 0, 15);
 				return DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_PARTNER;
 			}
 
-			if (preciseAim(target, partnerPosition, speed, 2)) {
+			if (preciseAim(target, partnerPosition, speed, 10)) {
 				if (m_pCom->BallInTribbler()){
-					m_pCom->Kick(1000);
+					m_pCom->Kick(800);
 					return DRIVEMODE_2V2_DEFENSIVE;
 				}
 			}
-			m_pCom->Drive(speed.velocity, speed.heading, speed.rotation);
+			m_pCom->Drive(speed.velocity, speed.heading, speed.rotation/2);
 			return DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_PARTNER;
 		}
 };
@@ -248,7 +248,9 @@ std::pair<DriveMode, DriveInstruction*> MasterDriveModes[] = {
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_DEFENSIVE, new Defensive()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_DRIVE_HOME, new DriveHome2v2()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_GOAL_KEEPER, new GoalKeeper()),
-	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_GATE, new DriveToBallAimGate2v2())
+	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_GATE, new DriveToBallAimGate2v2()),
+	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_PARTNER, new DriveToBallAimPartner()),
+	
 };
 
 std::pair<DriveMode, DriveInstruction*> SlaveDriveModes[] = {
