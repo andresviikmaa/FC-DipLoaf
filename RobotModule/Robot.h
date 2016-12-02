@@ -37,6 +37,9 @@ public:
 	void SendFieldState();
 	bool MessageReceived(const boost::array<char, BUF_SIZE>& buffer, size_t size);
 	bool MessageReceived(const std::string & message);
+
 	std::string lastMessage = "";
 	void InitializeTarget();
+
+	void InitializeTarget1vs1();
 };

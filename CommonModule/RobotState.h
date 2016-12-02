@@ -22,6 +22,6 @@ struct RobotState
 	RunMode runMode = ROBOT_MODE_IDLE; // 1vs1, idle, 2vs2
 	uchar gameMode = GAME_MODE_STOPED;  // referee commands
 	uchar pendingGameMode = GAME_MODE_STOPED;
-	uchar driveState = 0; // statemachine state
+	uchar driveState = 2; // statemachine state
 };
 

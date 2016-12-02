@@ -171,10 +171,10 @@ bool Robot::MessageReceived(const std::string & message) {
 	}
 	return true;
 };
-void Robot::InitializeTarget(){
+void Robot::InitializeTarget1vs1(){
 	auto &B = gFieldState.gates[BLUE_GATE];
 	auto &Y = gFieldState.gates[YELLOW_GATE];
-	if (B.distance > Y.distance){
+	if (B.distance > Y.distance || Y.heading < 0) {
 		gRobotState.targetGate = BLUE_GATE;
 		gRobotState.homeGate = YELLOW_GATE;
 	}
@@ -223,7 +223,7 @@ void Robot::Run()
 		while (!exitRobot)
 		{
 			if (lastGameMode != GAME_MODE_START_PLAY && gRobotState.gameMode == GAME_MODE_START_PLAY){
-				//InitializeTarget();
+				InitializeTarget1vs1();
 				//robotTracker.Reset();
 
 			}
