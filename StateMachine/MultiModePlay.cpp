@@ -10,6 +10,9 @@ const float KICKOFF_ANGLE = 45.;
 extern FieldState gFieldState;
 extern RobotState gRobotState;
 
+// -1 1
+#define sign(x) ((x > 0) ? 1 : -1)
+
 enum MultiModeDriveStates {
 	//2v2 modes
 	DRIVEMODE_2V2_OFFENSIVE = 100,
@@ -322,13 +325,12 @@ public:
 
 		//auto & target = gFieldState.partner;
 		auto target = gFieldState.gates[gRobotState.homeGate];
+		target.heading += sign(target.heading) * 30;
 		//std::cout << target.polarMetricCoords.y << std::endl;
-		if (aimTarget(target, speed, KICKOFF_ANGLE)){
-			m_pCom->Drive(0, 0, sign0(gFieldState.self.heading)*20);
-			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		if (aimTarget(target, speed, KICKOFF_ANGLE)){			
 			m_pCom->Kick(2500);
-			assert(false);//TODO: fix this -> gFieldState.SendPartnerMessage("PAS #");
-			std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+			//assert(false);//TODO: fix this -> gFieldState.SendPartnerMessage("PAS #");
+			//std::this_thread::sleep_for(std::chrono::milliseconds(1500));
 			//return DRIVEMODE_2V2_DRIVE_HOME;
 			//return DRIVEMODE_IDLE;
 			return DRIVEMODE_2V2_DEFENSIVE;

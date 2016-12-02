@@ -25,7 +25,7 @@ protected:
 	static DriveMode ACTIVE_DRIVE_TO_BALL_MODE;
 public:
 	const std::string name;
-	DriveInstruction(const std::string &name) ;
+	DriveInstruction(const std::string &name);
 	void Init(ISoccerRobot *pCom);
 	virtual void onEnter();
 	virtual DriveMode step1(double dt, DriveMode driveMode);
@@ -35,8 +35,10 @@ public:
 
 	const static bool USE_ANGLED_DRIVING = false;
 	bool aimTarget(const ObjectPosition &target, Speed &speed, double errorMargin = (USE_ANGLED_DRIVING) ? 90 : 10);
+	bool aimTargetAroundBall(const ObjectPosition &target, Speed &speed, double errorMargin);
 	bool catchTarget(const ObjectPosition &target, Speed &speed);
 	bool driveToTarget(const ObjectPosition &target, Speed &speed, double maxDistance = 50);
 	bool driveToTargetWithAngle(const ObjectPosition &target, Speed &speed, double maxDistance = 50, double errorMargin = 10);
 	bool preciseAim(const ObjectPosition &target, Speed &speed, double errorMargin = 5);
+	bool DriveInstruction::preciseAim(const ObjectPosition &ball, const ObjectPosition &gate, Speed &speed, double errorMargin);
 };

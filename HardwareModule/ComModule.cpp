@@ -18,13 +18,13 @@ ComModule::ComModule(boost::asio::io_service &io, const std::string ip_address, 
 ComModule::ComModule(boost::asio::io_service &io, const std::string ip_address, ushort port1):
 	io(io), UdpServer(io, ip_address, port1)
 {
-	//SendMessage("fs:0");
+	SendMessage("fs:0");
 	SendMessage("charge");
 }
 
 ComModule::~ComModule()
 {
-	//SendMessage("fs:1");
+	SendMessage("fs:1");
 	//for (int i = 0; i< 10; i++) {
 	//	SendMessage("discharge");
 	//	std::this_thread::sleep_for(std::chrono::milliseconds(300));
@@ -95,7 +95,7 @@ bool ComModule::MessageReceived(const std::string & message) {
 	const auto &command = params[0];
 	const int SIMULATOR_SPEED = 1;
 	if (command == "speeds" && params.size() > 4/*<speeds:%d:%d:%d:%d:%d>*/) {
-		std::cout << "cmd: " << tmp << std::endl;
+		//std::cout << "cmd: " << tmp << std::endl;
 		gFieldState.self.wheelSpeeds[0] = atoi(params[1].c_str());
 		gFieldState.self.wheelSpeeds[1] = atoi(params[2].c_str());
 		gFieldState.self.wheelSpeeds[2] = atoi(params[3].c_str());
@@ -131,7 +131,7 @@ void ComModule::SendMessages() {
 	ss << ":" << (int)speeds.at<double>(1);
 	ss << ":" << (int)speeds.at<double>(3);
 	ss << ":" << (int)speeds.at<double>(2);
-	ss << ":" << -tribblerSpeed*30;
+	ss << ":" << -tribblerSpeed*25;
 
 	std::string tmp = ss.str();
 	SendMessage(tmp);
