@@ -391,6 +391,10 @@ void MainCameraVision::FindMissingBalls(){
 	for (auto &ball1 : localState.balls){
 		for (auto &ball2 : lastBalls){
 			if (ball2.isValid && (r + ball2.rawPixelCoords).contains(ball1.rawPixelCoords)){
+				if (ball2.id == 0){
+					ball1.isValid = false;
+					break;//already used
+				}
 				ball1.id = ball2.id;
 				ball2.id = 0;
 				ball1.isUpdated = true;

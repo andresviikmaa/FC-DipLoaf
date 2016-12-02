@@ -178,6 +178,7 @@ void Robot::Run()
 {
 	exitRobot = false;
 	double t1 = (double)cv::getTickCount();
+	double u1 = (double)cv::getTickCount();
 #define GUSTAV
 #ifdef GUSTAV
 	if (false){//2v2
@@ -211,7 +212,9 @@ void Robot::Run()
 
 			}
 			double t2 = (double)cv::getTickCount();
-			double dt = (t2 - t1) / cv::getTickFrequency();
+			double dt = (t2 - t1) / cv::getTickFrequency();	
+			double u2 = (double)cv::getTickCount();
+			double du = (u2 - u1) / cv::getTickFrequency();
 
 
 			mainUpdated = m_pMainVision->PublishState();
@@ -219,11 +222,12 @@ void Robot::Run()
 			m_pComModule->ProcessCommands();
 			if(gFieldState.closestBallTribbler > 3) robotTracker.Predict(dt, mainUpdated, frontUpdated);
 			//TODO: remove this if ball in tribbler is working
-			m_pComModule->SetBallInTribbler(gFieldState.ballsFront[gFieldState.closestBallTribbler].distance < 100);
+
+			m_pComModule->SetBallInTribbler(gFieldState.ballsFront[gFieldState.closestBallTribbler].distance < 100 && fabs(gFieldState.ballsFront[gFieldState.closestBallTribbler].heading) < 15);
 			
-			if (counter > 10) {
-				fps = (double)counter / dt;
-				t1 = t2;
+			if (du > 0.5) {
+				fps = (double)counter / du;
+				u1 = u2;
 				counter = 0;
 				SendFieldState();
 			}
@@ -258,16 +262,16 @@ void Robot::Run()
 //			std::string debug2 = " " + m_pComModule->GetDebugInfo();
 //			debug2[0] = COMMAND_WHEELS_STATE;
 //			SendData(debug2.c_str(), debug2.size());
-int ms = 50;
-		std::chrono::milliseconds dura(ms);
-		std::this_thread::sleep_for(dura);
+//int ms = 50;
+		//std::chrono::milliseconds dura(ms);
+		//std::this_thread::sleep_for(dura);
 
 			//int key = cv::waitKey(50);
 			//if (key == 27) {
 			//	std::cout << "exiting program" << std::endl;
 			//	break;
 			//}
-
+			t1 = t2;
 
 		}
 	}
