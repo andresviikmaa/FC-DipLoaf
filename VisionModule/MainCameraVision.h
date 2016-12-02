@@ -65,12 +65,7 @@ protected:
 	BallFinder ballFinder;
 	RobotFinder robotFinder;
 
-	void resetBallsUpdateState() {
-		return;
-		//for (size_t i = 0, isize = _balls.size(); i < isize; i++) {
-		//	_balls[i].setIsUpdated(false);
-		//}
-	}
+	virtual void ResetUpdateState();
 	std::vector<cv::Point2i> notBlueGates, notYellowGates;
 
 	ThresholdedImages thresholdedImages;
@@ -81,18 +76,20 @@ protected:
 	void CheckCollisions();
 	void FindBalls();
 	void FindClosestBalls();
-	void FindMissingBalls();
+	void FindMissingBalls(double dt);
 	void FindOtherRobots();
 	virtual void UpdateObjectPostion(ObjectPosition & object, const cv::Point2d &pos);
 	std::vector<OBJECT> thresholdObjects;
 	BallPosition lastBalls[MAX_BALLS];
+	BallPosition newBalls[MAX_BALLS];
 	uchar ballCounter = 0;
+	uchar lastClosest = MAX_BALLS - 1;
 
 public:
 	boost::mutex state_mutex;
 	MainCameraVision(ICamera * pCamera, const std::string sName="MainCameraVision");
 	virtual ~MainCameraVision();
-	virtual void ProcessFrame();
+	virtual void ProcessFrame(double dt);
 	bool PublishState();
 	virtual void Enable(bool enable) {
 		m_bEnabled = enable;

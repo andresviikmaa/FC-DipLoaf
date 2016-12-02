@@ -89,6 +89,7 @@ void MainCameraVision::captureFrames(bool start){
 void MainCameraVision::Run() {
 	frameCenter = cv::Point2d(m_pCamera->GetFrameSize()) / 2;
 	double t1 = (double)cv::getTickCount();
+	double t0 = (double)cv::getTickCount();
 	size_t counter = 0;
 	double fps = 0.;
 
@@ -96,6 +97,7 @@ void MainCameraVision::Run() {
 
 		double t2 = (double)cv::getTickCount();
 		double dt = (t2 - t1) / cv::getTickFrequency();
+		double dt2 = (t2 - t0) / cv::getTickFrequency();
 		if (counter > 10) {
 			fps = (double)counter / dt;
 			t1 = t2;
@@ -116,26 +118,17 @@ void MainCameraVision::Run() {
 			cvtColor(frameBGR, frameHSV, cv::COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
 
 
-			ProcessFrame();
+			ProcessFrame(dt2);
+			t0 = t2;
 			{
 				boost::mutex::scoped_lock lock(state_mutex); //allow one command at a time
 				memcpy(&localStateCopy, &localState, sizeof(FieldState));
-				// reset all
-				for (size_t i = 0; i < MAX_BALLS; i++) {
-					localState.balls[i].isValid = false;
-					localState.balls[i].distance = 10001;
-					localState.balls[i].heading = 0;
-					localState.balls[i].angle = 0;
-
-				}
-				localState.gates[BLUE_GATE].isValid = false;
-				localState.gates[BLUE_GATE].distance = 10001;
-
-				localState.gates[YELLOW_GATE].isValid = false;
-				localState.gates[YELLOW_GATE].distance = 10001;
+				memcpy(&localStateCopy.balls, &lastBalls, sizeof(BallPosition)*MAX_BALLS); //TODO:avoid double copy
+				
 
 				stateUpdated = true;
 			}
+			ResetUpdateState();
 		}
 		else {
 			;//sleep
@@ -149,6 +142,24 @@ void MainCameraVision::Run() {
 #endif // DEBUG
 
 	}
+}
+void MainCameraVision::ResetUpdateState(){
+	// reset all
+	for (size_t i = 0; i < MAX_BALLS; i++) {
+		newBalls[i].isValid = false;
+		newBalls[i].isUpdated = false;
+		newBalls[i].isPredicted = false;
+		newBalls[i].distance = 10001;
+		newBalls[i].heading = 0;
+		newBalls[i].angle = 0;
+
+	}
+	localState.gates[BLUE_GATE].isValid = false;
+	localState.gates[BLUE_GATE].distance = 10001;
+
+	localState.gates[YELLOW_GATE].isValid = false;
+	localState.gates[YELLOW_GATE].distance = 10001;
+
 }
 bool MainCameraVision::PublishState() {
 	boost::mutex::scoped_lock lock(state_mutex); //allow one command at a time
@@ -166,7 +177,7 @@ bool MainCameraVision::PublishState() {
 	}
 	return false;
 }
-void  MainCameraVision::ProcessFrame() {
+void  MainCameraVision::ProcessFrame(double dt) {
 
 #ifdef SHOW_UI
 	cv::line(frameBGR, (frameBGR.size() / 2) + cv::Size(0, -30), (frameBGR.size() / 2) + cv::Size(0, 30), cv::Scalar(0, 0, 255), 3, 8, 0);
@@ -177,8 +188,10 @@ void  MainCameraVision::ProcessFrame() {
 	ThresholdFrame();
 	//CheckGateObstruction();
 	FindGates();
+
 	//CheckCollisions();
 	FindBalls();
+	FindMissingBalls(dt);
 	FindClosestBalls();
 
 
@@ -208,16 +221,12 @@ void MainCameraVision::UpdateObjectPostion(ObjectPosition & object, const cv::Po
 
 	double distanceInCm = dist == 0 ? 0.0 : std::max(0.0, 13.13*exp(0.008 * dist));
 
-	double angle = angleBetween(pos - frameCenter, { 1, 0 });
+	double angle = angleBetween(pos - frameCenter, { -1, 0 });
 	//double angle = atan((object.rawPixelCoords.y) / (object.rawPixelCoords.x)) * 180 / PI;
 	//TODO: hack to fix simulator, as 
 	if (distanceInCm < 14 && fabs(fabs(angle) - 270)<0.01)  angle = 0;
 	// flip angle alony y axis
-#ifndef VIRTUAL_FLIP
-	object.polarMetricCoords = { distanceInCm, angle };
-#else
-	object.polarMetricCoords = { distanceInCm, -angle + 360 };
-#endif
+	object.polarMetricCoords = { distanceInCm, 360-angle};
 	SYNC_OBJECT(object);
 	object.isValid = true;
 }
@@ -371,8 +380,8 @@ void MainCameraVision::FindBalls() {
 	for (auto ball : balls) {
 		// this is dangerous as fixed size array is used. TODO: convert balls back to vector perhaps.
 		if (ballFinder.validateBall(thresholdedImages, ball, frameHSV, frameBGR)) {
-			UpdateObjectPostion(localState.balls[localState.ballCount], ball);
-			localState.balls[localState.ballCount].id = 0;
+			UpdateObjectPostion(newBalls[localState.ballCount], ball);
+			newBalls[localState.ballCount].id = 0;
 			localState.ballCount++;
 		}
 		if (localState.ballCount >= MAX_BALLS) break;
@@ -384,49 +393,58 @@ void MainCameraVision::FindBalls() {
 
 }
 
-void MainCameraVision::FindMissingBalls(){
+void MainCameraVision::FindMissingBalls(double dt){
+	cv::Rect2d r(-35, -35, 70, 70);
 	
-	cv::Rect2d r(-19, -19, 38, 38);
-	//std::cout << "========================" << std::endl;
-	//for (auto &ball2 : lastBalls){
-	//	if (!ball2.isValid) continue;
-	//	std::cout << "<" << (int)ball2.id << "," << ball2.rawPixelCoords << std::endl;
-	//}
-	//std::cout << "------------------------" << std::endl;
-	
-	for (auto &ball1 : localState.balls){
-		if (!ball1.isValid) continue;
-		//std::cout << ">" << (int)ball1.id << "," << ball1.rawPixelCoords << std::endl;
-		for (auto &ball2 : lastBalls){
+	// copy newBalls into lastBalls keeping old ones if not expired
+	// first find what old balls are present
+	for (auto &ball2 : lastBalls){
+		if (!ball2.isValid) continue;
+		if (ball2.isPredicted && ball2.lostTime > 0.5) {
+			ball2.isValid = false;
+			continue;
+		}
+		ball2.isUpdated = false;
+		for (auto &ball1 : newBalls){
+			if (ball1.isUpdated) continue;
 			if (ball2.isValid && (r + ball2.rawPixelCoords).contains(ball1.rawPixelCoords)){
-				if(ball2.id == 0){
-					ball1.isValid = false;
-					break;//already used
-				}
-				ball1.id = ball2.id;
-				ball2.id = 0;
+				// override last ball with new
+				uchar id = ball2.id;
+				memcpy(&ball2, &ball1, sizeof(BallPosition));
+				ball2.isUpdated = true;
+				ball2.id = id; // restore
+				ball2.lostTime = 0;
 				ball1.isUpdated = true;
-				ball1.isPredicted = false;
-
 				break;
 			}
 		}
+<<<<<<< HEAD
 		//std::cout << "#" << (int)ball1.id << "," << ball1.rawPixelCoords << std::endl;
 		
 		if (ball1.id == 0 && ball1.isValid){
 			ball1.isUpdated = false;
 			ball1.id = ++ballCounter;
+=======
+		if (!ball2.isUpdated){
+			ball2.isUpdated = true;
+			ball2.isPredicted = true;
+			ball2.lostTime += dt;
+>>>>>>> refs/remotes/origin/master
 		}
 	}
-	int lostBallCount = 0;
-	for (auto &ball2 : lastBalls){
-		if (ball2.id != 0){
-			lostBallCount++;
-			for (auto &ball1 : localState.balls){
-				if (!ball1.isValid){
-					//ball1 = ball2;
+
+	//then add new ones
+	int i = 0;
+	for (auto &ball2 : newBalls){
+		if (!ball2.isValid) continue;
+		if (!ball2.isUpdated){
+			for (; i < MAX_BALLS; i++){
+				auto &ball1 = lastBalls[i];
+				if (!ball1.isValid) {
 					memcpy(&ball1, &ball2, sizeof(BallPosition));
-					ball1.isPredicted = true;
+					ball1.isUpdated = true;
+					ball1.lostTime = 0;
+					ball1.id = ++ballCounter;
 					//std::cout << "ball lost" << ball1.rawPixelCoords << std::endl;
 					break;
 				}
@@ -448,7 +466,7 @@ void MainCameraVision::FindMissingBalls(){
 #ifdef SHOW_UI
 	cv::Rect2d r2(-30, -30, 60, 60);
 
-	for (auto &ball1 : localState.balls){
+	for (auto &ball1 : lastBalls){
 		if (!ball1.isUpdated) continue;
 		cv::Scalar c(0, ball1.isUpdated ? 255:0, ball1.isPredicted ? 255 : 0 );
 		//cv::rectangle(frameBGR, r2 + frameCenter + ball1.rawPixelCoords, c, 3, 8, 0);
@@ -456,17 +474,15 @@ void MainCameraVision::FindMissingBalls(){
 	}
 #endif // SHOW_UI
 
-	memcpy(lastBalls, localState.balls, MAX_BALLS * sizeof(BallPosition));
 }
 
 void MainCameraVision::FindClosestBalls(){
-	FindMissingBalls();
 	uchar closest = MAX_BALLS, closest2 = MAX_BALLS, closest3 = MAX_BALLS-1;
 	double dist1 = INT_MAX, dist2 = INT_MAX, dist3 = INT_MAX;
 	localState.closestBallInFront = MAX_BALLS - 1;
 	localState.closestBall = MAX_BALLS - 1;
 	uchar i=0;
-	for (auto &ball : localState.balls){
+	for (auto &ball : lastBalls){
 		if (!ball.isValid) continue;
 		localState.ballCount++;
 
@@ -487,9 +503,9 @@ void MainCameraVision::FindClosestBalls(){
 
 	cv::Rect privateZone(-19, -19, 38, 38);
 	cv::Rect privateZone2(-15, -15, 30, 30);
-	cv::Point p1 = localState.balls[localState.closestBall].rawPixelCoords + frameCenter;
-	//cv::Point p2 = localState.balls[localState.closestBallInFront].rawPixelCoords + frameCenter;
-	if (localState.balls[localState.closestBall].isPredicted) {
+	cv::Point p1 = lastBalls[localState.closestBall].rawPixelCoords + frameCenter;
+	//cv::Point p2 = newBalls[localState.closestBallInFront].rawPixelCoords + frameCenter;
+	if (lastBalls[localState.closestBall].isPredicted) {
 		rectangle(frameBGR, privateZone.tl() + p1, privateZone.br() + p1, greenColor, 3, 8, 0);
 	}
 	else {
