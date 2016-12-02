@@ -111,7 +111,7 @@ bool Robot::MessageReceived(const boost::array<char, BUF_SIZE>& buffer, size_t s
 		memcpy(&gPartnerFieldState, &buffer, size);
 		return true;
 	}
-	else if (code == COMMAND_ROBOT_STATE && size == sizeof(ROBOT_STATE)) {
+	else if (code == COMMAND_ROBOT_STATE && size == sizeof(RobotState)) {
 		memcpy(&gPartnerRobotState, &buffer, size);
 		return true;
 	}
