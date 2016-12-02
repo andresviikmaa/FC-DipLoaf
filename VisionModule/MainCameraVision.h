@@ -65,12 +65,7 @@ protected:
 	BallFinder ballFinder;
 	RobotFinder robotFinder;
 
-	void resetBallsUpdateState() {
-		return;
-		//for (size_t i = 0, isize = _balls.size(); i < isize; i++) {
-		//	_balls[i].setIsUpdated(false);
-		//}
-	}
+	virtual void ResetUpdateState();
 	std::vector<cv::Point2i> notBlueGates, notYellowGates;
 
 	ThresholdedImages thresholdedImages;

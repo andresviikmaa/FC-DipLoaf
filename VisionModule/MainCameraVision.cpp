@@ -123,24 +123,12 @@ void MainCameraVision::Run() {
 			{
 				boost::mutex::scoped_lock lock(state_mutex); //allow one command at a time
 				memcpy(&localStateCopy, &localState, sizeof(FieldState));
-				// reset all
-				for (size_t i = 0; i < MAX_BALLS; i++) {
-					newBalls[i].isValid = false;
-					newBalls[i].isUpdated = false;
-					newBalls[i].isPredicted = false;
-					newBalls[i].distance = 10001;
-					newBalls[i].heading = 0;
-					newBalls[i].angle = 0;
-
-				}
-				localState.gates[BLUE_GATE].isValid = false;
-				localState.gates[BLUE_GATE].distance = 10001;
-
-				localState.gates[YELLOW_GATE].isValid = false;
-				localState.gates[YELLOW_GATE].distance = 10001;
+				memcpy(&localStateCopy.balls, &lastBalls, sizeof(BallPosition)*MAX_BALLS); //TODO:avoid double copy
+				
 
 				stateUpdated = true;
 			}
+			ResetUpdateState();
 		}
 		else {
 			;//sleep
@@ -154,6 +142,24 @@ void MainCameraVision::Run() {
 #endif // DEBUG
 
 	}
+}
+void MainCameraVision::ResetUpdateState(){
+	// reset all
+	for (size_t i = 0; i < MAX_BALLS; i++) {
+		newBalls[i].isValid = false;
+		newBalls[i].isUpdated = false;
+		newBalls[i].isPredicted = false;
+		newBalls[i].distance = 10001;
+		newBalls[i].heading = 0;
+		newBalls[i].angle = 0;
+
+	}
+	localState.gates[BLUE_GATE].isValid = false;
+	localState.gates[BLUE_GATE].distance = 10001;
+
+	localState.gates[YELLOW_GATE].isValid = false;
+	localState.gates[YELLOW_GATE].distance = 10001;
+
 }
 bool MainCameraVision::PublishState() {
 	boost::mutex::scoped_lock lock(state_mutex); //allow one command at a time
