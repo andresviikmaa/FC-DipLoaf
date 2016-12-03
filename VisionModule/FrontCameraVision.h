@@ -28,6 +28,7 @@ public:
 	void LoadSettings();
 	bool PublishState();
 	void ResetUpdateState();
+	void CheckCollisionWithBorder();
 
 };
 

@@ -17,6 +17,7 @@ void  FrontCameraVision::ProcessFrame(double dt) {
 	ThresholdFrame();
 	//FindGate();
 	FindBall();
+	CheckCollisionWithBorder();
 
 }
 //void FrontCameraVision::ThresholdFrame() {
@@ -24,7 +25,15 @@ void  FrontCameraVision::ProcessFrame(double dt) {
 //		thresholder = new TBBImageThresholder(thresholdedImages, objectThresholds);
 //	thresholder->Start(frameHSV, { BALL, gFieldState.targetGate });
 //}
+void FrontCameraVision::CheckCollisionWithBorder() {
+	cv:Rect black(220, 190, 191, 62);
+	cv:Rect white(220, 250, 191, 62);
 
+	bool enoughtBlack = countNonZero(thresholdedImages[OUTER_BORDER]) > black.width*black.height*0.8;
+	bool enoughtWhite = countNonZero(thresholdedImages[INNER_BORDER]) > black.width*black.height*0.8;
+	localState.collisionWithBorder = enoughtBlack && enoughtWhite;
+
+}
 void FrontCameraVision::FindGate() {
 	MainCameraVision::FindGates();
 }
@@ -94,6 +103,7 @@ bool FrontCameraVision::PublishState() {
 	if (stateUpdated) {
 		memcpy(&gFieldState.ballsFront, &localStateCopy.balls, MAX_BALLS * sizeof(BallPosition));
 		gFieldState.closestBallTribbler = gFieldState.ballsFront[0].isValid ? 0 : MAX_BALLS-1;
+		gFieldState.collisionWithBorder = localState.collisionWithBorder;
 		stateUpdated = false;
 
 		return true;
