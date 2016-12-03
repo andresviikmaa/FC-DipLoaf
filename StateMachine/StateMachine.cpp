@@ -1,5 +1,7 @@
 #include "StateMachine.h"
 #include <algorithm>
+#include "../CommonModule/RobotState.h"
+extern RobotState gRobotState;
 
 StateMachine::StateMachine(ISoccerRobot *pComModule,
 	const std::map<DriveMode, DriveInstruction*> &driveModes) :driveModes(driveModes)
@@ -39,6 +41,7 @@ void StateMachine::Step(double dt) {
 	}
 
 	if (newMode != curDriveMode->first) {
+		gRobotState.driveState = newMode;
 		//boost::mutex::scoped_lock lock(mutex);
 		std::cout << "state: " << curDriveMode->second->name;
 

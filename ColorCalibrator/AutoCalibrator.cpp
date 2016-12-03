@@ -21,13 +21,29 @@ extern std::map<OBJECT, std::string> OBJECT_LABELS;
 
 AutoCalibrator::AutoCalibrator(ICamera * pCamera) :Dialog("Color Calibrator", pCamera->GetFrameSize(), pCamera->GetFrameSize())
 {
-	range = { { 179, 0 }, { 255, 0 }, { 255, 0 } };
+	range = { { 0, 0 }, { 0, 0 }, { 0, 0 } };
 	m_pCamera = pCamera;
 	frame_size = m_pCamera->GetFrameSize();
 	AddEventListener(this);
 	screenshot_mode = LIVE_FEED;
 //	reset();
 //	Start();
+	for (int i = 0; i < NUMBER_OF_OBJECTS; i++) {
+		createButton(OBJECT_LABELS[(OBJECT)i], '-', [&, i] {
+			//GetObjectThresholds(i, OBJECT_LABELS[(OBJECT)i]);
+			object_name = OBJECT_LABELS[(OBJECT)i];
+			object_id = (OBJECT)i;
+			LoadConf(object_name);
+			screenshot_mode = LIVE_FEED;
+		});
+	}
+	createButton("Threshold", 't', [&]{
+		screenshot_mode = THRESHOLDING;
+	});
+	createButton("Exit", 'x', [&]{
+		stop_thread = true;
+	});
+
 };
 
 const cv::Mat & AutoCalibrator::GetFrame() {
@@ -48,38 +64,30 @@ HSVColorRange AutoCalibrator::GetObjectThresholds (int index, const std::string 
 	return range;
 
 
-	/*
-    cv::imshow(name.c_str(), image); //show the thresholded image
-	cv::moveWindow(name.c_str(), 0, 0);
-    cv::setMouseCallback(name.c_str(), [](int event, int x, int y, int flags, void* self) {
-        if (event==cv::EVENT_LBUTTONUP) {
-			((AutoCalibrator*)self)->mouseClicked(x, y, flags);
-        }
-		if (event == cv::EVENT_RBUTTONUP) {
-			((AutoCalibrator*)self)->done = true;
-		}
-    }, this);
-
-
-    done = false;
-    while (!done)
-    {
-		std::this_thread::sleep_for(std::chrono::milliseconds(30)); // do not poll serial to fast
-		
-        if (cv::waitKey(30) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
-        {
-            std::cout << "esc key is pressed by user" << std::endl;
-            done = true;
-        }
-	
-    }
-    cvDestroyWindow(name.c_str());
-	*/
     SaveConf(object_name);
 	screenshot_mode = THRESHOLDING;
     return range;
 
 };
+void AutoCalibrator::LoadConf(const std::string &name) {
+	using boost::property_tree::ptree;
+	ptree pt;
+	try
+	{
+		read_ini(std::string("conf/") + m_pCamera->getName() + "/" + name + ".ini", pt);
+
+		range.hue.low = pt.get<int>("hue.low");
+		range.hue.high = pt.get<int>("hue.high");
+		range.sat.low = pt.get<int>("sat.low");
+		range.sat.high = pt.get<int>("sat.high");
+		range.val.low = pt.get<int>("val.low");
+		range.val.high = pt.get<int>("val.high");
+	}
+	catch (...) {};
+	std::cout << cv::Scalar(range.hue.low, range.sat.low, range.val.low) << cv::Scalar(range.hue.high, range.sat.high, range.val.high) << std::endl;
+
+}
+
 void AutoCalibrator::SaveConf(const std::string &name) {
 	using boost::property_tree::ptree;
 
@@ -97,24 +105,17 @@ void AutoCalibrator::SaveConf(const std::string &name) {
 #endif
 	write_ini(std::string("conf/") + m_pCamera->getName() + "/" + name + ".ini", pt);
 }
+
 bool AutoCalibrator::OnMouseEvent(int event, float x, float y, int flags) {
-	if (screenshot_mode == CROPPING){
-		return true;
-	}else if (screenshot_mode == GET_THRESHOLD){
-		if (event == cv::EVENT_LBUTTONUP) {
-			mouseClicked((int)(x), (int)(y), flags);
-		}
-		if (event == cv::EVENT_RBUTTONUP) {
-			SaveConf(this->object_name);
-			last_screenshot_mode = screenshot_mode;
-			screenshot_mode = THRESHOLDING;
-		}
-		return true;
+	if (screenshot_mode != THRESHOLDING) return false;
+	if (event == cv::EVENT_LBUTTONUP) {
+		mouseClicked((int)(x), (int)(y), flags);
 	}
-	return false;
-
+	if (event == cv::EVENT_RBUTTONUP) {
+		SaveConf(this->object_name);
+	}
+	return true;
 };
-
 void AutoCalibrator::mouseClicked(int x, int y, int flags){
 	typedef std::vector<std::pair<cv::Point, cv::Point>> pointlist;
 	//void ExamineNeigbourhood(pointlist points){
@@ -201,14 +202,7 @@ void AutoCalibrator::mouseClicked(int x, int y, int flags){
 	} while (!points.empty() && counter < 6000);
 	std::cout << "counter: " << counter << ", mean: " << mean << std::endl;
 
-	cv::Mat imgThresholded;
-	cv::inRange(frameHSV, cv::Scalar(range.hue.low, range.sat.low, range.val.low), cv::Scalar(range.hue.high, range.sat.high, range.val.high), imgThresholded); //Threshold the image
-	std::cout << cv::Scalar(range.hue.low, range.sat.low, range.val.low) << cv::Scalar(range.hue.high, range.sat.high, range.val.high) << std::endl;
 
-	cv::Mat selected(imgThresholded.rows, imgThresholded.cols, CV_8U, cv::Scalar::all(0));
-
-	buffer.copyTo(selected, 255 - imgThresholded);
-	selected.copyTo(buffer);
 
 }
 
@@ -220,70 +214,23 @@ AutoCalibrator::~AutoCalibrator(){
 
 
 int AutoCalibrator::Draw() {
-	//cv::waitKey(0);
+		frameBGR = m_pCamera->Capture();
+		cvtColor(frameBGR, frameHSV, CV_BGR2HSV);
 
-		if (screenshot_mode == LIVE_FEED){
-			if (last_screenshot_mode != LIVE_FEED){
-				clearButtons();
-				createButton("Take screenshot", 'c', [&] {
-					screenshot_mode = GRAB_FRAME;
-				});
-				createButton("Exit", 'x', [&]{
-					stop_thread = true;
-				});
-			}
-			frameBGR = m_pCamera->Capture();
-			GaussianBlur(frameBGR, frameBGR, cv::Size(3, 3), 0, 0, cv::BORDER_DEFAULT);
+		cv::Mat imgThresholded;
+		cv::inRange(frameHSV, cv::Scalar(range.hue.low, range.sat.low, range.val.low), cv::Scalar(range.hue.high, range.sat.high, range.val.high), imgThresholded); //Threshold the image
+		//std::cout << cv::Scalar(range.hue.low, range.sat.low, range.val.low) << cv::Scalar(range.hue.high, range.sat.high, range.val.high) << std::endl;
 
-			frameBGR.copyTo(buffer);
-			ShowImage(frameBGR);
-		}
+		cv::Mat selected(imgThresholded.rows, imgThresholded.cols, CV_8U, cv::Scalar::all(0));
 
-		else if (screenshot_mode == GRAB_FRAME){
-			last_screenshot_mode = screenshot_mode;
-			frameBGR.copyTo(image);
-			cvtColor(frameBGR, frameHSV, CV_BGR2HSV);
-			//int shift = 25; // in openCV hue values go from 0 to 180 (so have to be doubled to get to 0 .. 360) because of byte range from 0 to 255
-			//for (int j = 0; j<frameHSV.rows; ++j)
-			//	for (int i = 0; i<frameHSV.cols; ++i)
-			//	{
-			//		frameHSV.at<unsigned char>(j, i) = (frameHSV.at<unsigned char>(j, i) + shift) % 180;
-			//	}
-			//
-			screenshot_mode = THRESHOLDING;
-
-		}
-		else if (screenshot_mode == THRESHOLDING){
-			if (last_screenshot_mode != THRESHOLDING){
-				clearButtons();
-				for (int i = 0; i < NUMBER_OF_OBJECTS; i++) {
-					createButton(OBJECT_LABELS[(OBJECT)i], '-', [&, i] {
-						//GetObjectThresholds(i, OBJECT_LABELS[(OBJECT)i]);
-						object_name = OBJECT_LABELS[(OBJECT)i];
-						object_id = (OBJECT)i;
-						screenshot_mode = GET_THRESHOLD;
-					});
-
-				}
-				createButton("Back", 'r', [&] {
-					Reset();
-				});
-			}
-
-			last_screenshot_mode = screenshot_mode;
-			image.copyTo(buffer);
-			ShowImage(buffer);
-		}
-		else if (screenshot_mode == GET_THRESHOLD) {
-			if (last_screenshot_mode != GET_THRESHOLD){
-				clearButtons();
-			}
-			cv::putText(buffer, object_name, cv::Point((int)(image.cols * 0.3), (int)(image.rows*0.3)), cv::FONT_HERSHEY_DUPLEX , 1, cv::Scalar(23, 67, 245));
+		frameBGR.copyTo(buffer, 255 - imgThresholded);
+		ShowImage(buffer);
+		if (screenshot_mode == THRESHOLDING) {
+			cv::putText(buffer, object_name, cv::Point((int)(image.cols * 0.3), (int)(image.rows*0.3)), cv::FONT_HERSHEY_DUPLEX, 1, cv::Scalar(23, 67, 245));
 			cv::putText(buffer, "(ctrl +) click to select pixels, right click back", cv::Point((int)(image.cols * 0.2), (int)(image.rows*0.5)), cv::FONT_HERSHEY_DUPLEX, 0.3, cv::Scalar(23, 67, 245));
-			ShowImage(buffer);
-			last_screenshot_mode = screenshot_mode;
 
-		}
+		};
+
 		return Dialog::Draw();
 }
 
