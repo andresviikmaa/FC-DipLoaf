@@ -26,8 +26,8 @@ void  FrontCameraVision::ProcessFrame(double dt) {
 //	thresholder->Start(frameHSV, { BALL, gFieldState.targetGate });
 //}
 void FrontCameraVision::CheckCollisionWithBorder() {
-	cv:Rect black(220, 190, 191, 62);
-	cv:Rect white(220, 250, 191, 62);
+	cv::Rect black(220, 190, 191, 62);
+	cv::Rect white(220, 250, 191, 62);
 
 	bool enoughtBlack = countNonZero(thresholdedImages[OUTER_BORDER]) > black.width*black.height*0.8;
 	bool enoughtWhite = countNonZero(thresholdedImages[INNER_BORDER]) > black.width*black.height*0.8;
