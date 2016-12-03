@@ -188,13 +188,13 @@ void Robot::Run()
 	gRobotState.FIELD_MARKER = 'B';
 	gRobotState.targetGate = BLUE_GATE;
 	gRobotState.homeGate = YELLOW_GATE;
-	if (true){//2v2
+	if (false){//2v2
 		gRobotState.runMode = ROBOT_MODE_2VS2;
 		//gRobotState.gameMode = GAME_MODE_START_OUR_PENALTY;
 	}
 	else{
 		gRobotState.runMode = ROBOT_MODE_1VS1;
-		//gRobotState.gameMode = GAME_MODE_START_PLAY;
+		gRobotState.gameMode = GAME_MODE_START_PLAY;
 	}
 
 	//debug = true;
@@ -262,15 +262,15 @@ void Robot::Run()
 			//subtitles << "|" << m_pAutoPilot->GetDebugInfo();
 			//subtitles << "|" << 
 			
-			std::string debug = " " + m_AutoPilots[gRobotState.runMode]->GetDebugInfo();
-			debug[0] = COMMAND_STATEMACHINE_STATE;
-			SendData(debug.c_str(), debug.size());
+//			std::string debug = " " + m_AutoPilots[gRobotState.runMode]->GetDebugInfo();
+//			debug[0] = COMMAND_STATEMACHINE_STATE;
+//			SendData(debug.c_str(), debug.size());
 
 //			std::string debug2 = " " + m_pComModule->GetDebugInfo();
 //			debug2[0] = COMMAND_WHEELS_STATE;
 //			SendData(debug2.c_str(), debug2.size());
 
-			int ms = 50;
+			int ms = 20;
 			std::chrono::milliseconds dura(ms);
 			std::this_thread::sleep_for(dura);
 
