@@ -172,6 +172,7 @@ bool Robot::MessageReceived(const std::string & message) {
 	return true;
 };
 void Robot::InitializeTarget1vs1(){
+	return;
 	auto &B = gFieldState.gates[BLUE_GATE];
 	auto &Y = gFieldState.gates[YELLOW_GATE];
 	if (B.distance > Y.distance || Y.heading < 0) {
@@ -190,7 +191,7 @@ void Robot::Run()
 	double u1 = (double)cv::getTickCount();
 #define GUSTAV
 #ifdef GUSTAV
-	if (true){//2v2
+	if (false){//2v2
 		gRobotState.runMode = ROBOT_MODE_2VS2;
 
 		gRobotState.FIELD_MARKER = 'B';
@@ -201,8 +202,8 @@ void Robot::Run()
 	else{
 		gRobotState.runMode = ROBOT_MODE_1VS1;
 		gRobotState.FIELD_MARKER = 'B';
-		gRobotState.targetGate = BLUE_GATE;
-		gRobotState.homeGate = YELLOW_GATE;
+		gRobotState.targetGate = YELLOW_GATE;
+		gRobotState.homeGate = BLUE_GATE;
 		gRobotState.gameMode = GAME_MODE_START_PLAY;
 	}
 
@@ -278,7 +279,7 @@ void Robot::Run()
 //			std::string debug2 = " " + m_pComModule->GetDebugInfo();
 //			debug2[0] = COMMAND_WHEELS_STATE;
 //			SendData(debug2.c_str(), debug2.size());
-			int ms = 50;
+			int ms = 20;
 			std::chrono::milliseconds dura(ms);
 			std::this_thread::sleep_for(dura);
 

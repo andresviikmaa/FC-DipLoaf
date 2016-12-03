@@ -26,7 +26,7 @@ DriveMode SingleModeIdle::step(double dt) {
 	if (gRobotState.gameMode != GAME_MODE_IN_PROGRESS) {
 		return DRIVEMODE_IDLE;
 	}
-	return  DRIVEMODE_DRIVE_TO_BALL; 
+	return DRIVEMODE_DRIVE_TO_BALL;
 }
 
 /*BEGIN DriveToBall*/
