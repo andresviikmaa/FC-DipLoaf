@@ -222,7 +222,7 @@ public:
 		DriveMode step(double dt)
 		{
 			ObjectPosition partnerPosition = gFieldState.gates[gRobotState.homeGate];
-			partnerPosition.heading -= 20;
+			partnerPosition.heading -= 30;
 			auto &target = gFieldState.ballsFront[gFieldState.closestBallTribbler];
 
 			if (target.distance > 10000) {
@@ -233,7 +233,7 @@ public:
 				return DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_PARTNER;
 			}
 
-			if (preciseAim(target, partnerPosition, speed, 10)) {
+			if (preciseAim(target, partnerPosition, speed, 5)) {
 				if (m_pCom->BallInTribbler()){
 					m_pCom->Kick(800);
 					return DRIVEMODE_2V2_DEFENSIVE;
@@ -244,6 +244,20 @@ public:
 		}
 };
 
+class Reverse : public DriveInstruction
+{
+public:
+
+	Reverse(const std::string &name = "REVERSE") : DriveInstruction(name){};
+	virtual DriveMode step(double dt){
+		auto &Y = gFieldState.gates[YELLOW_GATE];
+		auto &B = gFieldState.gates[BLUE_GATE];
+		m_pCom->Drive(100, Y.distance > B.distance ? Y.heading : B.heading, 0);
+		if (STUCK_IN_STATE(1000 * 1))return DRIVEMODE_2V2_DEFENSIVE;
+		return DRIVEMODE_BORDER_TO_CLOSE;
+	}
+};
+
 
 std::pair<DriveMode, DriveInstruction*> MasterDriveModes[] = {
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_IDLE, new MasterModeIdle()),
@@ -252,6 +266,7 @@ std::pair<DriveMode, DriveInstruction*> MasterDriveModes[] = {
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_GOAL_KEEPER, new GoalKeeper()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_GATE, new DriveToBallAimGate2v2()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_PARTNER, new DriveToBallAimPartner()),
+	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_BORDER_TO_CLOSE, new Reverse()),
 	
 };
 
@@ -262,6 +277,7 @@ std::pair<DriveMode, DriveInstruction*> SlaveDriveModes[] = {
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_CATCH_KICKOFF, new CatchKickOff()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_GOAL_KEEPER, new GoalKeeper()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_GATE, new DriveToBallAimGate2v2()),
+	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_BORDER_TO_CLOSE, new Reverse()),
 };
 
 MultiModePlay::MultiModePlay(ISoccerRobot *pComModule, bool bMaster) :StateMachine(pComModule,

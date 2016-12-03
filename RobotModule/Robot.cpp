@@ -99,8 +99,8 @@ bool Robot::Launch()
 	return true;
 }
 void Robot::SendFieldState() {
-	const char * pData = reinterpret_cast<const char*>(&gFieldState);
-	SendData(pData, sizeof(FieldState));
+	//const char * pData = reinterpret_cast<const char*>(&gFieldState);
+	//SendData(pData, sizeof(FieldState));
 	const char * pData2 = reinterpret_cast<const char*>(&gRobotState);
 	SendData(pData2, sizeof(RobotState));
 
@@ -142,7 +142,12 @@ bool Robot::MessageReceived(const boost::array<char, BUF_SIZE>& buffer, size_t s
 };
 
 bool Robot::MessageReceived(const std::string & message) {
-	//std::cout << "MessageReceived: " << message << std::endl;
+	
+	if (lastMessage != message){
+		std::cout << "MessageReceived: " << message << std::endl;
+		lastMessage = message;
+	}
+	
 	if (message.empty()) return false;
 	COMMAND code = (COMMAND)message[0];
 
@@ -167,6 +172,7 @@ bool Robot::MessageReceived(const std::string & message) {
 	return true;
 };
 void Robot::InitializeTarget1vs1(){
+	return;
 	auto &B = gFieldState.gates[BLUE_GATE];
 	auto &Y = gFieldState.gates[YELLOW_GATE];
 	if (B.distance > Y.distance || Y.heading < 0) {
@@ -185,15 +191,21 @@ void Robot::Run()
 	double u1 = (double)cv::getTickCount();
 #define GUSTAV
 #ifdef GUSTAV
-	gRobotState.FIELD_MARKER = 'B';
-	gRobotState.targetGate = BLUE_GATE;
-	gRobotState.homeGate = YELLOW_GATE;
+
 	if (false){//2v2
 		gRobotState.runMode = ROBOT_MODE_2VS2;
+
+		gRobotState.FIELD_MARKER = 'B';
+		gRobotState.targetGate = YELLOW_GATE;
+		gRobotState.homeGate = BLUE_GATE;
 		//gRobotState.gameMode = GAME_MODE_START_OUR_PENALTY;
 	}
 	else{
 		gRobotState.runMode = ROBOT_MODE_1VS1;
+
+		gRobotState.FIELD_MARKER = 'B';
+		gRobotState.targetGate = YELLOW_GATE;
+		gRobotState.homeGate = BLUE_GATE;
 		gRobotState.gameMode = GAME_MODE_START_PLAY;
 	}
 
@@ -269,7 +281,10 @@ void Robot::Run()
 //			std::string debug2 = " " + m_pComModule->GetDebugInfo();
 //			debug2[0] = COMMAND_WHEELS_STATE;
 //			SendData(debug2.c_str(), debug2.size());
+<<<<<<< HEAD
 
+=======
+>>>>>>> 8c21f3210b8c695207d7bcd6d3a85c951327e0fa
 			int ms = 20;
 			std::chrono::milliseconds dura(ms);
 			std::this_thread::sleep_for(dura);
