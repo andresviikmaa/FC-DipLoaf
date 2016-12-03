@@ -6,6 +6,7 @@
 #include "../CommonModule/RobotState.h"
 
 extern RobotState gRobotState;
+extern FieldState gFieldState;
 
 DriveInstruction::DriveInstruction(const std::string &name) : name(name) {
 };
@@ -23,14 +24,16 @@ DriveMode DriveInstruction::step1(double dt, DriveMode driveMode) {
 		m_pCom->ToggleTribbler(0);
 		return DRIVEMODE_IDLE;
 	}
-	/*
-	// handle crash
-	if (m_pFieldState->collisionWithBorder && driveMode != DRIVEMODE_BORDER_TO_CLOSE){
-	prevDriveMode = driveMode;
-	std::cout << "To close to border" << std::endl;
+
+	
+	
+	
+	if (gFieldState.collisionWithBorder && driveMode != DRIVEMODE_BORDER_TO_CLOSE){
+		prevDriveMode = driveMode;
+		std::cout << "To close to border" << std::endl;
 	return DRIVEMODE_BORDER_TO_CLOSE;
 	}
-	*/
+	
 	/*
 	if (m_pFieldState->collisionWithUnknown && driveMode != DRIVEMODE_CRASH){
 	std::cout << "Crash" << std::endl;

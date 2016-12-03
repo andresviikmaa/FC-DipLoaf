@@ -122,12 +122,27 @@ public:
 	}
 };
 
+class Reverse : public DriveInstruction
+{
+public:
+	
+	Reverse(const std::string &name = "REVERSE") : DriveInstruction(name){};
+	virtual DriveMode step(double dt){
+		auto &Y = gFieldState.gates[YELLOW_GATE];
+		auto &B = gFieldState.gates[BLUE_GATE];
+		m_pCom->Drive(100, Y.distance > B.distance ? Y.heading :  B.heading, 0);
+		if (STUCK_IN_STATE(1000 * 1))return DRIVEMODE_DRIVE_TO_BALL;
+		return DRIVEMODE_BORDER_TO_CLOSE;
+	}
+};
+
 std::pair<DriveMode, DriveInstruction*> SingleDriveModes[] = {
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_IDLE, new SingleModeIdle()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_DRIVE_HOME, new DriveToHome()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_DRIVE_TO_BALL, new DriveToBall()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_DRIVE_TO_BALL_FRONT, new DriveToBallFront()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_DRIVE_TO_BALL_AIM_GATE, new DriveToBallAimGate()),
+	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_BORDER_TO_CLOSE, new Reverse()),
 };
 
 SingleModePlay::SingleModePlay(ISoccerRobot *pComModule)
