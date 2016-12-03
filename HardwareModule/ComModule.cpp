@@ -39,10 +39,6 @@ void ComModule::sendAck(const std::string & message){
 
 
 void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed) {
-
-	double current = std::clock(); 
-	if()
-	lastDrive = std::clock();
 	
 	direction *= -1.;
 	angularSpeed *= -1.;
@@ -73,6 +69,17 @@ void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed)
 	targetSpeedXYW.at<double>(0) = sin((direction)* CV_PI / 180.0)* fowardSpeed;
 	targetSpeedXYW.at<double>(1) = cos((direction)* CV_PI / 180.0)* fowardSpeed;
 	targetSpeedXYW.at<double>(2) = angularSpeed;
+
+
+
+	double current = std::clock();
+	if ((fowardSpeed - lastSpeed.velocity) / (current - lastDrive) > 40){
+		//
+		fowardSpeed *= 0.7;
+		angularSpeed*= 0.7;
+	}
+	lastDrive = std::clock();
+	lastSpeed.velocity = fowardSpeed;
 
 };
 
