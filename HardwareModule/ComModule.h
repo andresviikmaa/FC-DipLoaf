@@ -60,6 +60,7 @@ public:
 	}
 	virtual void sendAck(const std::string & message);
 
+	void smoothAcceleration(cv::Mat speeds);
 
 protected:
 

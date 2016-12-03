@@ -127,6 +127,7 @@ void ComModule::SendMessages() {
 	ss << "speeds";
 
 	cv::Mat speeds = wheelAngles * targetSpeedXYW *8;
+	if (false) smoothAcceleration(speeds);
 	ss << ":" << -(int)speeds.at<double>(0);
 	ss << ":" << (int)speeds.at<double>(1);
 	ss << ":" << (int)speeds.at<double>(3);
@@ -135,4 +136,14 @@ void ComModule::SendMessages() {
 
 	std::string tmp = ss.str();
 	SendMessage(tmp);
+}
+
+void ComModule::smoothAcceleration(cv::Mat speeds){
+	for (int i = 0; i < 4; i++){
+		double speedToBe = speeds.at<double>(i);
+		if (i == 0) speedToBe *= -1;//for wookie
+		if (fabs((double)(gFieldState.self.wheelSpeeds[i]) - speedToBe) > 1000){
+			speeds.at<double>(i) = (double)(gFieldState.self.wheelSpeeds[i]) + (speedToBe > 0) ? 1000 : -1000;
+		}
+	}	
 }
