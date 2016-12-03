@@ -10,18 +10,6 @@
 #else
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>#include "AutoCalibrator.h"
-#include <opencv2/highgui.hpp>
-#include <opencv2/core.hpp>
-#include <opencv2/imgproc.hpp>
-
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/ini_parser.hpp>
-#ifdef WIN32
-#include <direct.h>
-#else
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <unistd.h>
 #endif
 #include <stdlib.h>
