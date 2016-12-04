@@ -219,15 +219,20 @@ public:
 	DriveToBallAimPartner(const std::string &name = "2V2_DRIVE_TO_BALL_AIM_PARTNER") : DriveInstruction(name) {};
 		DriveMode step(double dt)
 		{
+
+			if (m_pCom->BallInTribbler()){
+				m_pCom->Kick(800);
+				return DRIVEMODE_2V2_DEFENSIVE;
+			}/*
 			ObjectPosition partnerPosition = gFieldState.gates[gRobotState.homeGate];
 			partnerPosition.heading -= 30;
 			auto &target = gFieldState.ballsFront[gFieldState.closestBallTribbler];
 
 			if (target.distance > 10000) {
-				/*
-					Robot must stay in center ring. If lost ball, then start rotating.
-				*/
-				//m_pCom->Drive(0, 0, 15);
+				target = gFieldState.balls[gFieldState.closestBall];
+				//	Robot must stay in center ring. If lost ball, then start rotating.
+				m_pCom->Drive(0, 0, 0);
+				//m_pCom->Drive(30, target.heading, 15);
 				return DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_PARTNER;
 			}
 
@@ -237,16 +242,18 @@ public:
 					return DRIVEMODE_2V2_DEFENSIVE;
 				}
 			}
-			m_pCom->Drive(speed.velocity, speed.heading, speed.rotation/2);
+			std::cout << speed.velocity << " " << speed.heading << " " << speed.rotation << std::endl;
+			*/
+			m_pCom->Drive(30,0, 0);
 			return DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_PARTNER;
 		}
 };
 
-class Reverse : public DriveInstruction
+class Reverse2v2 : public DriveInstruction
 {
 public:
 
-	Reverse(const std::string &name = "REVERSE") : DriveInstruction(name){};
+	Reverse2v2(const std::string &name = "REVERSE") : DriveInstruction(name){};
 	virtual DriveMode step(double dt){
 		auto &Y = gFieldState.gates[YELLOW_GATE];
 		auto &B = gFieldState.gates[BLUE_GATE];
@@ -264,7 +271,7 @@ std::pair<DriveMode, DriveInstruction*> MasterDriveModes[] = {
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_GOAL_KEEPER, new GoalKeeper()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_GATE, new DriveToBallAimGate2v2()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_PARTNER, new DriveToBallAimPartner()),
-	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_BORDER_TO_CLOSE, new Reverse()),
+	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_BORDER_TO_CLOSE, new Reverse2v2()),
 	
 };
 
@@ -275,7 +282,7 @@ std::pair<DriveMode, DriveInstruction*> SlaveDriveModes[] = {
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_CATCH_KICKOFF, new CatchKickOff()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_GOAL_KEEPER, new GoalKeeper()),
 	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_2V2_DRIVE_TO_BALL_AIM_GATE, new DriveToBallAimGate2v2()),
-	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_BORDER_TO_CLOSE, new Reverse()),
+	std::pair<DriveMode, DriveInstruction*>(DRIVEMODE_BORDER_TO_CLOSE, new Reverse2v2()),
 };
 
 MultiModePlay::MultiModePlay(ISoccerRobot *pComModule, bool bMaster) :StateMachine(pComModule,

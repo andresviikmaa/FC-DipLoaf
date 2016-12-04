@@ -69,6 +69,7 @@ void FrontCameraVision::UpdateObjectPostion(ObjectPosition & object, const cv::P
 	object.rawPixelCoords = pos - frameCenter;
 	if (pos.x < 0) {
 		object.isValid = false;
+		object.distance = 10001;
 		return;
 	}
 

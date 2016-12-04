@@ -65,15 +65,17 @@ void ComModule::Drive(double fowardSpeed, double direction, double angularSpeed)
 
 	}
 
-	double t2 = (double)cv::getTickCount();
-	double dt = (t2 - lastDrive) / cv::getTickFrequency();
-	double temp = fowardSpeed > lastSpeed.velocity && (fowardSpeed - lastSpeed.velocity) / (dt - lastDrive);
-	if (fowardSpeed > lastSpeed.velocity && (fowardSpeed - lastSpeed.velocity) / dt > 0.6){
-		fowardSpeed *= dt*40;
-		angularSpeed *= dt*40;
+	if (false){
+		double t2 = (double)cv::getTickCount();
+		double dt = (t2 - lastDrive) / cv::getTickFrequency();
+		double temp = fowardSpeed > lastSpeed.velocity && (fowardSpeed - lastSpeed.velocity) / (dt - lastDrive);
+		if (fowardSpeed > lastSpeed.velocity && (fowardSpeed - lastSpeed.velocity) / dt > 0.6){
+			fowardSpeed *= dt * 40;
+			angularSpeed *= dt * 40;
+		}
+		lastDrive = t2;
+		lastSpeed.velocity = fowardSpeed;
 	}
-	lastDrive = t2;
-	lastSpeed.velocity = fowardSpeed;
 
 	targetSpeedXYW.at<double>(0) = sin((direction)* CV_PI / 180.0)* fowardSpeed;
 	targetSpeedXYW.at<double>(1) = cos((direction)* CV_PI / 180.0)* fowardSpeed;

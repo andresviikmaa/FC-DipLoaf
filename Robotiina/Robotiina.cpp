@@ -35,7 +35,7 @@ std::atomic_bool exitRobot;
 #ifdef USE_ROBOTIINA_WIFI 
 // robotiina wifi
 boost::asio::ip::address bind_addr = boost::asio::ip::address::from_string("0.0.0.0"); // this computer ip
-boost::asio::ip::address brdc_addr = boost::asio::ip::address::from_string("192.168.42.13"); // netmask 255.255.255.240
+boost::asio::ip::address brdc_addr = boost::asio::ip::address::from_string("192.168.0.13"); // netmask 255.255.255.240
 #else
 // any local network
 boost::asio::ip::address bind_addr = boost::asio::ip::address::from_string("0.0.0.0"); // all interfaces
