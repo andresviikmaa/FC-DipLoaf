@@ -1,0 +1,7 @@
+boardcastSubnet=127.255.255.255
+ethernetIp=192.168.4.1
+ethernetPort=8042
+frontCam=../test_images/front1.jpg
+mainCam=../test_images/omni4.jpg
+master=no
+name=
