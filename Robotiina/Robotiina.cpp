@@ -30,10 +30,15 @@ boost::asio::io_service io;
 boost::asio::io_service io2;
 std::atomic_bool exitRobot;
 
-//TODO: convert to commandline options
+
+boost::asio::ip::address bind_addr = boost::asio::ip::address::from_string("0.0.0.0"); // all interfaces;
+boost::asio::ip::address brdc_addr;
+
+/*
 #define USE_ROBOTIINA_WIFI
 #ifdef USE_ROBOTIINA_WIFI 
 // robotiina wifi
+//TODO: convert to commandline options
 boost::asio::ip::address bind_addr = boost::asio::ip::address::from_string("0.0.0.0"); // this computer ip
 boost::asio::ip::address brdc_addr = boost::asio::ip::address::from_string("192.168.0.13"); // netmask 255.255.255.240
 #else
@@ -42,7 +47,7 @@ boost::asio::ip::address bind_addr = boost::asio::ip::address::from_string("0.0.
 boost::asio::ip::address brdc_addr = boost::asio::ip::address_v4::broadcast(); // local network
 
 #endif
-
+*/
 #ifdef WIN32
 BOOL CtrlHandler(DWORD fdwCtrlType)
 { 
@@ -105,6 +110,7 @@ int main(int argc, char* argv[])
 		Settings settings;
 		settings.LoadFromCommandLine(argc, argv);
 
+		brdc_addr = settings.boardcastSubnet.empty() ? boost::asio::ip::address_v4::broadcast() : boost::asio::ip::address::from_string(settings.boardcastSubnet);
 		std::cout << "Initializing Main Camera... " << std::endl;
 		Camera mainCamera("main", settings.mainCam);
 		std::cout << "Initializing Front Camera... " << std::endl;

@@ -10,6 +10,7 @@ public:
 	std::string frontCam;
 	std::string mainCam;
 	bool master;
+	std::string boardcastSubnet;
 	Settings();
 	~Settings();
 	void LoadFromCommandLine(int argc, char* argv[]);

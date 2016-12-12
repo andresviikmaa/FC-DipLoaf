@@ -10,6 +10,8 @@ Settings::Settings():ConfigurableModule("Settings")
 	ADD_STR_SETTING(mainCam);
 	ADD_STR_SETTING(frontCam);
 	ADD_BOOL_SETTING(master);
+	ADD_STR_SETTING(boardcastSubnet)
+
 	LoadSettings();
 }
 
@@ -36,6 +38,8 @@ void Settings::LoadFromCommandLine(int argc, char* argv[]) {
 		ethernetPort = config["mainboard-port"].as<int>();
 	if (config.count("master"))
 		master = config["master"].as<bool>();
+	if (config.count("boardcast-subnet"))
+		boardcastSubnet = config["boardcast-subnet"].as<std::string>();
 
 	SaveSettings();
 }
